@@ -1,0 +1,11 @@
+BasedOnStyle: Microsoft
+AccessModifierOffset: -4
+AlignEscapedNewlines: Left
+AllowShortFunctionsOnASingleLine: Empty
+BraceWrapping:
+  BeforeLambdaBody: true
+FixNamespaceComments: false
+IndentCaseLabels: true
+NamespaceIndentation: All
+PointerAlignment: Left
+UseTab: ForIndentation

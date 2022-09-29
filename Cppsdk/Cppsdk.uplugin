@@ -1,0 +1,29 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Dolby.io C++ SDK",
+	"Description": "Dolby.io C++ SDK plugin for Unreal Engine 4 and 5",
+	"Category": "Audio",
+	"CreatedBy": "Dolby Laboratories",
+	"CreatedByURL": "https://dolby.io/",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": true,
+	"IsExperimentalVersion": true,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "DolbyIoConferenceModule",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+        {
+            "Name": "SdkAccessModule",
+            "Type": "Runtime",
+            "LoadingPhase": "Default"
+        }
+	]
+}
