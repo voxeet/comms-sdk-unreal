@@ -2,16 +2,13 @@
 
 namespace Dolby
 {
-	class ISdkStatusObserver;
+	class ISdkApi;
+	using FMessage = FString;
 
 	class FSdkStatus final
 	{
 	public:
-		using FMessage = FString;
-		using FDeviceName = FText;
-		using FDeviceNames = TArray<FDeviceName>;
-
-		FSdkStatus(ISdkStatusObserver&);
+		FSdkStatus(ISdkApi&);
 
 		bool IsDisconnected() const;
 		bool IsConnecting() const;
@@ -20,20 +17,6 @@ namespace Dolby
 		void OnDisconnected();
 		void OnConnecting();
 		void OnConnected();
-
-		void OnNewListOfInputDevices(const FDeviceNames&);
-		void OnNewListOfOutputDevices(const FDeviceNames&);
-
-		void OnInputDeviceAdded(const FDeviceName&);
-		void OnOutputDeviceAdded(const FDeviceName&);
-
-		void OnInputDeviceRemoved(const FDeviceName&);
-		void OnOutputDeviceRemoved(const FDeviceName&);
-
-		void OnInputDeviceChanged(const FDeviceName&);
-		void OnOutputDeviceChanged(const FDeviceName&);
-
-		void OnRefreshTokenRequested();
 
 		void SetMsg(const FMessage&);
 
@@ -52,6 +35,6 @@ namespace Dolby
 		EConnectionStatus ConnectionStatus = EConnectionStatus::Disconnected;
 		FMessage Msg;
 
-		ISdkStatusObserver& Observer;
+		ISdkApi& Delegate;
 	};
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
-#include "SdkStatusObserver.h"
+#include "SdkApi.h"
 
 #include "DolbyIoConference.generated.h"
 
@@ -20,7 +20,7 @@ namespace Dolby
 
 /** Interface to the Dolby.io C++ SDK. */
 UCLASS()
-class DOLBYIOCONFERENCEMODULE_API ADolbyIoConference : public AActor, public Dolby::ISdkStatusObserver
+class DOLBYIOCONFERENCEMODULE_API ADolbyIoConference : public AActor, public Dolby::ISdkApi
 {
 	GENERATED_BODY()
 
@@ -159,13 +159,14 @@ private:
 	// AActor
 	void Tick(float DeltaTime) override;
 
-	// Dolby::ISdkStatusObserver
-	void OnStatusChanged(const FMessage&) override;
+	// Dolby::ISdkApi - used by FSdkStatus
+	void OnStatusChanged(const Dolby::FMessage&) override;
 
-	void OnNewListOfInputDevices(const FDeviceNames&) override;
-	void OnNewListOfOutputDevices(const FDeviceNames&) override;
-	void OnInputDeviceChanged(const FDeviceName&) override;
-	void OnOutputDeviceChanged(const FDeviceName&) override;
+	// Dolby::ISdkApi - used by FSdkAccess
+	void OnNewListOfInputDevices(const Dolby::FDeviceNames&) override;
+	void OnNewListOfOutputDevices(const Dolby::FDeviceNames&) override;
+	void OnInputDeviceChanged(const Dolby::FDeviceName&) override;
+	void OnOutputDeviceChanged(const Dolby::FDeviceName&) override;
 
 	void OnRefreshTokenRequested() override;
 

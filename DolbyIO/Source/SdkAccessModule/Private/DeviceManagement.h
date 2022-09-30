@@ -7,25 +7,25 @@ namespace dolbyio::comms::services
 
 namespace Dolby
 {
-	class FSdkStatus;
 	class FDevices;
+	struct FExceptionHandler;
+	class ISdkApi;
 
 	class FDeviceManagement final
 	{
 	public:
 		using FDvcDeviceManagement = dolbyio::comms::services::device_management;
 
-		FDeviceManagement(FDvcDeviceManagement&, FSdkStatus&);
+		FDeviceManagement(FDvcDeviceManagement&, ISdkApi&, FExceptionHandler&);
 		~FDeviceManagement();
 
 		void SetInputDevice(const int Index);
 		void SetOutputDevice(const int Index);
 
 	private:
-		void InitializeDevices(FDvcDeviceManagement&);
-		void GetAllDevices(FDvcDeviceManagement&);
+		void InitializeDevices(FDvcDeviceManagement&, FExceptionHandler&);
+		void GetAllDevices(FDvcDeviceManagement&, FExceptionHandler&);
 
-		FSdkStatus& Status;
 		TUniquePtr<FDevices> InputDevices;
 		TUniquePtr<FDevices> OutputDevices;
 	};

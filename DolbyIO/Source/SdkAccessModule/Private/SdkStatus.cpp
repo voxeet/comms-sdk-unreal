@@ -1,12 +1,12 @@
 #include "SdkStatus.h"
+#include "SdkApi.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogDolby, Log, All);
 #define DLB_UE_LOG(Format, ...) UE_LOG(LogDolby, Log, TEXT(Format), ##__VA_ARGS__)
-#define DLB_UE_LOG_DEVICE(Type, Event) DLB_UE_LOG(Type " device " Event ": %s", *Name.ToString())
 
 namespace Dolby
 {
-	FSdkStatus::FSdkStatus(ISdkStatusObserver& Observer) : Observer(Observer) {}
+	FSdkStatus::FSdkStatus(ISdkApi& Delegate) : Delegate(Delegate) {}
 
 	bool FSdkStatus::IsDisconnected() const
 	{
@@ -34,47 +34,6 @@ namespace Dolby
 		SetConnection(EConnectionStatus::Connected);
 	}
 
-	void FSdkStatus::OnNewListOfInputDevices(const FDeviceNames& Names)
-	{
-		Observer.OnNewListOfInputDevices(Names);
-	}
-	void FSdkStatus::OnNewListOfOutputDevices(const FDeviceNames& Names)
-	{
-		Observer.OnNewListOfOutputDevices(Names);
-	}
-	void FSdkStatus::OnInputDeviceAdded(const FDeviceName& Name)
-	{
-		DLB_UE_LOG_DEVICE("Input", "added");
-	}
-	void FSdkStatus::OnOutputDeviceAdded(const FDeviceName& Name)
-	{
-		DLB_UE_LOG_DEVICE("Output", "added");
-	}
-	void FSdkStatus::OnInputDeviceRemoved(const FDeviceName& Name)
-	{
-		DLB_UE_LOG_DEVICE("Input", "removed");
-	}
-	void FSdkStatus::OnOutputDeviceRemoved(const FDeviceName& Name)
-	{
-		DLB_UE_LOG_DEVICE("Output", "removed");
-	}
-	void FSdkStatus::OnInputDeviceChanged(const FDeviceName& Name)
-	{
-		DLB_UE_LOG_DEVICE("Input", "changed");
-		Observer.OnInputDeviceChanged(Name);
-	}
-	void FSdkStatus::OnOutputDeviceChanged(const FDeviceName& Name)
-	{
-		DLB_UE_LOG_DEVICE("Output", "changed");
-		Observer.OnOutputDeviceChanged(Name);
-	}
-
-	void FSdkStatus::OnRefreshTokenRequested()
-	{
-		DLB_UE_LOG("Refresh token requested");
-		Observer.OnRefreshTokenRequested();
-	}
-
 	void FSdkStatus::SetMsg(const FMessage& M)
 	{
 		Msg = M;
@@ -91,11 +50,11 @@ namespace Dolby
 	{
 		const FMessage Status = ToString();
 		DLB_UE_LOG("%s", *Status);
-		Observer.OnStatusChanged(Status);
+		Delegate.OnStatusChanged(Status);
 		Msg.Reset();
 	}
 
-	FSdkStatus::FMessage FSdkStatus::ToString() const
+	FMessage FSdkStatus::ToString() const
 	{
 		FMessage Ret;
 		switch (ConnectionStatus)

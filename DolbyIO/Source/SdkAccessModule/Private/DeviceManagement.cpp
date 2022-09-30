@@ -1,14 +1,17 @@
 #include "DeviceManagement.h"
 #include "Common.h"
 #include "Devices.h"
+#include "ExceptionHandler.h"
 
 namespace Dolby
 {
-	FDeviceManagement::FDeviceManagement(FDvcDeviceManagement& DeviceManagement, FSdkStatus& Status)
-	    : Status(Status), InputDevices(MakeUnique<FDevices>(FDevices::EDirection::Input, DeviceManagement, Status)),
-	      OutputDevices(MakeUnique<FDevices>(FDevices::EDirection::Output, DeviceManagement, Status))
+	FDeviceManagement::FDeviceManagement(FDvcDeviceManagement& DeviceManagement, ISdkApi& Delegate,
+	                                     FExceptionHandler& ExceptionHandler)
+	    : InputDevices(MakeUnique<FDevices>(FDevices::EDirection::Input, DeviceManagement, Delegate, ExceptionHandler)),
+	      OutputDevices(
+	          MakeUnique<FDevices>(FDevices::EDirection::Output, DeviceManagement, Delegate, ExceptionHandler))
 	{
-		InitializeDevices(DeviceManagement);
+		InitializeDevices(DeviceManagement, ExceptionHandler);
 	}
 
 	FDeviceManagement::~FDeviceManagement() {}
@@ -36,9 +39,10 @@ namespace Dolby
 		}
 	}
 
-	void FDeviceManagement::InitializeDevices(FDvcDeviceManagement& DeviceManagement)
+	void FDeviceManagement::InitializeDevices(FDvcDeviceManagement& DeviceManagement,
+	                                          FExceptionHandler& ExceptionHandler)
 	{
-		GetAllDevices(DeviceManagement);
+		GetAllDevices(DeviceManagement, ExceptionHandler);
 
 		DeviceManagement
 		    .add_event_handler(
@@ -67,7 +71,7 @@ namespace Dolby
 				        }
 			        }
 		        })
-		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+		    .on_error(ExceptionHandler);
 
 		DeviceManagement
 		    .add_event_handler(
@@ -82,7 +86,7 @@ namespace Dolby
 				        OutputDevices->OnAdded(Event.device);
 			        }
 		        })
-		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+		    .on_error(ExceptionHandler);
 
 		DeviceManagement
 		    .add_event_handler(
@@ -91,10 +95,10 @@ namespace Dolby
 			        InputDevices->OnRemoved(Event.uid);
 			        OutputDevices->OnRemoved(Event.uid);
 		        })
-		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+		    .on_error(ExceptionHandler);
 	}
 
-	void FDeviceManagement::GetAllDevices(FDvcDeviceManagement& DeviceManagement)
+	void FDeviceManagement::GetAllDevices(FDvcDeviceManagement& DeviceManagement, FExceptionHandler& ExceptionHandler)
 	{
 		DeviceManagement.get_audio_devices()
 		    .then(
@@ -121,6 +125,6 @@ namespace Dolby
 			        InputDevices->Initialize(MoveTemp(InitInputDevices), MoveTemp(InitInputDeviceNames));
 			        OutputDevices->Initialize(MoveTemp(InitOutputDevices), MoveTemp(InitOutputDeviceNames));
 		        })
-		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+		    .on_error(ExceptionHandler);
 	}
 }
