@@ -20,7 +20,7 @@ namespace Dolby
 		using FUserName = FString;
 
 	public:
-		FSdkAccess(class ISdkStatusObserver&);
+		FSdkAccess(class ISdkApi&);
 		~FSdkAccess();
 
 		void Connect(const FToken&, const FConferenceName&, const FUserName&);
@@ -41,6 +41,7 @@ namespace Dolby
 		void ConnectToDemoConference(const FUserName&);
 
 		FSdkStatus Status;
+		ISdkApi& Delegate;
 		TUniquePtr<class FDeviceManagement> Devices;
 		TUniquePtr<dolbyio::comms::sdk> Sdk;
 		TUniquePtr<dolbyio::comms::refresh_token> RefreshTokenCb;

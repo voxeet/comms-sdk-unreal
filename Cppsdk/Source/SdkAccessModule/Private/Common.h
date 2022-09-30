@@ -4,7 +4,7 @@
 #include <dolbyio/comms/sdk.h>
 
 #include "SdkStatus.h"
-#include "SdkStatusObserver.h"
+#include "SdkApi.h"
 
 #define DLB_CATCH_ALL                                                                          \
 	catch (const dolbyio::comms::exception& Ex)                                                \

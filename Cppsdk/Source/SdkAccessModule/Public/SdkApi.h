@@ -2,14 +2,14 @@
 
 namespace Dolby
 {
-	class ISdkStatusObserver
+	class ISdkApi
 	{
 	public:
 		using FMessage = FString;
 		using FDeviceName = FText;
 		using FDeviceNames = TArray<FDeviceName>;
 
-		virtual ~ISdkStatusObserver() = default;
+		virtual ~ISdkApi() = default;
 
 		virtual void OnStatusChanged(const FMessage&) = 0;
 

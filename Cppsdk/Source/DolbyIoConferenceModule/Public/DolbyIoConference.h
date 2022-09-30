@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
-#include "SdkStatusObserver.h"
+#include "SdkApi.h"
 
 #include "DolbyIoConference.generated.h"
 
@@ -12,7 +12,7 @@ namespace Dolby
 
 /** Interface to the Dolby.io C++ SDK. */
 UCLASS()
-class DOLBYIOCONFERENCEMODULE_API ADolbyIoConference : public AActor, public Dolby::ISdkStatusObserver
+class DOLBYIOCONFERENCEMODULE_API ADolbyIoConference : public AActor, public Dolby::ISdkApi
 {
 	GENERATED_BODY()
 
@@ -130,7 +130,7 @@ private:
 	// AActor
 	void Tick(float DeltaTime) override;
 
-	// Dolby::ISdkStatusObserver
+	// Dolby::ISdkApi - used by FSdkStatus
 	void OnStatusChanged(const FMessage&) override;
 
 	void OnNewListOfInputDevices(const FDeviceNames&) override;
@@ -138,8 +138,10 @@ private:
 	void OnInputDeviceChanged(const FDeviceName&) override;
 	void OnOutputDeviceChanged(const FDeviceName&) override;
 
+	// Dolby::ISdkApi - used by FSdkAccess
 	void OnRefreshTokenRequested() override;
 
 	// for some reason this cannot be made a UniquePtr, even with the destructor trick
 	TSharedPtr<Dolby::FSdkAccess> CppSdk;
+	//Dolby::FSdkAccess CppSdk; TODO
 };

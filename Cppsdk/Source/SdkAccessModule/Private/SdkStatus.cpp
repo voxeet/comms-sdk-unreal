@@ -6,7 +6,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogDolby, Log, All);
 
 namespace Dolby
 {
-	FSdkStatus::FSdkStatus(ISdkStatusObserver& Observer) : Observer(Observer) {}
+	FSdkStatus::FSdkStatus(ISdkApi& Observer) : Observer(Observer) {}
 
 	bool FSdkStatus::IsDisconnected() const
 	{
@@ -61,18 +61,12 @@ namespace Dolby
 	void FSdkStatus::OnInputDeviceChanged(const FDeviceName& Name)
 	{
 		DLB_UE_LOG_DEVICE("Input", "changed");
-		Observer.OnInputDeviceChanged(Name);
+		Observer.OnInputDeviceChanged(Name); //??
 	}
 	void FSdkStatus::OnOutputDeviceChanged(const FDeviceName& Name)
 	{
 		DLB_UE_LOG_DEVICE("Output", "changed");
-		Observer.OnOutputDeviceChanged(Name);
-	}
-
-	void FSdkStatus::OnRefreshTokenRequested()
-	{
-		DLB_UE_LOG("Refresh token requested");
-		Observer.OnRefreshTokenRequested();
+		Observer.OnOutputDeviceChanged(Name); //??
 	}
 
 	void FSdkStatus::SetMsg(const FMessage& M)

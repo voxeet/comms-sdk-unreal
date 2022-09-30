@@ -14,7 +14,7 @@ namespace Dolby
 {
 	using namespace dolbyio::comms;
 
-	FSdkAccess::FSdkAccess(ISdkStatusObserver& Observer) : Status(Observer)
+	FSdkAccess::FSdkAccess(ISdkApi& UeObject) : Status(UeObject), Delegate(UeObject) 
 	{
 		try
 		{
@@ -62,7 +62,7 @@ namespace Dolby
 		                      [this](auto&& cb)
 		                      {
 			                      RefreshTokenCb.Reset(cb.release());
-			                      Status.OnRefreshTokenRequested();
+			                      Delegate.OnRefreshTokenRequested();
 		                      })
 		              .release());
 		Devices = MakeUnique<FDeviceManagement>(Sdk->device_management(), Status);
