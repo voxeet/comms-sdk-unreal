@@ -1,65 +1,67 @@
 #include "Devices.h"
 #include "Common.h"
+#include "SdkApi.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogDolbyDevice, Log, All);
+#define DLB_UE_LOG_DEVICE(Type, Event) UE_LOG(LogDolbyDevice, Log, TEXT(Type " device " Event ": %s"), *Name.ToString())
 
 namespace Dolby
 {
-	FDevices::FDevices(EDirection Direction, FDvcDeviceManagement& DeviceManagement, FSdkStatus& Status)
-	    : Direction(Direction), DeviceManagement(DeviceManagement), Status(Status)
+	FDevices::FDevices(EDirection Direction, FDvcDeviceManagement& DeviceManagement, ISdkApi& Delegate,
+	                   FExceptionHandler& ExceptionHandler)
+	    : Direction(Direction), DeviceManagement(DeviceManagement), Delegate(Delegate),
+	      ExceptionHandler(ExceptionHandler)
 	{
 	}
 
-#define DLB_LOCK FScopeLock Lock{&CriticalSection};
-
 	void FDevices::Initialize(FDvcDevices&& DvcDevices, FDeviceNames&& Names)
 	{
-		DLB_LOCK
+		FScopeLock Lock{&CriticalSection};
 		Devices = MoveTemp(DvcDevices);
 		DeviceNames = MoveTemp(Names);
-		IsInput() ? Status.OnNewListOfInputDevices(DeviceNames) : Status.OnNewListOfOutputDevices(DeviceNames);
+		IsInput() ? Delegate.OnNewListOfInputDevices(DeviceNames) : Delegate.OnNewListOfOutputDevices(DeviceNames);
 		NotifyCurrent();
 	}
 
 	void FDevices::Set(const Index Index)
 	{
-		DLB_LOCK
+		FScopeLock Lock{&CriticalSection};
 
-		if (!Devices.IsValidIndex(Index))
-		{
-			throw std::logic_error{std::string{"Wrong "} + (IsInput() ? "input" : "output") + " device Index "};
-		}
+		if (Devices.IsValidIndex(Index))
+			return (IsInput() ? DeviceManagement.set_preferred_input_audio_device(Devices[Index])
+			                  : DeviceManagement.set_preferred_output_audio_device(Devices[Index]))
+			    .on_error(
+			        [this](auto&& Ex)
+			        {
+				        NotifyCurrent();
+				        ExceptionHandler(std::move(Ex));
+			        });
 
-		return (IsInput() ? DeviceManagement.set_preferred_input_audio_device(Devices[Index])
-		                  : DeviceManagement.set_preferred_output_audio_device(Devices[Index]))
-		    .on_error(
-		        [this](auto&& Ex)
-		        {
-			        NotifyCurrent();
-			        HandleAsyncException(Ex, Status);
-		        });
+		throw std::logic_error{std::string{"Wrong "} + (IsInput() ? "input" : "output") + " device Index "};
 	}
 
 	void FDevices::OnAdded(const FDvcDevice& Device)
 	{
 		const auto Name = ToFText(Device.name());
-		DLB_LOCK
+		FScopeLock Lock{&CriticalSection};
 		Devices.Add(Device);
 		DeviceNames.Add(Name);
 
 		if (IsInput())
 		{
-			Status.OnInputDeviceAdded(Name);
-			Status.OnNewListOfInputDevices(DeviceNames);
+			DLB_UE_LOG_DEVICE("Input", "added");
+			Delegate.OnNewListOfInputDevices(DeviceNames);
 		}
 		else
 		{
-			Status.OnOutputDeviceAdded(Name);
-			Status.OnNewListOfOutputDevices(DeviceNames);
+			DLB_UE_LOG_DEVICE("Output", "added");
+			Delegate.OnNewListOfOutputDevices(DeviceNames);
 		}
 	}
 
 	void FDevices::OnRemoved(const Uid& Uid)
 	{
-		DLB_LOCK
+		FScopeLock Lock{&CriticalSection};
 		for (int i = 0; i < Devices.Num(); ++i)
 		{
 			if (Devices[i].uid() == Uid)
@@ -70,13 +72,13 @@ namespace Dolby
 
 				if (IsInput())
 				{
-					Status.OnInputDeviceRemoved(Name);
-					Status.OnNewListOfInputDevices(DeviceNames);
+					DLB_UE_LOG_DEVICE("Input", "removed");
+					Delegate.OnNewListOfInputDevices(DeviceNames);
 				}
 				else
 				{
-					Status.OnOutputDeviceRemoved(Name);
-					Status.OnNewListOfOutputDevices(DeviceNames);
+					DLB_UE_LOG_DEVICE("Output", "removed");
+					Delegate.OnNewListOfOutputDevices(DeviceNames);
 				}
 
 				break;
@@ -86,23 +88,36 @@ namespace Dolby
 
 	void FDevices::OnChanged(const FDvcDevice& Device)
 	{
-		DLB_LOCK
+		FScopeLock Lock{&CriticalSection};
 		if (!CurrentDevice || !(*CurrentDevice == Device))
 		{
 			CurrentDevice = MakeUnique<FDvcDevice>(Device);
-			const auto Name = ToFText(Device.name());
-			IsInput() ? Status.OnInputDeviceChanged(Name) : Status.OnOutputDeviceChanged(Name);
+			UpdateUIOnChanged(ToFText(Device.name()));
 		}
 	}
 
 	void FDevices::OnChangedToNone()
 	{
-		DLB_LOCK
+		FScopeLock Lock{&CriticalSection};
 		if (CurrentDevice)
 		{
 			CurrentDevice.Reset();
 			static const auto Name = FText::FromString("None");
-			IsInput() ? Status.OnInputDeviceChanged(Name) : Status.OnOutputDeviceChanged(Name);
+			UpdateUIOnChanged(Name);
+		}
+	}
+
+	void FDevices::UpdateUIOnChanged(const FDeviceName& Name) const
+	{
+		if (IsInput())
+		{
+			DLB_UE_LOG_DEVICE("Input", "changed");
+			Delegate.OnInputDeviceChanged(Name);
+		}
+		else
+		{
+			DLB_UE_LOG_DEVICE("Output", "changed");
+			Delegate.OnOutputDeviceChanged(Name);
 		}
 	}
 
@@ -116,6 +131,6 @@ namespace Dolby
 		(IsInput() ? DeviceManagement.get_current_audio_input_device()
 		           : DeviceManagement.get_current_audio_output_device())
 		    .then([this](auto&& Device) { Device ? OnChanged(*Device) : OnChangedToNone(); })
-		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+		    .on_error(ExceptionHandler);
 	}
 }

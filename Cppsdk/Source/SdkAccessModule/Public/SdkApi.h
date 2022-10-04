@@ -2,13 +2,13 @@
 
 namespace Dolby
 {
+	using FMessage = FString;
+	using FDeviceName = FText;
+	using FDeviceNames = TArray<FDeviceName>;
+
 	class ISdkApi
 	{
 	public:
-		using FMessage = FString;
-		using FDeviceName = FText;
-		using FDeviceNames = TArray<FDeviceName>;
-
 		virtual ~ISdkApi() = default;
 
 		virtual void OnStatusChanged(const FMessage&) = 0;

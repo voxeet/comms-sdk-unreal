@@ -12,6 +12,7 @@ namespace dolbyio::comms
 namespace Dolby
 {
 	class FSdkStatus;
+	struct FExceptionHandler;
 
 	class FDevices final
 	{
@@ -31,7 +32,7 @@ namespace Dolby
 		using FDvcDevices = TArray<FDvcDevice>;
 		using FDeviceNames = TArray<FDeviceName>;
 
-		FDevices(EDirection, FDvcDeviceManagement&, FSdkStatus&);
+		FDevices(EDirection, FDvcDeviceManagement&, ISdkApi&, FExceptionHandler&);
 
 		void Initialize(FDvcDevices&&, FDeviceNames&&);
 		void Set(const Index);
@@ -42,11 +43,13 @@ namespace Dolby
 
 	private:
 		bool IsInput() const;
+		void UpdateUIOnChanged(const FDeviceName& Name) const;
 		void NotifyCurrent();
 
 		EDirection Direction;
 		FDvcDeviceManagement& DeviceManagement;
-		FSdkStatus& Status;
+		ISdkApi& Delegate;
+		FExceptionHandler& ExceptionHandler;
 
 		FCriticalSection CriticalSection;
 		FDvcDevices Devices;

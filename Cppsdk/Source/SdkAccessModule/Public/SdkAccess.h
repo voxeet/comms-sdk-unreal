@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SdkStatus.h"
+#include "ExceptionHandler.h"
 
 namespace dolbyio
 {
@@ -42,6 +43,7 @@ namespace Dolby
 
 		FSdkStatus Status;
 		ISdkApi& Delegate;
+		FExceptionHandler ExceptionHandler;
 		TUniquePtr<class FDeviceManagement> Devices;
 		TUniquePtr<dolbyio::comms::sdk> Sdk;
 		TUniquePtr<dolbyio::comms::refresh_token> RefreshTokenCb;

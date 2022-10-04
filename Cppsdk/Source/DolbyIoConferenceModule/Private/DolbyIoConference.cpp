@@ -54,31 +54,31 @@ void ADolbyIoConference::Tick(float DeltaTime)
 
 #define ON_GAME_THREAD(Func) AsyncTask(ENamedThreads::GameThread, [this] { Func(); });
 
-void ADolbyIoConference::OnStatusChanged(const FMessage& Msg)
+void ADolbyIoConference::OnStatusChanged(const Dolby::FMessage& Msg)
 {
 	Status = Msg;
 	ON_GAME_THREAD(OnStatusChanged);
 }
 
-void ADolbyIoConference::OnNewListOfInputDevices(const FDeviceNames& Names)
+void ADolbyIoConference::OnNewListOfInputDevices(const Dolby::FDeviceNames& Names)
 {
 	InputDevices = Names;
 	ON_GAME_THREAD(OnNewListOfInputDevices);
 }
 
-void ADolbyIoConference::OnNewListOfOutputDevices(const FDeviceNames& Names)
+void ADolbyIoConference::OnNewListOfOutputDevices(const Dolby::FDeviceNames& Names)
 {
 	OutputDevices = Names;
 	ON_GAME_THREAD(OnNewListOfOutputDevices);
 }
 
-void ADolbyIoConference::OnInputDeviceChanged(const FDeviceName& Name)
+void ADolbyIoConference::OnInputDeviceChanged(const Dolby::FDeviceName& Name)
 {
 	CurrentInputDevice = Name;
 	ON_GAME_THREAD(OnInputDeviceChanged);
 }
 
-void ADolbyIoConference::OnOutputDeviceChanged(const FDeviceName& Name)
+void ADolbyIoConference::OnOutputDeviceChanged(const Dolby::FDeviceName& Name)
 {
 	CurrentOutputDevice = Name;
 	ON_GAME_THREAD(OnOutputDeviceChanged);

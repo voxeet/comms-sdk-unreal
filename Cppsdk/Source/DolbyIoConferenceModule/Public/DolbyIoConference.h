@@ -131,17 +131,16 @@ private:
 	void Tick(float DeltaTime) override;
 
 	// Dolby::ISdkApi - used by FSdkStatus
-	void OnStatusChanged(const FMessage&) override;
-
-	void OnNewListOfInputDevices(const FDeviceNames&) override;
-	void OnNewListOfOutputDevices(const FDeviceNames&) override;
-	void OnInputDeviceChanged(const FDeviceName&) override;
-	void OnOutputDeviceChanged(const FDeviceName&) override;
+	void OnStatusChanged(const Dolby::FMessage&) override;
 
 	// Dolby::ISdkApi - used by FSdkAccess
+	void OnNewListOfInputDevices(const Dolby::FDeviceNames&) override;
+	void OnNewListOfOutputDevices(const Dolby::FDeviceNames&) override;
+	void OnInputDeviceChanged(const Dolby::FDeviceName&) override;
+	void OnOutputDeviceChanged(const Dolby::FDeviceName&) override;
+
 	void OnRefreshTokenRequested() override;
 
 	// for some reason this cannot be made a UniquePtr, even with the destructor trick
 	TSharedPtr<Dolby::FSdkAccess> CppSdk;
-	//Dolby::FSdkAccess CppSdk; TODO
 };
