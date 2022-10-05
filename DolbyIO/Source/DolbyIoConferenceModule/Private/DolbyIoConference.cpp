@@ -51,9 +51,7 @@ void ADolbyIoConference::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FVector Position;
-	FRotator Rotation;
-	GetWorld()->GetFirstPlayerController()->GetActorEyesViewPoint(Position, Rotation);
+	OnSpatialUpdateNeeded();
 	CppSdk->UpdateViewPoint(Position, Rotation);
 }
 
@@ -92,4 +90,15 @@ void ADolbyIoConference::OnOutputDeviceChanged(const FDeviceName& Name)
 void ADolbyIoConference::OnRefreshTokenRequested()
 {
 	ON_GAME_THREAD(OnRefreshTokenNeeded);
+}
+
+void ADolbyIoConference::OnSpatialUpdateNeeded_Implementation()
+{
+	if (const auto world = GetWorld())
+	{
+		if (const auto player = world->GetFirstPlayerController())
+		{
+			player->GetActorEyesViewPoint(Position, Rotation);
+		}
+	}
 }
