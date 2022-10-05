@@ -10,7 +10,7 @@ ADolbyIoConference::ADolbyIoConference()
 {
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.TickInterval = 0.3;
+	PrimaryActorTick.TickInterval = 0.03;
 }
 
 void ADolbyIoConference::Connect()
