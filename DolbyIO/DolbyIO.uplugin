@@ -2,8 +2,8 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "Dolby.io C++ SDK",
-	"Description": "Dolby.io C++ SDK plugin for Unreal Engine 4 and 5",
+	"FriendlyName": "Dolby.io Communications",
+	"Description": "Dolby.io Communications plugin for Unreal Engine",
 	"Category": "Audio",
 	"CreatedBy": "Dolby Laboratories",
 	"CreatedByURL": "https://dolby.io/",
@@ -12,7 +12,7 @@
 	"SupportURL": "",
 	"CanContainContent": true,
 	"IsBetaVersion": true,
-	"IsExperimentalVersion": true,
+	"IsExperimentalVersion": false,
 	"Installed": false,
 	"Modules": [
 		{
