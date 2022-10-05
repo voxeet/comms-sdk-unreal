@@ -12,7 +12,7 @@ public class SdkAccessModule : ModuleRules
 
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "Engine" });
 
-        var SdkDir = Path.Combine(Directory.GetParent(ModuleDirectory).Parent.FullName, "sdk-release");
+        var SdkDir = Path.Combine(Directory.GetParent(ModuleDirectory).Parent.FullName, "ThirdParty", "sdk-release");
         var LibDir = Path.Combine(SdkDir, "lib");
 
         PublicIncludePaths.AddRange(new string[] {

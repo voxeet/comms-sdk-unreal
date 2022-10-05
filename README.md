@@ -11,9 +11,9 @@ Plugin integrating [Dolby.io Communications C++ SDK](https://github.com/DolbyIO/
 This section describes how to create a new Unreal Engine project using the plugin.
 1. Create a game using the First Person template - see [section below](#create) for help.
 2. Unzip the Dolby.io Communications C++ SDK release.
-3. Copy or link the unzipped sdk-release folder into the DolbyIo/ThirdParty folder.
+3. Copy or link the unzipped sdk-release folder into the DolbyIO/ThirdParty folder.
 4. Create folder named "Plugins" in your game's root folder.
-5. Copy or link the DolbyIo folder into the Plugins folder.
+5. Copy or link the DolbyIO folder into the Plugins folder.
 6. Regenerate IDE project files - see [section below](#regenerate) for help.
 7. Close Unreal Editor.
 8. Build your game in the Development Editor configuration. On Windows, also build the Development configuration.
@@ -57,7 +57,7 @@ If your game does not contain C++ code (e.g. you created a game from a Blueprint
 ## <a name="place"></a> Placing sample plugin object in game
 - Unreal Engine 4:
     - Content Browser → View Options → Show Plugin Content
-    - Content Browser → DolbyIo Content → drag DolbyIoSampleConferenceBP to anywhere in the viewport
+    - Content Browser → DolbyIO Content → drag DolbyIoSampleConferenceBP to anywhere in the viewport
 - Unreal Engine 5: 
     - Content Drawer → Settings → Show Plugin Content
     - Content Drawer → All → Plugins → Dolby.io Communications Content → drag DolbyIoSampleConferenceBP to anywhere in the viewport
