@@ -42,6 +42,11 @@ void ADolbyIoConference::RefreshToken()
 	CppSdk->RefreshToken(Token);
 }
 
+dolbyio::comms::sdk* ADolbyIoConference::GetRawSdk()
+{
+	return CppSdk->GetRawSdk();
+}
+
 void ADolbyIoConference::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
