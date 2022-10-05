@@ -36,6 +36,8 @@ namespace Dolby
 
 		void RefreshToken(const FToken&);
 
+		dolbyio::comms::sdk* GetRawSdk();
+
 	private:
 		void Connect(const FConferenceName&, const FUserName&);
 		void ConnectToDemoConference(const FUserName&);

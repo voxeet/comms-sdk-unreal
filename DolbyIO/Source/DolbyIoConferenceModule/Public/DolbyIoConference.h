@@ -5,6 +5,14 @@
 
 #include "DolbyIoConference.generated.h"
 
+namespace dolbyio
+{
+	namespace comms
+	{
+		class sdk;
+	}
+}
+
 namespace Dolby
 {
 	class FSdkAccess;
@@ -126,6 +134,12 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnRefreshTokenNeeded();
 
+	// other functions
+
+	/** Retrieves the pointer to the current Dolby.io C++ SDK instance to allow controlling the SDK at the lowest level.
+	 */
+	dolbyio::comms::sdk* GetRawSdk();
+
 private:
 	// AActor
 	void Tick(float DeltaTime) override;
@@ -140,6 +154,5 @@ private:
 
 	void OnRefreshTokenRequested() override;
 
-	// for some reason this cannot be made a UniquePtr, even with the destructor trick
 	TSharedPtr<Dolby::FSdkAccess> CppSdk;
 };
