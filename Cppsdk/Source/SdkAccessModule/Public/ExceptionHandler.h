@@ -2,18 +2,16 @@
 
 namespace Dolby
 {
-	using FMessage = FString;
+	class FSdkStatus;
 
 	struct FExceptionHandler
 	{
-		using FNotifyingFunction = std::function<void(const FMessage&)>;
-
-		FExceptionHandler(FNotifyingFunction&& LogFunction);
+		FExceptionHandler(FSdkStatus& Status);
 
 		void operator()(std::exception_ptr&& ExcPtr);
 		void NotifyIfThrows(std::function<void()> function);
 
 	private:
-		FNotifyingFunction Notify;
+		FSdkStatus& Status;
 	};
 }

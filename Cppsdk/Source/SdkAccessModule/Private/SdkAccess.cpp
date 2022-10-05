@@ -15,8 +15,7 @@ namespace Dolby
 	using namespace dolbyio::comms;
 
 	FSdkAccess::FSdkAccess(ISdkApi& SdkApi)
-	    : Status(SdkApi), Delegate(SdkApi),
-	      ExceptionHandler([this](const FMessage& msg) { Status.SetMsg(msg); }) 
+	    : Status(SdkApi), Delegate(SdkApi), ExceptionHandler(Status) 
 	{
 		ExceptionHandler.NotifyIfThrows(
 		    [this]()

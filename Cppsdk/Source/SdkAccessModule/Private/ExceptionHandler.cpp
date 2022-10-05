@@ -1,8 +1,11 @@
 #include "ExceptionHandler.h"
+#include "SdkStatus.h"
+
+#include "dolbyio/comms/sdk_exceptions.h"
 
 namespace Dolby
 {
-	FExceptionHandler::FExceptionHandler(FNotifyingFunction&& NotifyingFunction) : Notify(NotifyingFunction) {}
+	FExceptionHandler::FExceptionHandler(FSdkStatus& Status) : Status(Status) {}
 
 	void FExceptionHandler::operator()(std::exception_ptr&& ExcPtr)
 	{
@@ -14,16 +17,21 @@ namespace Dolby
 	{
 		function();
 	}
+	catch (const dolbyio::comms::conference_state_exception& Ex)
+	{
+		Status.OnDisconnected();
+		Status.SetMsg(FMessage{"Caught dolbyio::comms::conference_state_exception: "} + Ex.what());
+	}
 	catch (const dolbyio::comms::exception& Ex)
 	{
-		Notify(FMessage{"Caught dolbyio::comms::exception: "} + Ex.what());
+		Status.SetMsg(FMessage{"Caught dolbyio::comms::exception: "} + Ex.what());
 	}
 	catch (const std::exception& Ex)
 	{
-		Notify(FMessage{"Caught std::exception: "} + Ex.what());
+		Status.SetMsg(FMessage{"Caught std::exception: "} + Ex.what());
 	}
 	catch (...)
 	{
-		Notify("Caught unknown exception");
+		Status.SetMsg("Caught unknown exception");
 	}
 }
