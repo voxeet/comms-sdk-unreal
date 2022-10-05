@@ -10,7 +10,7 @@ ADolbyIoConference::ADolbyIoConference()
 {
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.TickInterval = 0.3;
+	PrimaryActorTick.TickInterval = 0.03;
 }
 
 void ADolbyIoConference::Connect()
@@ -42,13 +42,16 @@ void ADolbyIoConference::RefreshToken()
 	CppSdk->RefreshToken(Token);
 }
 
+dolbyio::comms::sdk* ADolbyIoConference::GetRawSdk()
+{
+	return CppSdk->GetRawSdk();
+}
+
 void ADolbyIoConference::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FVector Position;
-	FRotator Rotation;
-	GetWorld()->GetFirstPlayerController()->GetActorEyesViewPoint(Position, Rotation);
+	OnSpatialUpdateNeeded();
 	CppSdk->UpdateViewPoint(Position, Rotation);
 }
 
@@ -87,4 +90,15 @@ void ADolbyIoConference::OnOutputDeviceChanged(const FDeviceName& Name)
 void ADolbyIoConference::OnRefreshTokenRequested()
 {
 	ON_GAME_THREAD(OnRefreshTokenNeeded);
+}
+
+void ADolbyIoConference::OnSpatialUpdateNeeded_Implementation()
+{
+	if (const auto world = GetWorld())
+	{
+		if (const auto player = world->GetFirstPlayerController())
+		{
+			player->GetActorEyesViewPoint(Position, Rotation);
+		}
+	}
 }

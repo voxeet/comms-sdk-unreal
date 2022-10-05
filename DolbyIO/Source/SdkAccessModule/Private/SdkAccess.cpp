@@ -227,4 +227,11 @@ namespace Dolby
 		}
 	}
 	DLB_CATCH_ALL
+
+	sdk* FSdkAccess::GetRawSdk()
+	try
+	{
+		return Sdk.Get();
+	}
+	DLB_CATCH_ALL
 }

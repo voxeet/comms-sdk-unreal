@@ -5,6 +5,14 @@
 
 #include "DolbyIoConference.generated.h"
 
+namespace dolbyio
+{
+	namespace comms
+	{
+		class sdk;
+	}
+}
+
 namespace Dolby
 {
 	class FSdkAccess;
@@ -40,6 +48,14 @@ public:
 	/** Modifiable flag indicating whether to mute output audio. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dolby")
 	bool bIsOutputMuted;
+
+	/** The position used to update the spatial audio configuration. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dolby")
+	FVector Position;
+
+	/** The rotation used to update the spatial audio configuration. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dolby")
+	FRotator Rotation;
 
 	// read-only values set by the SDK
 
@@ -126,6 +142,19 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnRefreshTokenNeeded();
 
+	// events called from C++ with a default C++ implementation, overridable in Blueprints
+
+	/** Event signaled when the position and rotation used to update the spatial audio configuration should be updated.
+	 */
+	UFUNCTION(BlueprintNativeEvent, Category = "Dolby")
+	void OnSpatialUpdateNeeded();
+
+	// other functions
+
+	/** Retrieves the pointer to the current Dolby.io C++ SDK instance to allow controlling the SDK at the lowest level.
+	 */
+	dolbyio::comms::sdk* GetRawSdk();
+
 private:
 	// AActor
 	void Tick(float DeltaTime) override;
@@ -140,6 +169,5 @@ private:
 
 	void OnRefreshTokenRequested() override;
 
-	// for some reason this cannot be made a UniquePtr, even with the destructor trick
 	TSharedPtr<Dolby::FSdkAccess> CppSdk;
 };
