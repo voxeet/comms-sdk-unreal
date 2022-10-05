@@ -8,8 +8,8 @@ Plugin integrating [Dolby.io Communications C++ SDK](https://github.com/DolbyIO/
 - If on macOS, it is recommended to follow the [development advice](#macos) below.
 
 ## Usage
-This section describes how to create an example Unreal Engine 4.27 project using the plugin from scratch. You will also find this description helpful if you already have a game with which to integrate or you are using Unreal Engine 5.  
-1. Create a game using the Unreal Engine First Person template - see [section below](#create) for help.
+This section describes how to create a new Unreal Engine project using the plugin.
+1. Create a game using the First Person template - see [section below](#create) for help.
 2. Unzip the Dolby.io Communications C++ SDK release.
 3. Copy or link the unzipped sdk-release folder into the DolbyIo/ThirdParty folder.
 4. Create folder named "Plugins" in your game's root folder.
@@ -50,7 +50,7 @@ If your game does not contain C++ code (e.g. you created a game from a Blueprint
         - Unreal Engine 4: File → Refresh Visual Studio Project
         - Unreal Engine 5: Tools → Refresh Visual Studio Project
 - macOS:
-    - use the script in {UnrealEngineRoot}/Engine/Build/BatchFiles/Mac/Build.sh or
+    - use the script in {UnrealEngineRoot}/Engine/Build/BatchFiles/Mac/GenerateProjectFiles.sh or
         - Unreal Engine 4: File → Refresh Xcode Project
         - Unreal Engine 5: Tools → Refresh Xcode Project
 
@@ -67,9 +67,10 @@ If your game does not contain C++ code (e.g. you created a game from a Blueprint
 - DolbyIoSampleConnectMenu provides a sample implementation of a graphics user interface using DolbyIoSampleConferenceBP.
 - DolbyIoSampleDebugInfo provides a sample implementation of displaying some additional debug information.
 
-These Blueprints serve are example uses of the plugin but are not meant to be used as-is. Users should implement their own Blueprints, possibly basing them on the samples provided, or implement a C++ class deriving from ADolbyIoConference.
+These Blueprints serve as example uses of the plugin but are not meant to be used as-is. Users should implement their own Blueprints, possibly basing them on the samples provided, or implement a C++ class deriving from ADolbyIoConference.
 
 The plugin does several things that the user would normally need to do manually when working with the SDK:
+- sets up the build system to include and link appropriate files
 - initializes the SDK using the client access token
 - connects to and disconnects from conferences and keeps track of the connection status
 - updates spatial audio information
@@ -80,4 +81,4 @@ The plugin does several things that the user would normally need to do manually 
 The plugin provides a subset of the functionality the SDK offers, but its code structure is fairly simple and extending it should be relatively easy. The key actors in the plugin are:
 - ADolbyIoConference - the boundary between Unreal Engine and the SDK, interfacing from external code to SdkAccess and back
 - SdkAccess - the class where most of the calls to the SDK are made
-- SdkStatus - keeping track of state, interfacing from SdkAccess to ADolbyIoConference
+- SdkStatus - keeps track of state, interfacing from SdkAccess to ADolbyIoConference
