@@ -194,7 +194,7 @@ namespace Dolby
 		if (DemoParticipantIDs.Num())
 		{
 			static float Angle = 0;
-			Angle += 0.1f;
+			Angle += 0.01f;
 			for (const auto& Participant : DemoParticipantIDs)
 			{
 				Update.set_spatial_position(ToStdString(Participant),
