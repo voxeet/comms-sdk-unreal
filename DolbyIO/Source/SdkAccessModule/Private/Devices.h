@@ -43,7 +43,7 @@ namespace Dolby
 
 	private:
 		bool IsInput() const;
-		void UpdateUIOnChanged(const FDeviceName& Name) const;
+		void NotifyDeviceChanged(const FDeviceName& Name) const;
 		void NotifyCurrent();
 
 		EDirection Direction;

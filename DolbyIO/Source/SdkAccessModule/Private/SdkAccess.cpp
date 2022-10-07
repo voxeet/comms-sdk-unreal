@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "DeviceManagement.h"
 #include "Modules/ModuleManager.h"
+#include "SdkApi.h"
 
 IMPLEMENT_MODULE(FDefaultModuleImpl, SdkAccessModule)
 
@@ -54,7 +55,7 @@ namespace Dolby
 			return;
 		}
 		ExceptionHandler.NotifyIfThrows(
-		    [&]
+		    [this, &Token, &Conf, &User]
 		    {
 			    if (Status.IsConnected())
 			    {
@@ -103,7 +104,7 @@ namespace Dolby
 			        return Sdk->conference().create(Options);
 		        })
 		    .then(
-		        [this, Conf](auto&& ConferenceInfo)
+		        [this](auto&& ConferenceInfo)
 		        {
 			        conference::join_options Options{};
 			        Options.constraints.audio = true;
@@ -146,6 +147,7 @@ namespace Dolby
 	void FSdkAccess::Disconnect()
 	{
 		if (Status.IsConnected())
+		{
 			ExceptionHandler.NotifyIfThrows(
 			    [this]
 			    {
@@ -155,39 +157,49 @@ namespace Dolby
 				        .then([this] { return Sdk->session().close(); })
 				        .on_error(ExceptionHandler);
 			    });
+		}
 	}
 
 	void FSdkAccess::MuteInput(const bool bIsMuted)
 	{
 		if (Status.IsConnected())
+		{
 			ExceptionHandler.NotifyIfThrows([this, bIsMuted]()
 			                                { Sdk->conference().mute(bIsMuted).on_error(ExceptionHandler); });
+		}
 	}
 
 	void FSdkAccess::MuteOutput(const bool bIsMuted)
 	{
 		if (Status.IsConnected())
+		{
 			ExceptionHandler.NotifyIfThrows([this, bIsMuted]()
 			                                { Sdk->conference().mute_output(bIsMuted).on_error(ExceptionHandler); });
+		}
 	}
 
 	void FSdkAccess::SetInputDevice(const int Index)
 	{
 		if (Status.IsConnected())
+		{
 			ExceptionHandler.NotifyIfThrows([this, Index]() { Devices->SetInputDevice(Index); });
+		}
 	}
 
 	void FSdkAccess::SetOutputDevice(const int Index)
 	{
 		if (Status.IsConnected())
+		{
 			ExceptionHandler.NotifyIfThrows([this, Index]() { Devices->SetOutputDevice(Index); });
+		}
 	}
 
 	void FSdkAccess::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
 	{
 		if (Status.IsConnected())
+		{
 			ExceptionHandler.NotifyIfThrows(
-			    [this, Position, Rotation]
+			    [this, &Position, &Rotation]
 			    {
 				    spatial_audio_batch_update Update;
 
@@ -215,11 +227,13 @@ namespace Dolby
 				    Update.set_spatial_direction({Rotation.Pitch, Rotation.Yaw, Rotation.Roll});
 				    Sdk->conference().update_spatial_audio_configuration(MoveTemp(Update)).on_error(ExceptionHandler);
 			    });
+		}
 	}
 
 	void FSdkAccess::RefreshToken(const FToken& token)
 	{
 		if (Status.IsConnected())
+		{
 			ExceptionHandler.NotifyIfThrows(
 			    [this, &token]
 			    {
@@ -228,6 +242,7 @@ namespace Dolby
 					    (*RefreshTokenCb)(ToStdString(token));
 				    }
 			    });
+		}
 	}
 
 	sdk* FSdkAccess::GetRawSdk()

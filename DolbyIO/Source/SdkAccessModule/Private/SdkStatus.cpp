@@ -1,7 +1,7 @@
 #include "SdkStatus.h"
 #include "SdkApi.h"
 
-DEFINE_LOG_CATEGORY_STATIC(LogDolby, Log, All);
+DEFINE_LOG_CATEGORY(LogDolby);
 #define DLB_UE_LOG(Format, ...) UE_LOG(LogDolby, Log, TEXT(Format), ##__VA_ARGS__)
 
 namespace Dolby

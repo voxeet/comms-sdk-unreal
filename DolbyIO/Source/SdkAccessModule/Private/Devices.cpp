@@ -2,8 +2,10 @@
 #include "Common.h"
 #include "SdkApi.h"
 
-DEFINE_LOG_CATEGORY_STATIC(LogDolbyDevice, Log, All);
-#define DLB_UE_LOG_DEVICE(Type, Event) UE_LOG(LogDolbyDevice, Log, TEXT(Type " device " Event ": %s"), *Name.ToString())
+
+
+DECLARE_LOG_CATEGORY_EXTERN(LogDolby, Log, All);
+#define DLB_UE_LOG_DEVICE(Type, Event) UE_LOG(LogDolby, Log, TEXT(Type " device " Event ": %s"), *Name.ToString())
 
 namespace Dolby
 {
@@ -25,19 +27,21 @@ namespace Dolby
 
 	void FDevices::Set(const Index Index)
 	{
+		if (!Devices.IsValidIndex(Index))
+		{
+			throw std::logic_error{std::string{"Wrong "} + (IsInput() ? "input" : "output") + " device Index "};
+		}
+
 		FScopeLock Lock{&CriticalSection};
 
-		if (Devices.IsValidIndex(Index))
-			return (IsInput() ? DeviceManagement.set_preferred_input_audio_device(Devices[Index])
-			                  : DeviceManagement.set_preferred_output_audio_device(Devices[Index]))
-			    .on_error(
-			        [this](auto&& Ex)
-			        {
-				        NotifyCurrent();
-				        ExceptionHandler(std::move(Ex));
-			        });
-
-		throw std::logic_error{std::string{"Wrong "} + (IsInput() ? "input" : "output") + " device Index "};
+		(IsInput() ? DeviceManagement.set_preferred_input_audio_device(Devices[Index])
+		           : DeviceManagement.set_preferred_output_audio_device(Devices[Index]))
+		    .on_error(
+		        [this](auto&& Ex)
+		        {
+			        NotifyCurrent();
+			        ExceptionHandler(std::move(Ex));
+		        });
 	}
 
 	void FDevices::OnAdded(const FDvcDevice& Device)
@@ -92,7 +96,7 @@ namespace Dolby
 		if (!CurrentDevice || !(*CurrentDevice == Device))
 		{
 			CurrentDevice = MakeUnique<FDvcDevice>(Device);
-			UpdateUIOnChanged(ToFText(Device.name()));
+			NotifyDeviceChanged(ToFText(Device.name()));
 		}
 	}
 
@@ -103,11 +107,11 @@ namespace Dolby
 		{
 			CurrentDevice.Reset();
 			static const auto Name = FText::FromString("None");
-			UpdateUIOnChanged(Name);
+			NotifyDeviceChanged(Name);
 		}
 	}
 
-	void FDevices::UpdateUIOnChanged(const FDeviceName& Name) const
+	void FDevices::NotifyDeviceChanged(const FDeviceName& Name) const
 	{
 		if (IsInput())
 		{
