@@ -5,6 +5,12 @@
 
 namespace Dolby
 {
+	using FToken = FString;
+	using FConferenceName = FString;
+	using FUserName = FString;
+	using FMessage = FString;
+	using FDeviceName = FText;
+	using FDeviceNames = TArray<FDeviceName>;
 
 	inline auto ToFText(const std::string& String)
 	{

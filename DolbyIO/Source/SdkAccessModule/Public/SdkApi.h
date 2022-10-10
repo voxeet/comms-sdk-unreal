@@ -1,11 +1,9 @@
 #pragma once
 
+#include "Common.h"
+
 namespace Dolby
 {
-	using FMessage = FString;
-	using FDeviceName = FText;
-	using FDeviceNames = TArray<FDeviceName>;
-
 	class ISdkApi
 	{
 	public:

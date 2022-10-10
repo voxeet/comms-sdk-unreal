@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Common.h"
 #include "SdkStatus.h"
 #include "ExceptionHandler.h"
 
@@ -16,10 +17,6 @@ namespace Dolby
 {
 	class SDKACCESSMODULE_API FSdkAccess final
 	{
-		using FToken = FString;
-		using FConferenceName = FString;
-		using FUserName = FString;
-
 	public:
 		FSdkAccess(class ISdkApi&);
 		~FSdkAccess();

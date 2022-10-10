@@ -17,7 +17,6 @@ namespace Dolby
 	class FDevices final
 	{
 		using FDvcDeviceManagement = dolbyio::comms::services::device_management;
-		using FDeviceName = FText;
 		using FDvcDevice = dolbyio::comms::dvc_device;
 		using FCurrentDevice = TUniquePtr<FDvcDevice>;
 		using Index = int;

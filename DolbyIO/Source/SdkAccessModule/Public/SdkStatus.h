@@ -1,9 +1,10 @@
 #pragma once
 
+#include "Common.h"
+
 namespace Dolby
 {
 	class ISdkApi;
-	using FMessage = FString;
 
 	class FSdkStatus final
 	{
