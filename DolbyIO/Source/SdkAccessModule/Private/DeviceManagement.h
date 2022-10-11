@@ -9,14 +9,14 @@ namespace Dolby
 {
 	class FDevices;
 	struct FExceptionHandler;
-	class ISdkApi;
+	class ISdkEventsObserver;
 
 	class FDeviceManagement final
 	{
 	public:
 		using FDvcDeviceManagement = dolbyio::comms::services::device_management;
 
-		FDeviceManagement(FDvcDeviceManagement&, ISdkApi&, FExceptionHandler&);
+		FDeviceManagement(FDvcDeviceManagement&, ISdkEventsObserver&, FExceptionHandler&);
 		~FDeviceManagement();
 
 		void SetInputDevice(const int Index);

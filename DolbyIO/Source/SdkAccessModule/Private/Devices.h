@@ -31,7 +31,7 @@ namespace Dolby
 		using FDvcDevices = TArray<FDvcDevice>;
 		using FDeviceNames = TArray<FDeviceName>;
 
-		FDevices(EDirection, FDvcDeviceManagement&, ISdkApi&, FExceptionHandler&);
+		FDevices(EDirection, FDvcDeviceManagement&, ISdkEventsObserver&, FExceptionHandler&);
 
 		void Initialize(FDvcDevices&&, FDeviceNames&&);
 		void Set(const Index);
@@ -47,7 +47,7 @@ namespace Dolby
 
 		EDirection Direction;
 		FDvcDeviceManagement& DeviceManagement;
-		ISdkApi& Delegate;
+		ISdkEventsObserver& Observer;
 		FExceptionHandler& ExceptionHandler;
 
 		FCriticalSection CriticalSection;

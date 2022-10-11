@@ -1,6 +1,6 @@
 #include "Devices.h"
 #include "Common.h"
-#include "SdkApi.h"
+#include "SdkEventsObserver.h"
 
 
 
@@ -9,9 +9,9 @@ DECLARE_LOG_CATEGORY_EXTERN(LogDolby, Log, All);
 
 namespace Dolby
 {
-	FDevices::FDevices(EDirection Direction, FDvcDeviceManagement& DeviceManagement, ISdkApi& Delegate,
+	FDevices::FDevices(EDirection Direction, FDvcDeviceManagement& DeviceManagement, ISdkEventsObserver& Observer,
 	                   FExceptionHandler& ExceptionHandler)
-	    : Direction(Direction), DeviceManagement(DeviceManagement), Delegate(Delegate),
+	    : Direction(Direction), DeviceManagement(DeviceManagement), Observer(Observer),
 	      ExceptionHandler(ExceptionHandler)
 	{
 	}
@@ -21,7 +21,7 @@ namespace Dolby
 		FScopeLock Lock{&CriticalSection};
 		Devices = MoveTemp(DvcDevices);
 		DeviceNames = MoveTemp(Names);
-		IsInput() ? Delegate.OnNewListOfInputDevices(DeviceNames) : Delegate.OnNewListOfOutputDevices(DeviceNames);
+		IsInput() ? Observer.OnNewListOfInputDevices(DeviceNames) : Observer.OnNewListOfOutputDevices(DeviceNames);
 		NotifyCurrent();
 	}
 
@@ -54,12 +54,12 @@ namespace Dolby
 		if (IsInput())
 		{
 			DLB_UE_LOG_DEVICE("Input", "added");
-			Delegate.OnNewListOfInputDevices(DeviceNames);
+			Observer.OnNewListOfInputDevices(DeviceNames);
 		}
 		else
 		{
 			DLB_UE_LOG_DEVICE("Output", "added");
-			Delegate.OnNewListOfOutputDevices(DeviceNames);
+			Observer.OnNewListOfOutputDevices(DeviceNames);
 		}
 	}
 
@@ -77,12 +77,12 @@ namespace Dolby
 				if (IsInput())
 				{
 					DLB_UE_LOG_DEVICE("Input", "removed");
-					Delegate.OnNewListOfInputDevices(DeviceNames);
+					Observer.OnNewListOfInputDevices(DeviceNames);
 				}
 				else
 				{
 					DLB_UE_LOG_DEVICE("Output", "removed");
-					Delegate.OnNewListOfOutputDevices(DeviceNames);
+					Observer.OnNewListOfOutputDevices(DeviceNames);
 				}
 
 				break;
@@ -116,12 +116,12 @@ namespace Dolby
 		if (IsInput())
 		{
 			DLB_UE_LOG_DEVICE("Input", "changed");
-			Delegate.OnInputDeviceChanged(Name);
+			Observer.OnInputDeviceChanged(Name);
 		}
 		else
 		{
 			DLB_UE_LOG_DEVICE("Output", "changed");
-			Delegate.OnOutputDeviceChanged(Name);
+			Observer.OnOutputDeviceChanged(Name);
 		}
 	}
 

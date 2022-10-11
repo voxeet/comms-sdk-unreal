@@ -1,12 +1,12 @@
 #include "SdkStatus.h"
-#include "SdkApi.h"
+#include "SdkEventsObserver.h"
 
 DEFINE_LOG_CATEGORY(LogDolby);
 #define DLB_UE_LOG(Format, ...) UE_LOG(LogDolby, Log, TEXT(Format), ##__VA_ARGS__)
 
 namespace Dolby
 {
-	FSdkStatus::FSdkStatus(ISdkApi& Delegate) : Delegate(Delegate) {}
+	FSdkStatus::FSdkStatus(ISdkEventsObserver& Observer) : Observer(Observer) {}
 
 	bool FSdkStatus::IsDisconnected() const
 	{
@@ -50,7 +50,7 @@ namespace Dolby
 	{
 		const FMessage Status = ToString();
 		DLB_UE_LOG("%s", *Status);
-		Delegate.OnStatusChanged(Status);
+		Observer.OnStatusChanged(Status);
 		Msg.Reset();
 	}
 

@@ -18,7 +18,7 @@ namespace Dolby
 	class SDKACCESSMODULE_API FSdkAccess final
 	{
 	public:
-		FSdkAccess(class ISdkApi&);
+		FSdkAccess(class ISdkEventsObserver&);
 		~FSdkAccess();
 
 		void Connect(const FToken&, const FConferenceName&, const FUserName&);
@@ -41,7 +41,7 @@ namespace Dolby
 		void ConnectToDemoConference(const FUserName&);
 
 		FSdkStatus Status;
-		ISdkApi& Delegate;
+		ISdkEventsObserver& Observer;
 		FExceptionHandler ExceptionHandler;
 		TUniquePtr<class FDeviceManagement> Devices;
 		TUniquePtr<dolbyio::comms::sdk> Sdk;

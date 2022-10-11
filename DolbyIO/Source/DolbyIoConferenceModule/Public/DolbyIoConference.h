@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
-#include "SdkApi.h"
+#include "SdkEventsObserver.h"
 
 #include "DolbyIoConference.generated.h"
 
@@ -20,7 +20,7 @@ namespace Dolby
 
 /** Interface to the Dolby.io C++ SDK. */
 UCLASS()
-class DOLBYIOCONFERENCEMODULE_API ADolbyIoConference : public AActor, public Dolby::ISdkApi
+class DOLBYIOCONFERENCEMODULE_API ADolbyIoConference : public AActor, public Dolby::ISdkEventsObserver
 {
 	GENERATED_BODY()
 

@@ -4,12 +4,12 @@
 
 namespace Dolby
 {
-	class ISdkApi;
+	class ISdkEventsObserver;
 
 	class FSdkStatus final
 	{
 	public:
-		FSdkStatus(ISdkApi&);
+		FSdkStatus(ISdkEventsObserver&);
 
 		bool IsDisconnected() const;
 		bool IsConnecting() const;
@@ -36,6 +36,6 @@ namespace Dolby
 		EConnectionStatus ConnectionStatus = EConnectionStatus::Disconnected;
 		FMessage Msg;
 
-		ISdkApi& Delegate;
+		ISdkEventsObserver& Observer;
 	};
 }

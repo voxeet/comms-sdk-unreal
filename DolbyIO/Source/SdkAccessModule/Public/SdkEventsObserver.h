@@ -4,10 +4,10 @@
 
 namespace Dolby
 {
-	class ISdkApi
+	class ISdkEventsObserver
 	{
 	public:
-		virtual ~ISdkApi() = default;
+		virtual ~ISdkEventsObserver() = default;
 
 		virtual void OnStatusChanged(const FMessage&) = 0;
 

@@ -5,11 +5,11 @@
 
 namespace Dolby
 {
-	FDeviceManagement::FDeviceManagement(FDvcDeviceManagement& DeviceManagement, ISdkApi& Delegate,
+	FDeviceManagement::FDeviceManagement(FDvcDeviceManagement& DeviceManagement, ISdkEventsObserver& Observer,
 	                                     FExceptionHandler& ExceptionHandler)
-	    : InputDevices(MakeUnique<FDevices>(FDevices::EDirection::Input, DeviceManagement, Delegate, ExceptionHandler)),
+	    : InputDevices(MakeUnique<FDevices>(FDevices::EDirection::Input, DeviceManagement, Observer, ExceptionHandler)),
 	      OutputDevices(
-	          MakeUnique<FDevices>(FDevices::EDirection::Output, DeviceManagement, Delegate, ExceptionHandler))
+	          MakeUnique<FDevices>(FDevices::EDirection::Output, DeviceManagement, Observer, ExceptionHandler))
 	{
 		InitializeDevices(DeviceManagement, ExceptionHandler);
 	}

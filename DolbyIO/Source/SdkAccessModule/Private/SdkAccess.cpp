@@ -2,7 +2,7 @@
 #include "Common.h"
 #include "DeviceManagement.h"
 #include "Modules/ModuleManager.h"
-#include "SdkApi.h"
+#include "SdkEventsObserver.h"
 
 IMPLEMENT_MODULE(FDefaultModuleImpl, SdkAccessModule)
 
@@ -15,8 +15,8 @@ namespace Dolby
 {
 	using namespace dolbyio::comms;
 
-	FSdkAccess::FSdkAccess(ISdkApi& SdkApi)
-	    : Status(SdkApi), Delegate(SdkApi), ExceptionHandler(Status) 
+	FSdkAccess::FSdkAccess(ISdkEventsObserver& Observer)
+	    : Status(Observer), Observer(Observer), ExceptionHandler(Status) 
 	{
 		ExceptionHandler.NotifyIfThrows(
 		    [this]()
@@ -67,10 +67,10 @@ namespace Dolby
 			                          [this](auto&& cb)
 			                          {
 				                          RefreshTokenCb.Reset(cb.release());
-				                          Delegate.OnRefreshTokenRequested();
+				                          Observer.OnRefreshTokenRequested();
 			                          })
 			                  .release());
-			    Devices = MakeUnique<FDeviceManagement>(Sdk->device_management(), Delegate, ExceptionHandler);
+			    Devices = MakeUnique<FDeviceManagement>(Sdk->device_management(), Observer, ExceptionHandler);
 			    Connect(Conf, User);
 		    });
 	}
