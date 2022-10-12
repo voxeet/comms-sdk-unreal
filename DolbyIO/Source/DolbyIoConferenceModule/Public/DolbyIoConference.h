@@ -1,7 +1,8 @@
 #pragma once
 
-#include "GameFramework/Actor.h"
 #include "SdkStatusObserver.h"
+
+#include "GameFramework/Actor.h"
 
 #include "DolbyIoConference.generated.h"
 

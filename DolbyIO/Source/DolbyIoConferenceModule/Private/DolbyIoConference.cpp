@@ -1,11 +1,15 @@
 #include "DolbyIoConference.h"
-#include "Modules/ModuleManager.h"
+
 #include "SdkAccess.h"
+
+#include "Async/Async.h"
+#include "Engine/World.h"
+#include "GameFramework/PlayerController.h"
+#include "Modules/ModuleManager.h"
 
 IMPLEMENT_MODULE(FDefaultModuleImpl, DolbyIoConferenceModule)
 
 ADolbyIoConference::ADolbyIoConference()
-    // these defaults can be overriden in Unreal Editor
     : ConferenceName("unreal"), UserName("unreal"), Status("Disconnected"), CppSdk(MakeShared<Dolby::FSdkAccess>(*this))
 {
 	PrimaryActorTick.bStartWithTickEnabled = true;

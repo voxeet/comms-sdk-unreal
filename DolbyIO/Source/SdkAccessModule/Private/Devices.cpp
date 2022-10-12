@@ -1,5 +1,8 @@
 #include "Devices.h"
+
 #include "Common.h"
+
+#include "Misc/ScopeLock.h"
 
 namespace Dolby
 {

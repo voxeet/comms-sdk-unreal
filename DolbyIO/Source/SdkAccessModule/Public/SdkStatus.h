@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Internationalization/Text.h"
+
 namespace Dolby
 {
 	class ISdkStatusObserver;

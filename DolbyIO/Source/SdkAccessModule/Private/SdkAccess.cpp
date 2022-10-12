@@ -1,6 +1,9 @@
 #include "SdkAccess.h"
+
 #include "Common.h"
 #include "DeviceManagement.h"
+
+#include "Math/Rotator.h"
 #include "Modules/ModuleManager.h"
 
 IMPLEMENT_MODULE(FDefaultModuleImpl, SdkAccessModule)

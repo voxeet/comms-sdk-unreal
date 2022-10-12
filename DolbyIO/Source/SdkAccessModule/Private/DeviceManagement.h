@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Templates/UniquePtr.h"
+
 namespace dolbyio::comms::services
 {
 	class device_management;

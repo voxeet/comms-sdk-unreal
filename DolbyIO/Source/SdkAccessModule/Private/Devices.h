@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Internationalization/Text.h"
+
 namespace dolbyio::comms
 {
 	class dvc_device;
