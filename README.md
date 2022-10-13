@@ -8,7 +8,7 @@ Plugin integrating [Dolby.io Communications C++ SDK](https://github.com/DolbyIO/
 
 ## <a name="usage"></a> How to use
 1. Download the latest plugin [release](https://github.com/DolbyIO/comms-sdk-unreal/releases).  
-*The location above does not yet work as there is no CI for this project yet. Use the build from [Box](#usage)*.
+*The location above does not yet work as there is no CI for this project yet. Use the build from [Box](https://dolby.box.com/s/dp6seu7ezine09my1tgmlc21k4w7pmmc)*.
 2. Copy the plugin to {UnrealEngineRoot}/Engine/Plugins, so that you have a folder such as C:\Epic Games\UE_4.27\Engine\Plugins\DolbyIO.  
 *Alternatively, copy the plugin to {YourGameRoot}/Plugins.*
 3. Launch your game project ([create a game](#create) using the First Person template if you're starting out from scratch).
