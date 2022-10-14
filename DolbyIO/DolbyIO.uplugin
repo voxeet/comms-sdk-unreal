@@ -4,7 +4,7 @@
 	"VersionName": "1.0",
 	"EngineVersion" : "4.27.0",
 	"FriendlyName": "Dolby.io Communications",
-	"Description": "Dolby.io Communications plugin for Unreal Engine",
+	"Description": "Plugin integrating the Dolby.io Communications C++ SDK.",
 	"Category": "Audio",
 	"CreatedBy": "Dolby Laboratories",
 	"CreatedByURL": "https://dolby.io",
