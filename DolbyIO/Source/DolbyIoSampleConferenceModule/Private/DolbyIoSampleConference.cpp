@@ -1,3 +1,5 @@
+// Copyright 2022 Dolby Laboratories
+
 #include "DolbyIoSampleConference.h"
 
 #include "Components/InputComponent.h"

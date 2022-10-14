@@ -1,3 +1,5 @@
+// Copyright 2022 Dolby Laboratories
+
 #include "DeviceManagement.h"
 
 #include "Common.h"

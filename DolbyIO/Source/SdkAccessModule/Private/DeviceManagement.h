@@ -1,3 +1,5 @@
+// Copyright 2022 Dolby Laboratories
+
 #pragma once
 
 #include "Templates/UniquePtr.h"

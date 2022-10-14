@@ -1,3 +1,5 @@
+// Copyright 2022 Dolby Laboratories
+
 #include "DolbyIoConference.h"
 
 #include "SdkAccess.h"

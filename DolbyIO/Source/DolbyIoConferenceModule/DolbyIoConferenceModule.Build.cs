@@ -1,3 +1,5 @@
+// Copyright 2022 Dolby Laboratories
+
 using UnrealBuildTool;
 
 public class DolbyIoConferenceModule : ModuleRules

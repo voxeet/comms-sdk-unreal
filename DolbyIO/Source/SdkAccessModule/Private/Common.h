@@ -1,3 +1,5 @@
+// Copyright 2022 Dolby Laboratories
+
 #pragma once
 
 #define DOLBYIO_COMMS_SUPPRESS_APPLE_NO_RTTI_WARNING

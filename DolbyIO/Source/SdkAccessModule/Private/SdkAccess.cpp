@@ -1,3 +1,5 @@
+// Copyright 2022 Dolby Laboratories
+
 #include "SdkAccess.h"
 
 #include "Common.h"
