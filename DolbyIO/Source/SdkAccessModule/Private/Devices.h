@@ -2,6 +2,8 @@
 
 #include "Internationalization/Text.h"
 
+#include <string>
+
 namespace dolbyio::comms
 {
 	class dvc_device;
