@@ -18,6 +18,7 @@ namespace Dolby
 		DLB_LOCK
 		Devices = MoveTemp(DvcDevices);
 		DeviceNames = MoveTemp(Names);
+		CurrentDevice.Reset();
 		IsInput() ? Status.OnNewListOfInputDevices(DeviceNames) : Status.OnNewListOfOutputDevices(DeviceNames);
 		NotifyCurrent();
 	}

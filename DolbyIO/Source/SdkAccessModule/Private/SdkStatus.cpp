@@ -1,12 +1,17 @@
 #include "SdkStatus.h"
 
+#include "SdkStatusObserver.h"
+
 DEFINE_LOG_CATEGORY_STATIC(LogDolby, Log, All);
 #define DLB_UE_LOG(Format, ...) UE_LOG(LogDolby, Log, TEXT(Format), ##__VA_ARGS__)
 #define DLB_UE_LOG_DEVICE(Type, Event) DLB_UE_LOG(Type " device " Event ": %s", *Name.ToString())
 
 namespace Dolby
 {
-	FSdkStatus::FSdkStatus(ISdkStatusObserver& Observer) : Observer(Observer) {}
+	void FSdkStatus::SetObserver(ISdkStatusObserver* Obs)
+	{
+		Observer = Obs;
+	}
 
 	bool FSdkStatus::IsDisconnected() const
 	{
@@ -33,14 +38,24 @@ namespace Dolby
 	{
 		SetConnection(EConnectionStatus::Connected);
 	}
+	void FSdkStatus::OnDisconnecting()
+	{
+		SetConnection(EConnectionStatus::Disconnecting);
+	}
 
 	void FSdkStatus::OnNewListOfInputDevices(const FDeviceNames& Names)
 	{
-		Observer.OnNewListOfInputDevices(Names);
+		if (Observer)
+		{
+			Observer->OnNewListOfInputDevices(Names);
+		}
 	}
 	void FSdkStatus::OnNewListOfOutputDevices(const FDeviceNames& Names)
 	{
-		Observer.OnNewListOfOutputDevices(Names);
+		if (Observer)
+		{
+			Observer->OnNewListOfOutputDevices(Names);
+		}
 	}
 	void FSdkStatus::OnInputDeviceAdded(const FDeviceName& Name)
 	{
@@ -61,18 +76,27 @@ namespace Dolby
 	void FSdkStatus::OnInputDeviceChanged(const FDeviceName& Name)
 	{
 		DLB_UE_LOG_DEVICE("Input", "changed");
-		Observer.OnInputDeviceChanged(Name);
+		if (Observer)
+		{
+			Observer->OnInputDeviceChanged(Name);
+		}
 	}
 	void FSdkStatus::OnOutputDeviceChanged(const FDeviceName& Name)
 	{
 		DLB_UE_LOG_DEVICE("Output", "changed");
-		Observer.OnOutputDeviceChanged(Name);
+		if (Observer)
+		{
+			Observer->OnOutputDeviceChanged(Name);
+		}
 	}
 
 	void FSdkStatus::OnRefreshTokenRequested()
 	{
 		DLB_UE_LOG("Refresh token requested");
-		Observer.OnRefreshTokenRequested();
+		if (Observer)
+		{
+			Observer->OnRefreshTokenRequested();
+		}
 	}
 
 	void FSdkStatus::SetMsg(const FMessage& M)
@@ -91,7 +115,10 @@ namespace Dolby
 	{
 		const FMessage Status = ToString();
 		DLB_UE_LOG("%s", *Status);
-		Observer.OnStatusChanged(Status);
+		if (Observer)
+		{
+			Observer->OnStatusChanged(Status);
+		}
 		Msg.Reset();
 	}
 
@@ -108,6 +135,9 @@ namespace Dolby
 				break;
 			case EConnectionStatus::Connected:
 				Ret = "Connected";
+				break;
+			case EConnectionStatus::Disconnecting:
+				Ret = "Disconnecting";
 				break;
 		}
 		if (!Msg.IsEmpty())

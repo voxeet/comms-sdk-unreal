@@ -24,6 +24,11 @@
             "Name": "SdkAccessModule",
             "Type": "Runtime",
             "LoadingPhase": "Default"
+        },
+        {
+            "Name": "DolbyIoSampleConferenceModule",
+            "Type": "Runtime",
+            "LoadingPhase": "Default"
         }
 	]
 }

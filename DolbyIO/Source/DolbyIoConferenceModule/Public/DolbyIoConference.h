@@ -14,12 +14,8 @@ namespace dolbyio
 	}
 }
 
-namespace Dolby
-{
-	class FSdkAccess;
-}
-
-/** Interface to the Dolby.io C++ SDK. */
+/** Interface to the Dolby.io C++ SDK. On BeginPlay, initializes the Dolby.io C++ SDK using the client access token set
+ * using a property. */
 UCLASS()
 class DOLBYIOCONFERENCEMODULE_API ADolbyIoConference : public AActor, public Dolby::ISdkStatusObserver
 {
@@ -82,8 +78,7 @@ public:
 
 	// functions for controlling the SDK, callable from Blueprints
 
-	/** Connects to Dolby.io conference using the client access token, conference name and user name set using
-	 * properties. */
+	/** Connects to Dolby.io conference using the conference name and user name set using properties. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void Connect();
 
@@ -118,32 +113,30 @@ public:
 	// events called from C++, implementable in Blueprints
 
 	/** Event signaled when the status of the Dolby.io C++ SDK changes. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
+	UFUNCTION(BlueprintNativeEvent, Category = "Dolby")
 	void OnStatusChanged();
 
 	/** Event signaled when there is a new list of input audio devices. Also called when a device is added or removed.
 	 * The list always contains all available devices. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
+	UFUNCTION(BlueprintNativeEvent, Category = "Dolby")
 	void OnNewListOfInputDevices();
 
 	/** Event signaled when there is a new list of output audio devices. Also called when a device is added or removed.
 	 * The list always contains all available devices. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
+	UFUNCTION(BlueprintNativeEvent, Category = "Dolby")
 	void OnNewListOfOutputDevices();
 
 	/** Event signaled when the input audio device is changed. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
+	UFUNCTION(BlueprintNativeEvent, Category = "Dolby")
 	void OnInputDeviceChanged();
 
 	/** Event signaled when the output audio device is changed. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
+	UFUNCTION(BlueprintNativeEvent, Category = "Dolby")
 	void OnOutputDeviceChanged();
 
 	/** Event signaled when the Dolby.io C++ SDK requests a refreshed token. */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
+	UFUNCTION(BlueprintNativeEvent, Category = "Dolby")
 	void OnRefreshTokenNeeded();
-
-	// events called from C++ with a default C++ implementation, overridable in Blueprints
 
 	/** Event signaled when the position and rotation used to update the spatial audio configuration should be updated.
 	 */
@@ -156,10 +149,15 @@ public:
 	 */
 	dolbyio::comms::sdk* GetRawSdk();
 
-private:
+protected:
 	// AActor
+	void BeginPlay() override;
 	void Tick(float DeltaTime) override;
+	void EndPlay(const EEndPlayReason::Type) override;
 
+	class APlayerController* FirstPlayerController;
+
+private:
 	// Dolby::ISdkStatusObserver
 	void OnStatusChanged(const FMessage&) override;
 
@@ -169,6 +167,4 @@ private:
 	void OnOutputDeviceChanged(const FDeviceName&) override;
 
 	void OnRefreshTokenRequested() override;
-
-	TSharedPtr<Dolby::FSdkAccess> CppSdk;
 };

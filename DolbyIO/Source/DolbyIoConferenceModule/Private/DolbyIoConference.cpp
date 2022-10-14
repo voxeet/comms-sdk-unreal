@@ -9,46 +9,68 @@
 
 IMPLEMENT_MODULE(FDefaultModuleImpl, DolbyIoConferenceModule)
 
-ADolbyIoConference::ADolbyIoConference()
-    : ConferenceName("unreal"), UserName("unreal"), Status("Disconnected"), CppSdk(MakeShared<Dolby::FSdkAccess>(*this))
+static Dolby::FSdkAccess CppSdk;
+
+ADolbyIoConference::ADolbyIoConference() : ConferenceName("unreal"), UserName("unreal"), Status("Disconnected")
 {
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickInterval = 0.03;
 }
 
+void ADolbyIoConference::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (const auto World = GetWorld())
+	{
+		FirstPlayerController = World->GetFirstPlayerController();
+	}
+
+	CppSdk.SetObserver(this);
+	CppSdk.Initialize(Token);
+}
+
+void ADolbyIoConference::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	CppSdk.Disconnect();
+	CppSdk.SetObserver(nullptr);
+
+	Super::EndPlay(EndPlayReason);
+}
+
 void ADolbyIoConference::Connect()
 {
-	CppSdk->Connect(Token, ConferenceName, UserName);
+	CppSdk.Connect(ConferenceName, UserName);
 }
 void ADolbyIoConference::Disconnect()
 {
-	CppSdk->Disconnect();
+	CppSdk.Disconnect();
 }
 void ADolbyIoConference::MuteInput()
 {
-	CppSdk->MuteInput(bIsInputMuted);
+	CppSdk.MuteInput(bIsInputMuted);
 }
 void ADolbyIoConference::MuteOutput()
 {
-	CppSdk->MuteOutput(bIsOutputMuted);
+	CppSdk.MuteOutput(bIsOutputMuted);
 }
 void ADolbyIoConference::SetInputDevice(const int Index)
 {
-	CppSdk->SetInputDevice(Index);
+	CppSdk.SetInputDevice(Index);
 }
 void ADolbyIoConference::SetOutputDevice(const int Index)
 {
-	CppSdk->SetOutputDevice(Index);
+	CppSdk.SetOutputDevice(Index);
 }
 void ADolbyIoConference::RefreshToken()
 {
-	CppSdk->RefreshToken(Token);
+	CppSdk.RefreshToken(Token);
 }
 
 dolbyio::comms::sdk* ADolbyIoConference::GetRawSdk()
 {
-	return CppSdk->GetRawSdk();
+	return CppSdk.GetRawSdk();
 }
 
 void ADolbyIoConference::Tick(float DeltaTime)
@@ -56,7 +78,7 @@ void ADolbyIoConference::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	OnSpatialUpdateNeeded();
-	CppSdk->UpdateViewPoint(Position, Rotation);
+	CppSdk.UpdateViewPoint(Position, Rotation);
 }
 
 #define ON_GAME_THREAD(Func) AsyncTask(ENamedThreads::GameThread, [this] { Func(); });
@@ -98,11 +120,15 @@ void ADolbyIoConference::OnRefreshTokenRequested()
 
 void ADolbyIoConference::OnSpatialUpdateNeeded_Implementation()
 {
-	if (const auto world = GetWorld())
+	if (FirstPlayerController)
 	{
-		if (const auto player = world->GetFirstPlayerController())
-		{
-			player->GetActorEyesViewPoint(Position, Rotation);
-		}
+		FirstPlayerController->GetActorEyesViewPoint(Position, Rotation);
 	}
 }
+
+void ADolbyIoConference::OnStatusChanged_Implementation() {}
+void ADolbyIoConference::OnNewListOfInputDevices_Implementation() {}
+void ADolbyIoConference::OnNewListOfOutputDevices_Implementation() {}
+void ADolbyIoConference::OnInputDeviceChanged_Implementation() {}
+void ADolbyIoConference::OnOutputDeviceChanged_Implementation() {}
+void ADolbyIoConference::OnRefreshTokenNeeded_Implementation() {}

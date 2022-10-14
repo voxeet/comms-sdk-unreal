@@ -17,7 +17,7 @@ namespace Dolby
 {
 	using namespace dolbyio::comms;
 
-	FSdkAccess::FSdkAccess(ISdkStatusObserver& Observer) : Status(Observer)
+	FSdkAccess::FSdkAccess()
 	{
 		try
 		{
@@ -44,23 +44,20 @@ namespace Dolby
 
 	FSdkAccess::~FSdkAccess() {}
 
-	void FSdkAccess::Connect(const FToken& Token, const FConferenceName& Conf, const FUserName& User)
+	void FSdkAccess::SetObserver(ISdkStatusObserver* Observer)
 	try
 	{
-		if (Token.IsEmpty() || Conf.IsEmpty() || User.IsEmpty())
-		{
-			throw std::logic_error{"Client access token, conference name and user name cannot be empty"};
-		}
-		if (Status.IsConnecting())
-		{
-			return;
-		}
-		if (Status.IsConnected())
-		{
-			Disconnect();
-		}
+		Status.SetObserver(Observer);
+	}
+	DLB_CATCH_ALL
 
-		Status.OnConnecting();
+	void FSdkAccess::Initialize(const FToken& Token)
+	try
+	{
+		if (Token.IsEmpty())
+		{
+			throw std::logic_error{"Client access token cannot be empty"};
+		}
 		Sdk.Reset(sdk::create(ToStdString(Token),
 		                      [this](auto&& cb)
 		                      {
@@ -69,13 +66,31 @@ namespace Dolby
 		                      })
 		              .release());
 		Devices = MakeUnique<FDeviceManagement>(Sdk->device_management(), Status);
-		Connect(Conf, User);
+		Status.OnDisconnected();
+		LocalParticipantID.Reset();
+		DemoParticipantIDs.Empty();
 	}
 	DLB_CATCH_ALL
 
 	void FSdkAccess::Connect(const FConferenceName& Conf, const FUserName& User)
+	try
 	{
 		using namespace dolbyio::comms::services;
+
+		if (!Sdk)
+		{
+			throw std::logic_error{"Must initialize SDK first"};
+		}
+		if (Conf.IsEmpty() || User.IsEmpty())
+		{
+			throw std::logic_error{"Conference name and user name cannot be empty"};
+		}
+		if (!Status.IsDisconnected())
+		{
+			throw std::logic_error{"Must disconnect first"};
+		}
+
+		Status.OnConnecting();
 
 		if (Conf == "demo")
 		{
@@ -112,6 +127,7 @@ namespace Dolby
 		    .then([this](auto&&) { Status.OnConnected(); })
 		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
 	}
+	DLB_CATCH_ALL
 
 	void FSdkAccess::ConnectToDemoConference(const FUserName& User)
 	{
@@ -152,8 +168,12 @@ namespace Dolby
 	try
 	{
 		DLB_MUST_BE_CONNECTED
-		Status.OnDisconnected();
-		Sdk->conference().leave().then([this] { return Sdk->session().close(); }).on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+		Status.OnDisconnecting();
+		Sdk->conference()
+		    .leave()
+		    .then([this] { return Sdk->session().close(); })
+		    .then([this] { Status.OnDisconnected(); })
+		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
 	}
 	DLB_CATCH_ALL
 
@@ -174,7 +194,6 @@ namespace Dolby
 	void FSdkAccess::SetInputDevice(const int Index)
 	try
 	{
-		DLB_MUST_BE_CONNECTED
 		Devices->SetInputDevice(Index);
 	}
 	DLB_CATCH_ALL
@@ -182,7 +201,6 @@ namespace Dolby
 	void FSdkAccess::SetOutputDevice(const int Index)
 	try
 	{
-		DLB_MUST_BE_CONNECTED
 		Devices->SetOutputDevice(Index);
 	}
 	DLB_CATCH_ALL
@@ -223,7 +241,6 @@ namespace Dolby
 	void FSdkAccess::RefreshToken(const FToken& token)
 	try
 	{
-		DLB_MUST_BE_CONNECTED
 		if (RefreshTokenCb)
 		{
 			(*RefreshTokenCb)(ToStdString(token));

@@ -13,7 +13,7 @@ namespace Dolby
 		using FDeviceName = FText;
 		using FDeviceNames = TArray<FDeviceName>;
 
-		FSdkStatus(ISdkStatusObserver&);
+		void SetObserver(ISdkStatusObserver*);
 
 		bool IsDisconnected() const;
 		bool IsConnecting() const;
@@ -22,6 +22,7 @@ namespace Dolby
 		void OnDisconnected();
 		void OnConnecting();
 		void OnConnected();
+		void OnDisconnecting();
 
 		void OnNewListOfInputDevices(const FDeviceNames&);
 		void OnNewListOfOutputDevices(const FDeviceNames&);
@@ -44,7 +45,8 @@ namespace Dolby
 		{
 			Disconnected,
 			Connecting,
-			Connected
+			Connected,
+			Disconnecting
 		};
 
 		void SetConnection(EConnectionStatus);
@@ -54,6 +56,6 @@ namespace Dolby
 		EConnectionStatus ConnectionStatus = EConnectionStatus::Disconnected;
 		FMessage Msg;
 
-		ISdkStatusObserver& Observer;
+		ISdkStatusObserver* Observer;
 	};
 }

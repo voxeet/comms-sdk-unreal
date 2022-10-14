@@ -6,7 +6,7 @@ public class DolbyIoConferenceModule : ModuleRules
     {
         PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
-        PrivateDependencyModuleNames.AddRange(
+        PublicDependencyModuleNames.AddRange(
             new string[]
             {
                 "Core",

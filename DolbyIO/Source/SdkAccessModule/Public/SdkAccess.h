@@ -20,10 +20,13 @@ namespace Dolby
 		using FUserName = FString;
 
 	public:
-		FSdkAccess(class ISdkStatusObserver&);
+		FSdkAccess();
 		~FSdkAccess();
 
-		void Connect(const FToken&, const FConferenceName&, const FUserName&);
+		void SetObserver(class ISdkStatusObserver*);
+
+		void Initialize(const FToken&);
+		void Connect(const FConferenceName&, const FUserName&);
 		void Disconnect();
 
 		void MuteInput(const bool bIsMuted);
@@ -39,7 +42,6 @@ namespace Dolby
 		dolbyio::comms::sdk* GetRawSdk();
 
 	private:
-		void Connect(const FConferenceName&, const FUserName&);
 		void ConnectToDemoConference(const FUserName&);
 
 		FSdkStatus Status;
