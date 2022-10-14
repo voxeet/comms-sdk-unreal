@@ -15,7 +15,7 @@ public class SdkAccessModule : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "Engine" });
 
 		string PluginDir = Directory.GetParent(ModuleDirectory).Parent.FullName;
-		string SdkDir = Path.Combine(PluginDir, "ThirdParty", "sdk-release");
+		string SdkDir = Path.Combine(PluginDir, "Source", "ThirdParty", "sdk-release");
 		string LibDir = Path.Combine(SdkDir, "lib");
 
 		PublicIncludePaths.AddRange(new string[] {
