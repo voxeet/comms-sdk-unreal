@@ -108,7 +108,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void SetOutputDevice(const int Index);
 
-	/** Refreshes the client access token set using the Token property. */
+	/** Refreshes the client access token set using the Token property. If the Dolby.io C++ SDK is not initialized,
+	 * initializes using the Token instead. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void RefreshToken();
 

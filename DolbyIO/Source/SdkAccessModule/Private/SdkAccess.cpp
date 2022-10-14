@@ -56,10 +56,13 @@ namespace Dolby
 	void FSdkAccess::Initialize(const FToken& Token)
 	try
 	{
-		if (Token.IsEmpty())
-		{
-			throw std::logic_error{"Client access token cannot be empty"};
-		}
+		Status.OnDisconnected();
+		Devices.Reset();
+		Sdk.Reset();
+		RefreshTokenCb.Reset();
+		LocalParticipantID.Reset();
+		DemoParticipantIDs.Empty();
+
 		Sdk.Reset(sdk::create(ToStdString(Token),
 		                      [this](auto&& cb)
 		                      {
@@ -68,17 +71,12 @@ namespace Dolby
 		                      })
 		              .release());
 		Devices = MakeUnique<FDeviceManagement>(Sdk->device_management(), Status);
-		Status.OnDisconnected();
-		LocalParticipantID.Reset();
-		DemoParticipantIDs.Empty();
 	}
 	DLB_CATCH_ALL
 
 	void FSdkAccess::Connect(const FConferenceName& Conf, const FUserName& User)
 	try
 	{
-		using namespace dolbyio::comms::services;
-
 		if (!Sdk)
 		{
 			throw std::logic_error{"Must initialize SDK first"};
@@ -98,6 +96,8 @@ namespace Dolby
 		{
 			return ConnectToDemoConference(User);
 		}
+
+		using namespace dolbyio::comms::services;
 
 		services::session::user_info UserInfo{};
 		UserInfo.name = ToStdString(User);
@@ -240,12 +240,16 @@ namespace Dolby
 	}
 	DLB_CATCH_ALL
 
-	void FSdkAccess::RefreshToken(const FToken& token)
+	void FSdkAccess::RefreshToken(const FToken& Token)
 	try
 	{
 		if (RefreshTokenCb)
 		{
-			(*RefreshTokenCb)(ToStdString(token));
+			(*RefreshTokenCb)(ToStdString(Token));
+		}
+		else
+		{
+			Initialize(Token);
 		}
 	}
 	DLB_CATCH_ALL
