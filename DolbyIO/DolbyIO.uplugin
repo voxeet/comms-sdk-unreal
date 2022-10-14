@@ -2,33 +2,37 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
+	"EngineVersion" : "4.27.0",
 	"FriendlyName": "Dolby.io Communications",
 	"Description": "Dolby.io Communications plugin for Unreal Engine",
 	"Category": "Audio",
 	"CreatedBy": "Dolby Laboratories",
-	"CreatedByURL": "https://dolby.io/",
-	"DocsURL": "",
-	"MarketplaceURL": "",
-	"SupportURL": "",
+	"CreatedByURL": "https://dolby.io",
+	"DocsURL": "https://github.com/DolbyIO/comms-sdk-unreal",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/OFFERID",
+	"SupportURL": "https://github.com/DolbyIO/comms-sdk-unreal",
+	"EnabledByDefault" : false,
 	"CanContainContent": true,
 	"IsBetaVersion": true,
-	"IsExperimentalVersion": false,
 	"Installed": false,
 	"Modules": [
 		{
 			"Name": "DolbyIoConferenceModule",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64", "Mac" ]
 		},
-        {
-            "Name": "SdkAccessModule",
-            "Type": "Runtime",
-            "LoadingPhase": "Default"
-        },
-        {
-            "Name": "DolbyIoSampleConferenceModule",
-            "Type": "Runtime",
-            "LoadingPhase": "Default"
-        }
+		{
+			"Name": "SdkAccessModule",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64", "Mac" ]
+		},
+		{
+			"Name": "DolbyIoSampleConferenceModule",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64", "Mac" ]
+		}
 	]
 }
