@@ -6,7 +6,7 @@ Plugin integrating [Dolby.io Communications C++ SDK](https://github.com/DolbyIO/
 - Tested on Windows 10 and macOS 12.
 - If on macOS, it is recommended to follow the [advice](#macos) below.
 
-## <a name="usage"></a> How to use
+## <a name="usage"></a> How to use the sample Blueprints
 1. Download the latest plugin [release](https://github.com/DolbyIO/comms-sdk-unreal/releases).  
 *The location above does not yet work as there is no CI for this project yet. Use the build from [Box](https://dolby.box.com/s/dp6seu7ezine09my1tgmlc21k4w7pmmc)*.
 2. Copy the plugin to {UnrealEngineRoot}/Engine/Plugins, so that you have a folder such as C:\Epic Games\UE_4.27\Engine\Plugins\DolbyIO.  
@@ -19,6 +19,14 @@ Plugin integrating [Dolby.io Communications C++ SDK](https://github.com/DolbyIO/
 8. Paste your [Dolby.io](https://dolby.io) client access token in the appropriate field.
 9. Connect.
 10. See [section below](#how) for how the plugin works and how you can use it in practice.
+
+## <a name="usage"></a> How to use the sample C++ class
+1. Follow steps 1-4 from [section above](#usage).
+2. [Place](#place) the plugin's DolbyIoSampleConference object in the scene.
+3. Make sure the object is selected in the World Outliner.
+4. Paste your [Dolby.io](https://dolby.io) client access token in the appropriate field in the Details window.
+5. Launch the game.
+6. See DolbyIoSampleConference.cpp for available key bindings.
 
 ## <a name="create"></a> Creating game from template
 Launch Unreal Engine from Epic Games Launcher, then:
@@ -33,7 +41,8 @@ You may replace the First Person template with any other template, but Third Per
 ## <a name="place"></a> Placing sample plugin object in game
 - Unreal Engine 4:
     - Content Browser → View Options → Show Plugin Content + Show Engine Content
-    - Content Browser → DolbyIO Content → drag DolbyIoSampleConferenceBP to anywhere in the viewport
+        - Content Browser → DolbyIO Content → drag DolbyIoSampleConferenceBP to anywhere in the viewport (for Blueprint sample) OR
+        - Content Browser → DolbyIO C++ Classes → DolbyIoSampleConferenceModule → Public → drag DolbyIoSampleConference to anywhere in the viewport (for C++ sample)
 - Unreal Engine 5:
     - Content Drawer → Settings → Show Plugin Content + Show Engine Content
     - Content Drawer → All → Plugins → Dolby.io Communications Content → drag DolbyIoSampleConferenceBP to anywhere in the viewport
@@ -75,7 +84,8 @@ If your game does not contain C++ code (e.g. you created a game from a Blueprint
         - Unreal Engine 5: Tools → Refresh Xcode Project
 
 ## <a name="how"></a>How it works
-- DolbyIoSampleConferenceBP provides a sample implementation to interface with the Dolby.io Communications C++ SDK using the API specified in the ADolbyIoConference class.
+- DolbyIoSampleConferenceBP provides a sample Blueprint implementation to interface with the Dolby.io Communications C++ SDK using the API specified in the ADolbyIoConference class.
+- DolbyIoSampleConference.cpp is similar except it is a C++ example.
 - DolbyIoSampleConnectMenu provides a sample implementation of a graphics user interface using DolbyIoSampleConferenceBP.
 - DolbyIoSampleDebugInfo provides a sample implementation of displaying some additional debug information.
 
