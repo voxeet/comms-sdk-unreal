@@ -41,6 +41,7 @@ public class SdkAccessModule : ModuleRules
 			{
 				RuntimeDependencies.Add(
 				    Path.Combine(PluginDir, "Binaries", Target.Platform.ToString(), Path.GetFileName(Dll)), Dll);
+				RuntimeDependencies.Add(Path.Combine("$(TargetOutputDir)", Path.GetFileName(Dll)), Dll);
 			}
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
