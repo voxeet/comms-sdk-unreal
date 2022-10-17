@@ -2,7 +2,15 @@
 
 #pragma once
 
+#if PLATFORM_WINDOWS
+#pragma warning(push)
+#pragma warning(disable : 4251)
+#pragma warning(disable : 4275)
+#endif
 #include <dolbyio/comms/event_handling.h>
+#if PLATFORM_WINDOWS
+#pragma warning(pop)
+#endif
 
 #include "Containers/Array.h"
 
