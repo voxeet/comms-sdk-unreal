@@ -4,6 +4,8 @@
 
 #include "SdkStatus.h"
 
+#include "Modules/ModuleManager.h"
+
 namespace dolbyio
 {
 	namespace comms
@@ -15,7 +17,7 @@ namespace dolbyio
 
 namespace Dolby
 {
-	class SDKACCESSMODULE_API FSdkAccess final
+	class SDKACCESSMODULE_API FSdkAccess final : public IModuleInterface
 	{
 		using FToken = FString;
 		using FConferenceName = FString;
@@ -24,6 +26,9 @@ namespace Dolby
 	public:
 		FSdkAccess();
 		~FSdkAccess();
+
+		void StartupModule() override;
+		void ShutdownModule() override;
 
 		void SetObserver(class ISdkStatusObserver*);
 
@@ -44,8 +49,11 @@ namespace Dolby
 		dolbyio::comms::sdk* GetRawSdk();
 
 	private:
+		void LoadDll(const FString&);
+
 		void ConnectToDemoConference(const FUserName&);
 
+		TArray<void*> DllHandles;
 		FSdkStatus Status;
 		TUniquePtr<dolbyio::comms::sdk> Sdk;
 		TUniquePtr<dolbyio::comms::refresh_token> RefreshTokenCb;

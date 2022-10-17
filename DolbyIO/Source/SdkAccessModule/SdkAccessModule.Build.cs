@@ -12,52 +12,40 @@ public class SdkAccessModule : ModuleRules
 		CppStandard = CppStandardVersion.Cpp17;
 		bEnableExceptions = true;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "Engine" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "Engine", "Projects" });
 
-		string PluginDir = Directory.GetParent(ModuleDirectory).Parent.FullName;
-		string SdkDir = Path.Combine(PluginDir, "Source", "ThirdParty", "sdk-release");
+		string SdkDir = Path.Combine("$(PluginDir)", "Source", "ThirdParty", "sdk-release");
+		PublicIncludePaths.Add(Path.Combine(SdkDir, "include"));
 		string LibDir = Path.Combine(SdkDir, "lib");
-
-		PublicIncludePaths.AddRange(new string[] {
-			Path.Combine(SdkDir, "include"),
-		});
-
-		string[] Libs = {};
 
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
-			Libs = new string[] {
+			PublicAdditionalLibraries.AddRange(new string[] {
 				Path.Combine(LibDir, "dolbyio_comms_media.lib"),
 				Path.Combine(LibDir, "dolbyio_comms_sdk.lib"),
-			};
+			});
 
-			string BinDir = Path.Combine(SdkDir, "bin");
-			foreach (string Dll in new string[] {
-				         Path.Combine(BinDir, "avutil-56.dll"),
-				         Path.Combine(BinDir, "dvclient.dll"),
-				         Path.Combine(BinDir, "dolbyio_comms_media.dll"),
-				         Path.Combine(BinDir, "dolbyio_comms_sdk.dll"),
-			         })
+			foreach (string Dll in new string[] { "avutil-56.dll", "dvclient.dll", "dolbyio_comms_media.dll",
+				                                  "dolbyio_comms_sdk.dll" })
 			{
-				RuntimeDependencies.Add(
-				    Path.Combine(PluginDir, "Binaries", Target.Platform.ToString(), Path.GetFileName(Dll)), Dll);
-				RuntimeDependencies.Add(Path.Combine("$(TargetOutputDir)", Path.GetFileName(Dll)), Dll);
+				PublicDelayLoadDLLs.Add(Dll);
+				RuntimeDependencies.Add(Path.Combine("$(PluginDir)/Binaries/Win64", Dll),
+				                        Path.Combine(SdkDir, "bin", Dll));
 			}
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
-			Libs = new string[] {
+			string[] Libs = new string[] {
 				Path.Combine(LibDir, "libdolbyio_comms_media.dylib"),
 				Path.Combine(LibDir, "libdolbyio_comms_sdk.dylib"),
 				Path.Combine(LibDir, "libdvclient.dylib"),
 			};
+			PublicAdditionalLibraries.AddRange(Libs);
 
 			foreach (string Lib in Libs)
 			{
 				RuntimeDependencies.Add(Lib);
 			}
 		}
-
-		PublicAdditionalLibraries.AddRange(Libs);
 	}
 }

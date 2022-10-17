@@ -9,7 +9,13 @@
 #include "Math/Rotator.h"
 #include "Modules/ModuleManager.h"
 
-IMPLEMENT_MODULE(FDefaultModuleImpl, SdkAccessModule)
+#if PLATFORM_WINDOWS
+#include "Interfaces/IPluginManager.h"
+#include "Misc/Paths.h"
+#include "Windows/WindowsPlatformProcess.h"
+#endif
+
+IMPLEMENT_MODULE(Dolby::FSdkAccess, SdkAccessModule)
 
 static std::string ToStdString(const FString& String)
 {
@@ -20,32 +26,55 @@ namespace Dolby
 {
 	using namespace dolbyio::comms;
 
-	FSdkAccess::FSdkAccess() : Events(MakeUnique<FEvents>(Status))
-	{
-		try
-		{
-			static std::once_flag Flag;
-			std::call_once(Flag,
-			               []
-			               {
-#if PLATFORM_WINDOWS
-				               static auto AlignedNew = +[](std::size_t Count, std::size_t Al)
-				               { return operator new(Count, static_cast<std::align_val_t>(Al)); };
-				               static auto AlignedDelete = +[](void* Ptr, std::size_t Al)
-				               { operator delete(Ptr, static_cast<std::align_val_t>(Al)); };
-				               sdk::set_app_allocator({operator new, AlignedNew, operator delete, AlignedDelete});
-#endif
-				               sdk::log_settings LogSettings;
-				               LogSettings.sdk_log_level = log_level::INFO;
-				               LogSettings.media_log_level = log_level::OFF;
-				               LogSettings.log_directory = "";
-				               sdk::set_log_settings(LogSettings);
-			               });
-		}
-		DLB_CATCH_ALL
-	}
+	FSdkAccess::FSdkAccess() : Events(MakeUnique<FEvents>(Status)) {}
 
 	FSdkAccess::~FSdkAccess() {}
+
+	void FSdkAccess::StartupModule()
+	try
+	{
+#if PLATFORM_WINDOWS
+		LoadDll("avutil-56.dll");
+		LoadDll("dvclient.dll");
+		LoadDll("dolbyio_comms_media.dll");
+		LoadDll("dolbyio_comms_sdk.dll");
+
+		static auto AlignedNew =
+		    +[](std::size_t Count, std::size_t Al) { return operator new(Count, static_cast<std::align_val_t>(Al)); };
+		static auto AlignedDelete =
+		    +[](void* Ptr, std::size_t Al) { operator delete(Ptr, static_cast<std::align_val_t>(Al)); };
+		sdk::set_app_allocator({operator new, AlignedNew, operator delete, AlignedDelete});
+#endif
+
+		sdk::log_settings LogSettings;
+		LogSettings.sdk_log_level = log_level::INFO;
+		LogSettings.media_log_level = log_level::OFF;
+		LogSettings.log_directory = "";
+		sdk::set_log_settings(LogSettings);
+	}
+	DLB_CATCH_ALL
+
+	void FSdkAccess::LoadDll(const FString& Dll)
+	{
+		const static auto BaseDir =
+		    FPaths::Combine(*IPluginManager::Get().FindPlugin("DolbyIO")->GetBaseDir(), TEXT("Binaries/Win64"));
+		if (const auto Handle = FPlatformProcess::GetDllHandle(*FPaths::Combine(*BaseDir, *Dll)))
+		{
+			DllHandles.Add(Handle);
+		}
+		else
+		{
+			throw std::runtime_error{std::string{"Failed to load "} + ToStdString(Dll)};
+		}
+	}
+
+	void FSdkAccess::ShutdownModule()
+	{
+		for (auto Handle : DllHandles)
+		{
+			FPlatformProcess::FreeDllHandle(Handle);
+		}
+	}
 
 	void FSdkAccess::SetObserver(ISdkStatusObserver* Observer)
 	try
