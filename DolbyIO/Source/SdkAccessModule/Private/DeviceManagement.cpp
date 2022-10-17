@@ -4,11 +4,13 @@
 
 #include "Common.h"
 #include "Devices.h"
+#include "Events.h"
 
 namespace Dolby
 {
 	FDeviceManagement::FDeviceManagement(FDvcDeviceManagement& DeviceManagement, FSdkStatus& Status)
-	    : Status(Status), InputDevices(MakeUnique<FDevices>(FDevices::EDirection::Input, DeviceManagement, Status)),
+	    : Status(Status), Events(MakeUnique<FEvents>(Status)),
+	      InputDevices(MakeUnique<FDevices>(FDevices::EDirection::Input, DeviceManagement, Status)),
 	      OutputDevices(MakeUnique<FDevices>(FDevices::EDirection::Output, DeviceManagement, Status))
 	{
 		InitializeDevices(DeviceManagement);
@@ -70,6 +72,7 @@ namespace Dolby
 				        }
 			        }
 		        })
+		    .then([this](auto&& Event) { Events->AddEvent(MoveTemp(Event)); })
 		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
 
 		DeviceManagement
@@ -85,6 +88,7 @@ namespace Dolby
 				        OutputDevices->OnAdded(Event.device);
 			        }
 		        })
+		    .then([this](auto&& Event) { Events->AddEvent(MoveTemp(Event)); })
 		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
 
 		DeviceManagement
@@ -94,6 +98,7 @@ namespace Dolby
 			        InputDevices->OnRemoved(Event.uid);
 			        OutputDevices->OnRemoved(Event.uid);
 		        })
+		    .then([this](auto&& Event) { Events->AddEvent(MoveTemp(Event)); })
 		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
 	}
 

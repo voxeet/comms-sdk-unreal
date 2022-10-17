@@ -16,6 +16,11 @@ namespace dolbyio
 	}
 }
 
+namespace Dolby
+{
+	class FSdkAccess;
+}
+
 /** Interface to the Dolby.io C++ SDK. On BeginPlay, initializes the Dolby.io C++ SDK using the client access token set
  * using a property. */
 UCLASS()
@@ -170,4 +175,6 @@ private:
 	void OnOutputDeviceChanged(const FDeviceName&) override;
 
 	void OnRefreshTokenRequested() override;
+
+	TSharedPtr<Dolby::FSdkAccess> CppSdk;
 };

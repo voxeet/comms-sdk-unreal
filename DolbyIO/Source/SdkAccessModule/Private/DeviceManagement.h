@@ -30,6 +30,8 @@ namespace Dolby
 		void GetAllDevices(FDvcDeviceManagement&);
 
 		FSdkStatus& Status;
+		TUniquePtr<class FEvents> Events;
+
 		TUniquePtr<FDevices> InputDevices;
 		TUniquePtr<FDevices> OutputDevices;
 	};

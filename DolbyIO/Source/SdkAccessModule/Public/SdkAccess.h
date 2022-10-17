@@ -10,8 +10,8 @@ namespace dolbyio
 	{
 		class refresh_token;
 		class sdk;
-	} // namespace comms
-} // namespace dolbyio
+	}
+}
 
 namespace Dolby
 {
@@ -47,9 +47,10 @@ namespace Dolby
 		void ConnectToDemoConference(const FUserName&);
 
 		FSdkStatus Status;
-		TUniquePtr<class FDeviceManagement> Devices;
 		TUniquePtr<dolbyio::comms::sdk> Sdk;
 		TUniquePtr<dolbyio::comms::refresh_token> RefreshTokenCb;
+		TUniquePtr<class FEvents> Events;
+		TUniquePtr<class FDeviceManagement> Devices;
 		FString LocalParticipantID;
 		TArray<FString> DemoParticipantIDs;
 	};

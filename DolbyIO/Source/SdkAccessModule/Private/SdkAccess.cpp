@@ -4,6 +4,7 @@
 
 #include "Common.h"
 #include "DeviceManagement.h"
+#include "Events.h"
 
 #include "Math/Rotator.h"
 #include "Modules/ModuleManager.h"
@@ -19,7 +20,7 @@ namespace Dolby
 {
 	using namespace dolbyio::comms;
 
-	FSdkAccess::FSdkAccess()
+	FSdkAccess::FSdkAccess() : Events(MakeUnique<FEvents>(Status))
 	{
 		try
 		{
@@ -157,6 +158,7 @@ namespace Dolby
 			            [this](const participant_added& Event)
 			            { DemoParticipantIDs.Add(Event.participant.user_id.c_str()); });
 		        })
+		    .then([this](auto&& Event) { Events->AddEvent(MoveTemp(Event)); })
 		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
 	}
 
