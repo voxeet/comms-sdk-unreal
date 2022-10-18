@@ -1,0 +1,78 @@
+name: Build Unreal Plugin
+
+on: push
+# nom, wydaje mi sie develop main tag -> jfrog, tag -> github release, wszystko inne -> build, ale dev/null
+
+env:
+  UNREAL_VERSION: "4.27"
+  CPP_SDK_VERSION: "2.1.0"
+
+jobs:
+  build-macos:
+    runs-on: ["self-hosted", "X64", "macOS"]
+    # User matrix for 4.27.2 and 5.0.3
+    env:
+      UE_ROOT: "/Users/Shared/Epic\ Games/UE_${UNREAL_VERSION}"
+      CPP_SDK_DESTINATION: "DolbyIO/Source/ThirdParty/"
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v2
+      - name: Download C++ SDK release asset
+        run: |
+          curl -L https://github.com/DolbyIO/comms-sdk-cpp/releases/download/${{ env.CPP_SDK_VERSION }}/cppsdk-${{ env.CPP_SDK_VERSION }}-macos64.zip > ${{ github.workspace }}/cppsdk-${{ env.CPP_SDK_VERSION }}-macos64.zip \
+          && unzip -q ${{ github.workspace }}/cppsdk-${{ env.CPP_SDK_VERSION }}-macos64.zip -d ${{ github.workspace }}/${{ env.CPP_SDK_DESTINATION }} \
+          && rm ${{ github.workspace }}/cppsdk-${{ env.CPP_SDK_VERSION }}-macos64.zip
+      - name: Run Build
+        run: |
+          "${{ env.UE_ROOT }}"/Engine/Build/BatchFiles/RunUAT.sh BuildPlugin \
+          -Rocket \
+          -Plugin=$(pwd)/DolbyIO/DolbyIO.uplugin \
+          -TargetPlatforms=Mac \
+          -Package=$(pwd)/Build/DolbyIO \
+          -StrictIncludes
+      - name: Create Artifacts
+        run: |
+          cd ${{ github.workspace }}/Build \
+          && zip -r DolbyIO_UnrealPlugin_${{ env.UNREAL_VERSION }}.zip DolbyIO \
+          && echo "Package name: DolbyIO_UnrealPlugin_${{ env.UNREAL_VERSION }}.zip" \
+          && echo "SHASUM256: $(shasum -a 256 DolbyIO_UnrealPlugin_${{ env.UNREAL_VERSION }}.zip)" \
+          && echo "C++ SDK ver.: ${{ env.CPP_SDK_VERSION }}"
+      - name: Publish Artifact on JFrog
+        run: |
+          echo "Step runs only for tag, master, develop."
+          echo "Publish DolbyIO_UnrealPlugin_${{ env.UNREAL_VERSION }}.zip to JFrog generic capi repository using access token."
+      - name: Create GitHub release
+        run: |
+          echo "Create GitHub release only for tag."
+  build-windows:
+    runs-on: ["self-hosted", "X64", "Windows"]
+    env:
+      CPP_SDK_DESTINATION: "DolbyIO/Source/ThirdParty/"
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v2
+      - name: Download C++ SDK release asset
+        run: |
+          curl -Uri "https://github.com/DolbyIO/comms-sdk-cpp/releases/download/${{ env.CPP_SDK_VERSION }}/cppsdk-${{ env.CPP_SDK_VERSION }}-windows64.zip" -UseBasicParsing -Out ${{ github.workspace }}/cppsdk-${{ env.CPP_SDK_VERSION }}-windows64.zip
+          Expand-Archive ${{ github.workspace }}/cppsdk-${{ env.CPP_SDK_VERSION }}-windows64.zip -DestinationPath ${{ github.workspace }}/${{ env.CPP_SDK_DESTINATION }}
+          rm ${{ github.workspace }}/cppsdk-${{ env.CPP_SDK_VERSION }}-windows64.zip
+      - name: Run Build
+        run: |
+          Write-Output "UE_${Env:UNREAL_VERSION}"
+          $UERunUAT = "C:\\Program Files\\Epic Games\\UE_${Env:UNREAL_VERSION}\\Engine\\Build\\BatchFiles\\RunUAT.bat"
+          & $UERunUAT BuildPlugin -Rocket -Plugin="$(pwd)\\DolbyIO\\DolbyIO.uplugin" -TargetPlatforms=Win64 -Package="$(pwd)\\Build\\DolbyIO" -StrictIncludes -VS2019
+      - name: Create Artifacts
+        run: |
+          cd ${{ github.workspace }}\Build
+          Compress-Archive -Path DolbyIO -DestinationPath "DolbyIO_UnrealPlugin_${Env:UNREAL_VERSION}.zip"
+          $env:WINDOWSSHA256 = (Get-FileHash -Algorithm SHA256 "DolbyIO_UnrealPlugin_${Env:UNREAL_VERSION}.zip").hash
+          Write-Output "Package name: DolbyIO_UnrealPlugin_${{ env.UNREAL_VERSION }}.zip"
+          Write-Output "SHASUM256: ${Env:WINDOWSSHA256} DolbyIO_UnrealPlugin_${Env:UNREAL_VERSION}.zip)"
+          Write-Output "C++ SDK ver.: ${Env:CPP_SDK_VERSION}"
+      - name: Publish Artifact on JFrog
+        run: |
+          Write-Output "Step runs only for tag, master, develop."
+          Write-Output "Publish DolbyIO_UnrealPlugin_${Env:UNREAL_VERSION}.zip to JFrog generic capi repository using access token."
+      - name: Create GitHub release
+        run: |
+          Write-Output "Create GitHub release only for tag."
