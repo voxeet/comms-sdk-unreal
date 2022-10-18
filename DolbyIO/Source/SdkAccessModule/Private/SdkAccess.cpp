@@ -88,7 +88,7 @@ namespace Dolby
 		Sdk.Reset();
 		RefreshTokenCb.Reset();
 		LocalParticipantID.Reset();
-		DemoParticipantIDs.Empty();
+		ParticipantIDs.Empty();
 
 		Sdk.Reset(sdk::create(ToStdString(Token),
 		                      [this](auto&& cb)
@@ -119,13 +119,9 @@ namespace Dolby
 
 		Status.OnConnecting();
 
-		if (Conf == "demo")
-		{
-			return ConnectToDemoConference(User);
-		}
+		bIsDemo = Conf == "demo";
 
 		using namespace dolbyio::comms::services;
-
 		services::session::user_info UserInfo{};
 		UserInfo.name = ToStdString(User);
 
@@ -139,6 +135,11 @@ namespace Dolby
 				        LocalParticipantID = User.participant_id->c_str();
 			        }
 
+			        if (bIsDemo)
+			        {
+				        return Sdk->conference().demo();
+			        }
+
 			        conference::conference_options Options{};
 			        Options.alias = ToStdString(Conf);
 			        Options.params.spatial_audio_style = spatial_audio_style::shared;
@@ -148,45 +149,44 @@ namespace Dolby
 		    .then(
 		        [this, Conf](auto&& ConferenceInfo)
 		        {
+			        if (bIsDemo)
+			        {
+				        return async_result<conference_info>{MoveTemp(ConferenceInfo)};
+			        }
+
 			        conference::join_options Options{};
 			        Options.constraints.audio = true;
 			        Options.connection.spatial_audio = true;
 			        return Sdk->conference().join(ConferenceInfo, Options);
 		        })
-		    .then([this](auto&&) { Status.OnConnected(); })
-		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
-	}
-	DLB_CATCH_ALL
-
-	void FSdkAccess::ConnectToDemoConference(const FUserName& User)
-	{
-		DemoParticipantIDs.Empty();
-
-		services::session::user_info UserInfo{};
-		UserInfo.name = ToStdString(User);
-
-		Sdk->session()
-		    .open(MoveTemp(UserInfo))
-		    .then(
-		        [this](auto&& User)
-		        {
-			        if (User.participant_id)
-			        {
-				        LocalParticipantID = User.participant_id->c_str();
-			        }
-			        return Sdk->conference().demo();
-		        })
 		    .then(
 		        [this](auto&&)
 		        {
 			        Status.OnConnected();
-			        return Sdk->conference().add_event_handler(
-			            [this](const participant_added& Event)
-			            { DemoParticipantIDs.Add(Event.participant.user_id.c_str()); });
+
+			        Sdk->conference()
+			            .add_event_handler([this](const participant_added& Event)
+			                               { ParticipantIDs.Add(Event.participant.user_id.c_str()); })
+			            .then([this](auto&& Event) { Events->AddEvent(MoveTemp(Event)); })
+			            .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+
+			        Sdk->conference()
+			            .add_event_handler(
+			                [this](const active_speaker_change& Event)
+			                {
+				                FSdkStatus::FParticipants ActiveSpeakers;
+				                for (const auto& Speaker : Event.active_speakers)
+				                {
+					                ActiveSpeakers.Add(Speaker.c_str());
+				                }
+				                Status.OnNewListOfActiveSpeakers(ActiveSpeakers);
+			                })
+			            .then([this](auto&& Event) { Events->AddEvent(MoveTemp(Event)); })
+			            .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
 		        })
-		    .then([this](auto&& Event) { Events->AddEvent(MoveTemp(Event)); })
 		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
 	}
+	DLB_CATCH_ALL
 
 #define DLB_MUST_BE_CONNECTED  \
 	if (!Status.IsConnected()) \
@@ -198,6 +198,8 @@ namespace Dolby
 	try
 	{
 		DLB_MUST_BE_CONNECTED
+		Events.Reset();
+		ParticipantIDs.Empty();
 		Status.OnDisconnecting();
 		Sdk->conference()
 		    .leave()
@@ -242,11 +244,11 @@ namespace Dolby
 
 		spatial_audio_batch_update Update;
 
-		if (DemoParticipantIDs.Num())
+		if (bIsDemo)
 		{
 			static float Angle = 0;
 			Angle += 0.01f;
-			for (const auto& Participant : DemoParticipantIDs)
+			for (const auto& Participant : ParticipantIDs)
 			{
 				Update.set_spatial_position(ToStdString(Participant),
 				                            Participant[0] == '1'

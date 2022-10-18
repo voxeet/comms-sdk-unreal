@@ -52,6 +52,15 @@ void ADolbyIoSampleConference::OnNewListOfOutputDevices_Implementation()
 	}
 }
 
+void ADolbyIoSampleConference::OnNewListOfActiveSpeakers_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("New list of active speakers:"));
+	for (const FParticipant& Speaker : ActiveSpeakers)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("\t%s"), *Speaker);
+	}
+}
+
 void ADolbyIoSampleConference::OnRefreshTokenNeeded_Implementation()
 {
 	Super::RefreshToken();

@@ -15,6 +15,7 @@ class DOLBYIOSAMPLECONFERENCEMODULE_API ADolbyIoSampleConference : public ADolby
 public:
 	void OnNewListOfInputDevices_Implementation() override;
 	void OnNewListOfOutputDevices_Implementation() override;
+	void OnNewListOfActiveSpeakers_Implementation() override;
 	void OnRefreshTokenNeeded_Implementation() override;
 
 	void Disconnect();

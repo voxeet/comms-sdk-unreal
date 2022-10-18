@@ -113,6 +113,12 @@ void ADolbyIoConference::OnOutputDeviceChanged(const FDeviceName& Name)
 	ON_GAME_THREAD(OnOutputDeviceChanged);
 }
 
+void ADolbyIoConference::OnNewListOfActiveSpeakers(const FParticipants& Participants)
+{
+	ActiveSpeakers = Participants;
+	ON_GAME_THREAD(OnNewListOfActiveSpeakers);
+}
+
 void ADolbyIoConference::OnRefreshTokenRequested()
 {
 	ON_GAME_THREAD(OnRefreshTokenNeeded);
@@ -131,4 +137,5 @@ void ADolbyIoConference::OnNewListOfInputDevices_Implementation() {}
 void ADolbyIoConference::OnNewListOfOutputDevices_Implementation() {}
 void ADolbyIoConference::OnInputDeviceChanged_Implementation() {}
 void ADolbyIoConference::OnOutputDeviceChanged_Implementation() {}
+void ADolbyIoConference::OnNewListOfActiveSpeakers_Implementation() {}
 void ADolbyIoConference::OnRefreshTokenNeeded_Implementation() {}

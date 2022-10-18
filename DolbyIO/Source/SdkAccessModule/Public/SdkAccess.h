@@ -51,8 +51,6 @@ namespace Dolby
 	private:
 		void LoadDll(const FString&);
 
-		void ConnectToDemoConference(const FUserName&);
-
 		TArray<void*> DllHandles;
 		FSdkStatus Status;
 		TUniquePtr<dolbyio::comms::sdk> Sdk;
@@ -60,6 +58,7 @@ namespace Dolby
 		TUniquePtr<class FEvents> Events;
 		TUniquePtr<class FDeviceManagement> Devices;
 		FString LocalParticipantID;
-		TArray<FString> DemoParticipantIDs;
+		TArray<FString> ParticipantIDs;
+		bool bIsDemo;
 	};
 }

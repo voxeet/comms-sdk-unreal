@@ -14,6 +14,7 @@ namespace Dolby
 		using FMessage = FString;
 		using FDeviceName = FText;
 		using FDeviceNames = TArray<FDeviceName>;
+		using FParticipants = TArray<FString>;
 
 		void SetObserver(ISdkStatusObserver*);
 
@@ -37,6 +38,8 @@ namespace Dolby
 
 		void OnInputDeviceChanged(const FDeviceName&);
 		void OnOutputDeviceChanged(const FDeviceName&);
+
+		void OnNewListOfActiveSpeakers(const FParticipants&);
 
 		void OnRefreshTokenRequested();
 

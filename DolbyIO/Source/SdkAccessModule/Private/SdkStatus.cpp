@@ -92,6 +92,14 @@ namespace Dolby
 		}
 	}
 
+	void FSdkStatus::OnNewListOfActiveSpeakers(const FParticipants& Participants)
+	{
+		if (Observer)
+		{
+			Observer->OnNewListOfActiveSpeakers(Participants);
+		}
+	}
+
 	void FSdkStatus::OnRefreshTokenRequested()
 	{
 		DLB_UE_LOG("Refresh token requested");

@@ -83,6 +83,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
 	FText CurrentOutputDevice;
 
+	/** List of participant IDs currently speaking in the conference. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
+	TArray<FString> ActiveSpeakers;
+
 	// functions for controlling the SDK, callable from Blueprints
 
 	/** Connects to Dolby.io conference using the conference name and user name set using properties. */
@@ -142,6 +146,10 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Dolby")
 	void OnOutputDeviceChanged();
 
+	/** Event signaled when there is a new list of active speakers available. */
+	UFUNCTION(BlueprintNativeEvent, Category = "Dolby")
+	void OnNewListOfActiveSpeakers();
+
 	/** Event signaled when the Dolby.io C++ SDK requests a refreshed token. */
 	UFUNCTION(BlueprintNativeEvent, Category = "Dolby")
 	void OnRefreshTokenNeeded();
@@ -173,6 +181,8 @@ private:
 	void OnNewListOfOutputDevices(const FDeviceNames&) override;
 	void OnInputDeviceChanged(const FDeviceName&) override;
 	void OnOutputDeviceChanged(const FDeviceName&) override;
+
+	void OnNewListOfActiveSpeakers(const FParticipants&) override;
 
 	void OnRefreshTokenRequested() override;
 
