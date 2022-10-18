@@ -92,6 +92,20 @@ namespace Dolby
 		}
 	}
 
+	void FSdkStatus::OnLocalParticipantChanged(const FParticipant& Participant)
+	{
+		if (Observer)
+		{
+			Observer->OnLocalParticipantChanged(Participant);
+		}
+	}
+	void FSdkStatus::OnNewListOfRemoteParticipants(const FParticipants& Participants)
+	{
+		if (Observer)
+		{
+			Observer->OnNewListOfRemoteParticipants(Participants);
+		}
+	}
 	void FSdkStatus::OnNewListOfActiveSpeakers(const FParticipants& Participants)
 	{
 		if (Observer)

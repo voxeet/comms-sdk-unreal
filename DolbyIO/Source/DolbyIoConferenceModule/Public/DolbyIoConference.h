@@ -83,9 +83,17 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
 	FText CurrentOutputDevice;
 
-	/** List of participant IDs currently speaking in the conference. */
+	/** The participant ID of the local user. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
-	TArray<FString> ActiveSpeakers;
+	FString LocalParticipant;
+
+	/** List of all remote participant IDs. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
+	TSet<FString> RemoteParticipants;
+
+	/** List of remote participants who are currently speaking. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
+	TSet<FString> ActiveSpeakers;
 
 	// functions for controlling the SDK, callable from Blueprints
 
@@ -146,6 +154,14 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Dolby")
 	void OnOutputDeviceChanged();
 
+	/** Event signaled when the local participant ID is changed. */
+	UFUNCTION(BlueprintNativeEvent, Category = "Dolby")
+	void OnLocalParticipantChanged();
+
+	/** Event signaled when there is a new list of remote participants available. */
+	UFUNCTION(BlueprintNativeEvent, Category = "Dolby")
+	void OnNewListOfRemoteParticipants();
+
 	/** Event signaled when there is a new list of active speakers available. */
 	UFUNCTION(BlueprintNativeEvent, Category = "Dolby")
 	void OnNewListOfActiveSpeakers();
@@ -182,6 +198,8 @@ private:
 	void OnInputDeviceChanged(const FDeviceName&) override;
 	void OnOutputDeviceChanged(const FDeviceName&) override;
 
+	void OnLocalParticipantChanged(const FParticipant&) override;
+	void OnNewListOfRemoteParticipants(const FParticipants&) override;
 	void OnNewListOfActiveSpeakers(const FParticipants&) override;
 
 	void OnRefreshTokenRequested() override;

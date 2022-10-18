@@ -52,6 +52,20 @@ void ADolbyIoSampleConference::OnNewListOfOutputDevices_Implementation()
 	}
 }
 
+void ADolbyIoSampleConference::OnLocalParticipantChanged_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Local participant ID: %s"), *LocalParticipant);
+}
+
+void ADolbyIoSampleConference::OnNewListOfRemoteParticipants_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("New list of remote participants:"));
+	for (const FParticipant& Participant : RemoteParticipants)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("\t%s"), *Participant);
+	}
+}
+
 void ADolbyIoSampleConference::OnNewListOfActiveSpeakers_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("New list of active speakers:"));

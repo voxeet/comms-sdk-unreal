@@ -58,7 +58,7 @@ namespace Dolby
 		TUniquePtr<class FEvents> Events;
 		TUniquePtr<class FDeviceManagement> Devices;
 		FString LocalParticipantID;
-		TArray<FString> ParticipantIDs;
+		TSet<FString> ParticipantIDs;
 		bool bIsDemo;
 	};
 }

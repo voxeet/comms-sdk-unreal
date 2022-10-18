@@ -113,9 +113,21 @@ void ADolbyIoConference::OnOutputDeviceChanged(const FDeviceName& Name)
 	ON_GAME_THREAD(OnOutputDeviceChanged);
 }
 
-void ADolbyIoConference::OnNewListOfActiveSpeakers(const FParticipants& Participants)
+void ADolbyIoConference::OnLocalParticipantChanged(const FParticipant& Participant)
 {
-	ActiveSpeakers = Participants;
+	LocalParticipant = Participant;
+	ON_GAME_THREAD(OnLocalParticipantChanged);
+}
+
+void ADolbyIoConference::OnNewListOfRemoteParticipants(const FParticipants& Participants)
+{
+	RemoteParticipants = Participants;
+	ON_GAME_THREAD(OnNewListOfRemoteParticipants);
+}
+
+void ADolbyIoConference::OnNewListOfActiveSpeakers(const FParticipants& Speakers)
+{
+	ActiveSpeakers = Speakers;
 	ON_GAME_THREAD(OnNewListOfActiveSpeakers);
 }
 
@@ -137,5 +149,7 @@ void ADolbyIoConference::OnNewListOfInputDevices_Implementation() {}
 void ADolbyIoConference::OnNewListOfOutputDevices_Implementation() {}
 void ADolbyIoConference::OnInputDeviceChanged_Implementation() {}
 void ADolbyIoConference::OnOutputDeviceChanged_Implementation() {}
+void ADolbyIoConference::OnLocalParticipantChanged_Implementation() {}
+void ADolbyIoConference::OnNewListOfRemoteParticipants_Implementation() {}
 void ADolbyIoConference::OnNewListOfActiveSpeakers_Implementation() {}
 void ADolbyIoConference::OnRefreshTokenNeeded_Implementation() {}

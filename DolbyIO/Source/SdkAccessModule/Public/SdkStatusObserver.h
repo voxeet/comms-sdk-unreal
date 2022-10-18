@@ -13,7 +13,7 @@ namespace Dolby
 		using FDeviceName = FText;
 		using FDeviceNames = TArray<FDeviceName>;
 		using FParticipant = FString;
-		using FParticipants = TArray<FParticipant>;
+		using FParticipants = TSet<FParticipant>;
 
 		virtual ~ISdkStatusObserver() = default;
 
@@ -24,6 +24,8 @@ namespace Dolby
 		virtual void OnInputDeviceChanged(const FDeviceName&) = 0;
 		virtual void OnOutputDeviceChanged(const FDeviceName&) = 0;
 
+		virtual void OnLocalParticipantChanged(const FParticipant&) = 0;
+		virtual void OnNewListOfRemoteParticipants(const FParticipants&) = 0;
 		virtual void OnNewListOfActiveSpeakers(const FParticipants&) = 0;
 
 		virtual void OnRefreshTokenRequested() = 0;

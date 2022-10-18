@@ -133,6 +133,7 @@ namespace Dolby
 			        if (User.participant_id)
 			        {
 				        LocalParticipantID = User.participant_id->c_str();
+				        Status.OnLocalParticipantChanged(LocalParticipantID);
 			        }
 
 			        if (bIsDemo)
@@ -165,8 +166,29 @@ namespace Dolby
 			        Status.OnConnected();
 
 			        Sdk->conference()
-			            .add_event_handler([this](const participant_added& Event)
-			                               { ParticipantIDs.Add(Event.participant.user_id.c_str()); })
+			            .add_event_handler(
+			                [this](const participant_added& Event)
+			                {
+				                ParticipantIDs.Add(Event.participant.user_id.c_str());
+				                Status.OnNewListOfRemoteParticipants(ParticipantIDs);
+			                })
+			            .then([this](auto&& Event) { Events->AddEvent(MoveTemp(Event)); })
+			            .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+
+			        Sdk->conference()
+			            .add_event_handler(
+			                [this](const participant_updated& Event)
+			                {
+				                const auto& ParticipantStatus = Event.participant.status;
+				                if (ParticipantStatus)
+				                {
+					                if (*ParticipantStatus == participant_status::left)
+					                {
+						                ParticipantIDs.Remove(Event.participant.user_id.c_str());
+						                Status.OnNewListOfRemoteParticipants(ParticipantIDs);
+					                }
+				                }
+			                })
 			            .then([this](auto&& Event) { Events->AddEvent(MoveTemp(Event)); })
 			            .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
 
