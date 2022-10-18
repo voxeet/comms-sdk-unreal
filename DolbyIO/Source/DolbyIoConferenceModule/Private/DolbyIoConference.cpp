@@ -63,6 +63,10 @@ void ADolbyIoConference::SetOutputDevice(const int Index)
 {
 	CppSdk->SetOutputDevice(Index);
 }
+void ADolbyIoConference::GetAudioLevels()
+{
+	CppSdk->GetAudioLevels();
+}
 void ADolbyIoConference::RefreshToken()
 {
 	CppSdk->RefreshToken(Token);
@@ -83,52 +87,58 @@ void ADolbyIoConference::Tick(float DeltaTime)
 
 #define ON_GAME_THREAD(Func) AsyncTask(ENamedThreads::GameThread, [this] { Func(); });
 
-void ADolbyIoConference::OnStatusChanged(const FMessage& Msg)
+void ADolbyIoConference::OnStatusChanged(const Dolby::FMessage& Msg)
 {
 	Status = Msg;
 	ON_GAME_THREAD(OnStatusChanged);
 }
 
-void ADolbyIoConference::OnNewListOfInputDevices(const FDeviceNames& Names)
+void ADolbyIoConference::OnNewListOfInputDevices(const Dolby::FDeviceNames& Names)
 {
 	InputDevices = Names;
 	ON_GAME_THREAD(OnNewListOfInputDevices);
 }
 
-void ADolbyIoConference::OnNewListOfOutputDevices(const FDeviceNames& Names)
+void ADolbyIoConference::OnNewListOfOutputDevices(const Dolby::FDeviceNames& Names)
 {
 	OutputDevices = Names;
 	ON_GAME_THREAD(OnNewListOfOutputDevices);
 }
 
-void ADolbyIoConference::OnInputDeviceChanged(const FDeviceName& Name)
+void ADolbyIoConference::OnInputDeviceChanged(const Dolby::FDeviceName& Name)
 {
 	CurrentInputDevice = Name;
 	ON_GAME_THREAD(OnInputDeviceChanged);
 }
 
-void ADolbyIoConference::OnOutputDeviceChanged(const FDeviceName& Name)
+void ADolbyIoConference::OnOutputDeviceChanged(const Dolby::FDeviceName& Name)
 {
 	CurrentOutputDevice = Name;
 	ON_GAME_THREAD(OnOutputDeviceChanged);
 }
 
-void ADolbyIoConference::OnLocalParticipantChanged(const FParticipant& Participant)
+void ADolbyIoConference::OnLocalParticipantChanged(const Dolby::FParticipant& Participant)
 {
 	LocalParticipant = Participant;
 	ON_GAME_THREAD(OnLocalParticipantChanged);
 }
 
-void ADolbyIoConference::OnNewListOfRemoteParticipants(const FParticipants& Participants)
+void ADolbyIoConference::OnNewListOfRemoteParticipants(const Dolby::FParticipants& Participants)
 {
 	RemoteParticipants = Participants;
 	ON_GAME_THREAD(OnNewListOfRemoteParticipants);
 }
 
-void ADolbyIoConference::OnNewListOfActiveSpeakers(const FParticipants& Speakers)
+void ADolbyIoConference::OnNewListOfActiveSpeakers(const Dolby::FParticipants& Speakers)
 {
 	ActiveSpeakers = Speakers;
 	ON_GAME_THREAD(OnNewListOfActiveSpeakers);
+}
+
+void ADolbyIoConference::OnNewAudioLevels(const Dolby::FAudioLevels& Levels)
+{
+	AudioLevels = Levels;
+	ON_GAME_THREAD(OnNewAudioLevels);
 }
 
 void ADolbyIoConference::OnRefreshTokenRequested()
@@ -152,4 +162,5 @@ void ADolbyIoConference::OnOutputDeviceChanged_Implementation() {}
 void ADolbyIoConference::OnLocalParticipantChanged_Implementation() {}
 void ADolbyIoConference::OnNewListOfRemoteParticipants_Implementation() {}
 void ADolbyIoConference::OnNewListOfActiveSpeakers_Implementation() {}
+void ADolbyIoConference::OnNewAudioLevels_Implementation() {}
 void ADolbyIoConference::OnRefreshTokenNeeded_Implementation() {}

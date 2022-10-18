@@ -113,6 +113,13 @@ namespace Dolby
 			Observer->OnNewListOfActiveSpeakers(Participants);
 		}
 	}
+	void FSdkStatus::OnNewAudioLevels(const FAudioLevels& Levels)
+	{
+		if (Observer)
+		{
+			Observer->OnNewAudioLevels(Levels);
+		}
+	}
 
 	void FSdkStatus::OnRefreshTokenRequested()
 	{
@@ -146,7 +153,7 @@ namespace Dolby
 		Msg.Reset();
 	}
 
-	FSdkStatus::FMessage FSdkStatus::ToString() const
+	FMessage FSdkStatus::ToString() const
 	{
 		FMessage Ret;
 		switch (ConnectionStatus)

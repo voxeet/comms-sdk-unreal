@@ -2,21 +2,13 @@
 
 #pragma once
 
-#include "Internationalization/Text.h"
+#include "SdkStatusObserver.h"
 
 namespace Dolby
 {
-	class ISdkStatusObserver;
-
 	class FSdkStatus final
 	{
 	public:
-		using FMessage = FString;
-		using FDeviceName = FText;
-		using FDeviceNames = TArray<FDeviceName>;
-		using FParticipant = FString;
-		using FParticipants = TSet<FParticipant>;
-
 		void SetObserver(ISdkStatusObserver*);
 
 		bool IsDisconnected() const;
@@ -43,6 +35,7 @@ namespace Dolby
 		void OnLocalParticipantChanged(const FParticipant&);
 		void OnNewListOfRemoteParticipants(const FParticipants&);
 		void OnNewListOfActiveSpeakers(const FParticipants&);
+		void OnNewAudioLevels(const FAudioLevels&);
 
 		void OnRefreshTokenRequested();
 

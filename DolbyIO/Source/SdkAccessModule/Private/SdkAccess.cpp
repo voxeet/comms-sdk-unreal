@@ -196,7 +196,7 @@ namespace Dolby
 			            .add_event_handler(
 			                [this](const active_speaker_change& Event)
 			                {
-				                FSdkStatus::FParticipants ActiveSpeakers;
+				                FParticipants ActiveSpeakers;
 				                for (const auto& Speaker : Event.active_speakers)
 				                {
 					                ActiveSpeakers.Add(Speaker.c_str());
@@ -289,6 +289,26 @@ namespace Dolby
 		                            {ScaledPosition.Y, ScaledPosition.Z, ScaledPosition.X});
 		Update.set_spatial_direction({Rotation.Pitch, Rotation.Yaw, Rotation.Roll});
 		Sdk->conference().update_spatial_audio_configuration(MoveTemp(Update)).on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+	}
+	DLB_CATCH_ALL
+
+	void FSdkAccess::GetAudioLevels()
+	try
+	{
+		DLB_MUST_BE_CONNECTED
+		Sdk->conference()
+		    .get_all_audio_levels()
+		    .then(
+		        [this](auto&& Levels)
+		        {
+			        FAudioLevels AudioLevels;
+			        for (const audio_level& Level : Levels)
+			        {
+				        AudioLevels.Emplace(Level.participant_id.c_str(), Level.level);
+			        }
+			        Status.OnNewAudioLevels(AudioLevels);
+		        })
+		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
 	}
 	DLB_CATCH_ALL
 

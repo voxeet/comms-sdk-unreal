@@ -95,6 +95,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
 	TSet<FString> ActiveSpeakers;
 
+	/** Map containing audio levels for participants who are speaking (key = participant ID, value = floating point
+	 * number representing the audio level). */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
+	TMap<FString, float> AudioLevels;
+
 	// functions for controlling the SDK, callable from Blueprints
 
 	/** Connects to Dolby.io conference using the conference name and user name set using properties. */
@@ -124,6 +129,11 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void SetOutputDevice(const int Index);
+
+	/** Requests the Dolby.io C++ SDK to get audio levels for all speaking participants. These will be available in the
+	 * AudioLevels property once the OnNewAudioLevels event triggers. */
+	UFUNCTION(BlueprintCallable, Category = "Dolby")
+	void GetAudioLevels();
 
 	/** Refreshes the client access token set using the Token property. If the Dolby.io C++ SDK is not initialized,
 	 * initializes using the Token instead. */
@@ -166,6 +176,10 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Dolby")
 	void OnNewListOfActiveSpeakers();
 
+	/** Event signaled when there is a new map of audio levels available. */
+	UFUNCTION(BlueprintNativeEvent, Category = "Dolby")
+	void OnNewAudioLevels();
+
 	/** Event signaled when the Dolby.io C++ SDK requests a refreshed token. */
 	UFUNCTION(BlueprintNativeEvent, Category = "Dolby")
 	void OnRefreshTokenNeeded();
@@ -191,16 +205,17 @@ protected:
 
 private:
 	// Dolby::ISdkStatusObserver
-	void OnStatusChanged(const FMessage&) override;
+	void OnStatusChanged(const Dolby::FMessage&) override;
 
-	void OnNewListOfInputDevices(const FDeviceNames&) override;
-	void OnNewListOfOutputDevices(const FDeviceNames&) override;
-	void OnInputDeviceChanged(const FDeviceName&) override;
-	void OnOutputDeviceChanged(const FDeviceName&) override;
+	void OnNewListOfInputDevices(const Dolby::FDeviceNames&) override;
+	void OnNewListOfOutputDevices(const Dolby::FDeviceNames&) override;
+	void OnInputDeviceChanged(const Dolby::FDeviceName&) override;
+	void OnOutputDeviceChanged(const Dolby::FDeviceName&) override;
 
-	void OnLocalParticipantChanged(const FParticipant&) override;
-	void OnNewListOfRemoteParticipants(const FParticipants&) override;
-	void OnNewListOfActiveSpeakers(const FParticipants&) override;
+	void OnLocalParticipantChanged(const Dolby::FParticipant&) override;
+	void OnNewListOfRemoteParticipants(const Dolby::FParticipants&) override;
+	void OnNewListOfActiveSpeakers(const Dolby::FParticipants&) override;
+	void OnNewAudioLevels(const Dolby::FAudioLevels&) override;
 
 	void OnRefreshTokenRequested() override;
 

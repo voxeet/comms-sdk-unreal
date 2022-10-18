@@ -31,13 +31,14 @@ void ADolbyIoSampleConference::BeginPlay()
 	InputComponent->BindKey(EKeys::M, IE_Pressed, this, &ADolbyIoSampleConference::NextOutputDevice);
 	InputComponent->BindKey(EKeys::I, IE_Pressed, this, &ADolbyIoSampleConference::MuteInput);
 	InputComponent->BindKey(EKeys::O, IE_Pressed, this, &ADolbyIoSampleConference::MuteOutput);
+	InputComponent->BindKey(EKeys::L, IE_Pressed, this, &ADolbyIoConference::GetAudioLevels);
 	EnableInput(FirstPlayerController);
 }
 
 void ADolbyIoSampleConference::OnNewListOfInputDevices_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("New list of input devices:"));
-	for (const FDeviceName& Device : InputDevices)
+	for (const auto& Device : InputDevices)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("\t%s"), *Device.ToString());
 	}
@@ -46,7 +47,7 @@ void ADolbyIoSampleConference::OnNewListOfInputDevices_Implementation()
 void ADolbyIoSampleConference::OnNewListOfOutputDevices_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("New list of output devices:"));
-	for (const FDeviceName& Device : OutputDevices)
+	for (const auto& Device : OutputDevices)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("\t%s"), *Device.ToString());
 	}
@@ -60,7 +61,7 @@ void ADolbyIoSampleConference::OnLocalParticipantChanged_Implementation()
 void ADolbyIoSampleConference::OnNewListOfRemoteParticipants_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("New list of remote participants:"));
-	for (const FParticipant& Participant : RemoteParticipants)
+	for (const auto& Participant : RemoteParticipants)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("\t%s"), *Participant);
 	}
@@ -69,9 +70,18 @@ void ADolbyIoSampleConference::OnNewListOfRemoteParticipants_Implementation()
 void ADolbyIoSampleConference::OnNewListOfActiveSpeakers_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("New list of active speakers:"));
-	for (const FParticipant& Speaker : ActiveSpeakers)
+	for (const auto& Speaker : ActiveSpeakers)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("\t%s"), *Speaker);
+	}
+}
+
+void ADolbyIoSampleConference::OnNewAudioLevels_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("New audio levels:"));
+	for (const auto& Level : AudioLevels)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("\t%s = %f"), *Level.Key, Level.Value);
 	}
 }
 

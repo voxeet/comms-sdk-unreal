@@ -44,6 +44,8 @@ namespace Dolby
 
 		void UpdateViewPoint(const FVector&, const FRotator&);
 
+		void GetAudioLevels();
+
 		void RefreshToken(const FToken&);
 
 		dolbyio::comms::sdk* GetRawSdk();
