@@ -6,16 +6,11 @@
 #include "DeviceManagement.h"
 #include "Events.h"
 
+#include "HAL/PlatformProcess.h"
 #include "Interfaces/IPluginManager.h"
 #include "Math/Rotator.h"
 #include "Misc/Paths.h"
 #include "Modules/ModuleManager.h"
-
-#if PLATFORM_WINDOWS
-#include "Windows/WindowsPlatformProcess.h"
-#elif PLATFORM_MAC
-#include "Mac/MacPlatformProcess.h"
-#endif
 
 IMPLEMENT_MODULE(Dolby::FSdkAccess, SdkAccessModule)
 
