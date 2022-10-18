@@ -195,12 +195,12 @@ public:
 	 */
 	dolbyio::comms::sdk* GetRawSdk();
 
-protected:
 	// AActor
 	void BeginPlay() override;
 	void Tick(float DeltaTime) override;
 	void EndPlay(const EEndPlayReason::Type) override;
 
+protected:
 	class APlayerController* FirstPlayerController;
 
 private:

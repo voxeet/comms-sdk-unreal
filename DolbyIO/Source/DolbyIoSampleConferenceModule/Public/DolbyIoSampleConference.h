@@ -13,6 +13,8 @@ class DOLBYIOSAMPLECONFERENCEMODULE_API ADolbyIoSampleConference : public ADolby
 	GENERATED_BODY()
 
 public:
+	void BeginPlay() override;
+
 	void OnNewListOfInputDevices_Implementation() override;
 	void OnNewListOfOutputDevices_Implementation() override;
 	void OnLocalParticipantChanged_Implementation() override;
@@ -21,6 +23,7 @@ public:
 	void OnNewAudioLevels_Implementation() override;
 	void OnRefreshTokenNeeded_Implementation() override;
 
+private:
 	void Disconnect();
 	void MuteInput();
 	void MuteOutput();
@@ -28,9 +31,6 @@ public:
 	void NextInputDevice();
 	void PreviousOutputDevice();
 	void NextOutputDevice();
-
-private:
-	void BeginPlay() override;
 
 	int GetCurrentInputDeviceIndex() const;
 	int GetCurrentOutputDeviceIndex() const;
