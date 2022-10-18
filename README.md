@@ -27,12 +27,19 @@ Plugin integrating [Dolby.io Communications C++ SDK](https://github.com/DolbyIO/
 6. See DolbyIoSampleConference.cpp for available key bindings.
 
 ## <a name="how"></a>How it works
-- DolbyIoSampleConferenceBP provides a sample Blueprint implementation to interface with the Dolby.io Communications C++ SDK using the API specified in the ADolbyIoConference class.
-- DolbyIoSampleConference.cpp is similar except it is a C++ example.
-- DolbyIoSampleConnectMenu provides a sample implementation of a graphics user interface using DolbyIoSampleConferenceBP.
-- DolbyIoSampleDebugInfo provides a sample implementation of displaying some additional debug information.
+The plugin wraps the [Dolby.io Communications C++ SDK](https://github.com/DolbyIO/comms-sdk-cpp) and provides a subset of the SDK's functionality through its API, which is visible in Unreal Engine. As a user, the information in the ADolbyIoConference header, along with the samples mentioned below, should provide you with everything you need to get started.
 
-These samples serve as example uses of the plugin but are not meant to be used as-is. Users should implement their own Blueprints, possibly basing them on the samples provided, or implement C++ code using ADolbyIoConference. The documentation in the  ADolbyIoConference header should provide you with everything you need to get started.
+- DolbyIoSampleConferenceBP provides a sample Blueprint implementation to interface with the SDK using the API specified in ADolbyIoConference.
+- DolbyIoSampleConference.cpp is similar except it is a C++ example.
+- DolbyIoSampleConnectMenu provides a sample Blueprint implementation of a GUI using DolbyIoSampleConferenceBP.
+
+These samples serve as example uses of the plugin but are not meant to be used as-is. Users should implement their own Blueprints, possibly basing them on the samples provided, or implement C++ code using ADolbyIoConference.
+
+It is also not difficult to extend plugin functionality by just knowing that:
+- ADolbyIoConference is the interface between the Unreal Engine and the SDK
+- FSdkAccess is the class where most of the calls to the SDK are made
+
+Therefore, the typical work flow to provide new features is to extend ADolbyIoConference's API and implement the functionality in FSdkAccess.
 
 ## Building from source
 1. Download [Dolby.io Communications C++ SDK release 2.1.0](https://github.com/DolbyIO/comms-sdk-cpp/releases/tag/2.1.0).
