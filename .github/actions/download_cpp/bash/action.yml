@@ -1,0 +1,22 @@
+name: 'CppSDKReleaseAssetDownloader'
+description: 'Download specific C++ SDK release asset.'
+inputs:
+  url:
+    description: 'C++ SDK release URL.'
+    required: true
+  tag:
+    description: 'Release tag of C++ SDK release.'
+    required: true
+  asset_name:
+    description: 'Define name of asset'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Download C++ MacOS
+      run: |
+        export INPUT_URL=${{ inputs.url }}
+        export INPUT_TAG=${{ inputs.tag }}
+        export INPUT_ASSET_NAME=${{ inputs.asset_name }}
+        ./.github/actions/download_cpp/bash/download_cpp.sh
+      shell: bash
