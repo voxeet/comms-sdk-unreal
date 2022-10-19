@@ -4,6 +4,10 @@ Plugin integrating [Dolby.io Communications C++ SDK](https://github.com/DolbyIO/
 - Tested on Windows 10 and macOS 12.
 - If on macOS, it is recommended to follow the [advice](#macos) below.
 
+## Prerequisites
+- [Dolby.io](https://dolby.io) account - if you do not have an account, you can [sign up](https://dolby.io/signup) for free.
+- [Client access token](https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) copied from the [Dolby.io dashboard](https://dashboard.dolby.io/). To create the token, log into the dashboard, create an application, and navigate to the API keys section.
+
 ## <a name="usage"></a> How to use the sample Blueprints
 1. Download the latest plugin [release](https://github.com/DolbyIO/comms-sdk-unreal/releases).  
 *The location above does not yet work as there is no CI for this project yet. Use the build from [Box](https://dolby.box.com/s/dp6seu7ezine09my1tgmlc21k4w7pmmc)*.
@@ -14,15 +18,15 @@ Plugin integrating [Dolby.io Communications C++ SDK](https://github.com/DolbyIO/
 5. Place the DolbyIoSampleConferenceBP object in the scene.
 6. Launch the game.
 7. Press C to open the connection menu.
-8. Paste your [Dolby.io](https://dolby.io) client access token in the appropriate field.
+8. Paste your Dolby.io client access token in the appropriate field.
 9. Connect.
 10. See [section below](#how) for how the plugin works and how you can use it in practice.
 
-## <a name="usage"></a> How to use the sample C++ class
+## How to use the sample C++ class
 1. Follow steps 1-4 from [section above](#usage).
 2. Place the DolbyIoSampleConference object in the scene.
 3. Make sure the object is selected in the World Outliner.
-4. Paste your [Dolby.io](https://dolby.io) client access token in the appropriate field in the Details window.
+4. Paste your Dolby.io client access token in the appropriate field in the Details window.
 5. Launch the game.
 6. See DolbyIoSampleConference.cpp for available key bindings.
 
