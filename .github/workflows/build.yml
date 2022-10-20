@@ -8,6 +8,7 @@ env:
   CPP_SDK_DESTINATION: "DolbyIO/Source/ThirdParty"
   CPP_SDK_URL: "https://github.com/DolbyIO/comms-sdk-cpp/releases/download"
   UNREAL_PLUGIN_OUTPUT: "Build/DolbyIO"
+  RETENTION: 8
 
 jobs:
   build-macos:
@@ -41,11 +42,13 @@ jobs:
         with:
           zip_name: "DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip"
           src_dir_path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
-      - name: Publish DolbyIO Plugin to GitHub packages
-        run: |
-          ls -la
-          echo "Step runs only for tag, master, develop."
-          echo "Publish DolbyIO_UnrealPlugin_${{ matrix.version }}.zip to JFrog generic capi repository using access token."
+      - name: Archive DolbyIO Plugin
+        if: contains(fromJson('["refs/heads/main", "refs/heads/develop", "refs/tags"]'), github.ref)
+        uses: actions/upload-artifact@v3
+        with:
+          name: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
+          path: ./DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
+          retention-days: ${{ env.RETENTION }}
       - name: Create GitHub release
         run: |
           echo "Create GitHub release only for tag."
@@ -77,11 +80,13 @@ jobs:
         with:
           zip_name: "DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip"
           src_dir_path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
-      - name: Publish DolbyIO Plugin to GitHub pages
-        run: |
-          ls
-          Write-Output "Step runs only for tag, master, develop."
-          Write-Output "Publish DolbyIO_UnrealPlugin_${{ matrix.version }}.zip to JFrog generic capi repository using access token."
+      - name: Archive DolbyIO Plugin
+        if: contains(fromJson('["refs/heads/main", "refs/heads/develop", "refs/tags"]'), github.ref)
+        uses: actions/upload-artifact@v3
+        with:
+          name: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
+          path: ./DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
+          retention-days: ${{ env.RETENTION }}
       - name: Create GitHub release
         run: |
           Write-Output "Create GitHub release only for tag."
