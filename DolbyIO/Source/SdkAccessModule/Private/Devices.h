@@ -29,7 +29,7 @@ namespace Dolby
 			Output
 		};
 		using FDvcDevices = TArray<FDvcDevice>;
-		using FDeviceNames = TArray<FDeviceName>;
+		//using FDeviceNames = TArray<FDeviceName>;
 
 		FDevices(EDirection, FDvcDeviceManagement&, ISdkEventsObserver&, FExceptionHandler&);
 

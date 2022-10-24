@@ -1,11 +1,12 @@
+#if 0
 #include "Devices.h"
 #include "Common.h"
 #include "SdkEventsObserver.h"
 
 
 
-DECLARE_LOG_CATEGORY_EXTERN(LogDolby, Log, All);
-#define DLB_UE_LOG_DEVICE(Type, Event) UE_LOG(LogDolby, Log, TEXT(Type " device " Event ": %s"), *Name.ToString())
+//DECLARE_LOG_CATEGORY_EXTERN(LogDolby, Log, All);
+//#define DLB_UE_LOG_DEVICE(Type, Event) UE_LOG(LogDolby, Log, TEXT(Type " device " Event ": %s"), *Name.ToString())
 
 namespace Dolby
 {
@@ -53,12 +54,12 @@ namespace Dolby
 
 		if (IsInput())
 		{
-			DLB_UE_LOG_DEVICE("Input", "added");
+			DLB_UE_LOG_DEVICE("Input", "added", Name);
 			Observer.OnNewListOfInputDevices(DeviceNames);
 		}
 		else
 		{
-			DLB_UE_LOG_DEVICE("Output", "added");
+			DLB_UE_LOG_DEVICE("Output", "added", Name);
 			Observer.OnNewListOfOutputDevices(DeviceNames);
 		}
 	}
@@ -76,12 +77,12 @@ namespace Dolby
 
 				if (IsInput())
 				{
-					DLB_UE_LOG_DEVICE("Input", "removed");
+					DLB_UE_LOG_DEVICE("Input", "removed", Name);
 					Observer.OnNewListOfInputDevices(DeviceNames);
 				}
 				else
 				{
-					DLB_UE_LOG_DEVICE("Output", "removed");
+					DLB_UE_LOG_DEVICE("Output", "removed", Name);
 					Observer.OnNewListOfOutputDevices(DeviceNames);
 				}
 
@@ -115,12 +116,12 @@ namespace Dolby
 	{
 		if (IsInput())
 		{
-			DLB_UE_LOG_DEVICE("Input", "changed");
+			DLB_UE_LOG_DEVICE("Input", "changed", Name);
 			Observer.OnInputDeviceChanged(Name);
 		}
 		else
 		{
-			DLB_UE_LOG_DEVICE("Output", "changed");
+			DLB_UE_LOG_DEVICE("Output", "changed", Name);
 			Observer.OnOutputDeviceChanged(Name);
 		}
 	}
@@ -138,3 +139,4 @@ namespace Dolby
 		    .on_error(ExceptionHandler);
 	}
 }
+#endif

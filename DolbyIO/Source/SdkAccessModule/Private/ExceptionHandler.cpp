@@ -12,10 +12,11 @@ namespace Dolby
 		NotifyIfThrows([ExcPtr]() { std::rethrow_exception(ExcPtr); });
 	}
 
-	void FExceptionHandler::NotifyIfThrows(std::function<void()> function)
+	template<typename Callee>
+	void FExceptionHandler::NotifyIfThrows(Callee Callee)
 	try
 	{
-		function();
+		Callee();
 	}
 	catch (const dolbyio::comms::conference_state_exception& Ex)
 	{
@@ -33,5 +34,10 @@ namespace Dolby
 	catch (...)
 	{
 		Status.SetMsg("Caught unknown exception");
+	}
+
+	void FExceptionHandler::RethrowAndUpdateStatus()
+	{
+		NotifyIfThrows([]() { throw; });
 	}
 }

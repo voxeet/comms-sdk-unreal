@@ -30,9 +30,13 @@ namespace Dolby
 		void SetInputDevice(const int Index);
 		void SetOutputDevice(const int Index);
 
+		FDeviceNames GetInputDeviceNames() const;
+		FDeviceNames GetOutputDeviceNames() const;
+
 		void UpdateViewPoint(const FVector&, const FRotator&);
 
 		void RefreshToken(const FToken&);
+		FText GetStatus() const;
 
 		dolbyio::comms::sdk* GetRawSdk();
 

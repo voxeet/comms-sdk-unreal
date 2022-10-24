@@ -9,7 +9,8 @@ namespace Dolby
 		FExceptionHandler(FSdkStatus& Status);
 
 		void operator()(std::exception_ptr&& ExcPtr);
-		void NotifyIfThrows(std::function<void()> function);
+		template <typename Callee> void NotifyIfThrows(Callee function);
+		void RethrowAndUpdateStatus();
 
 	private:
 		FSdkStatus& Status;

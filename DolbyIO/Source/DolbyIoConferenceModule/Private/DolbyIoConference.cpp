@@ -55,41 +55,42 @@ void ADolbyIoConference::Tick(float DeltaTime)
 	CppSdk->UpdateViewPoint(Position, Rotation);
 }
 
-#define ON_GAME_THREAD(Func) AsyncTask(ENamedThreads::GameThread, [this] { Func(); });
+inline void ADolbyIoConference::RunOnGameThread(void (ADolbyIoConference::*Function)())
+{
+	AsyncTask(ENamedThreads::GameThread, [this, Function] { (this->*Function)(); });
+}
 
 void ADolbyIoConference::OnStatusChanged(const Dolby::FMessage& Msg)
 {
 	Status = Msg;
-	ON_GAME_THREAD(OnStatusChanged);
+	RunOnGameThread(&ADolbyIoConference::OnStatusChanged);
 }
 
-void ADolbyIoConference::OnNewListOfInputDevices(const Dolby::FDeviceNames& Names)
+void ADolbyIoConference::OnListOfInputDevicesChanged()
 {
-	InputDevices = Names;
-	ON_GAME_THREAD(OnNewListOfInputDevices);
+	RunOnGameThread(&ADolbyIoConference::OnNewListOfInputDevices);
 }
 
-void ADolbyIoConference::OnNewListOfOutputDevices(const Dolby::FDeviceNames& Names)
+void ADolbyIoConference::OnListOfOutputDevicesChanged()
 {
-	OutputDevices = Names;
-	ON_GAME_THREAD(OnNewListOfOutputDevices);
+	RunOnGameThread(&ADolbyIoConference::OnNewListOfOutputDevices);
 }
 
-void ADolbyIoConference::OnInputDeviceChanged(const Dolby::FDeviceName& Name)
+void ADolbyIoConference::OnInputDeviceChanged(int Index)
 {
-	CurrentInputDevice = Name;
-	ON_GAME_THREAD(OnInputDeviceChanged);
+	CurrentInputDeviceIndex = Index;
+	RunOnGameThread(&ADolbyIoConference::OnInputDeviceChanged);
 }
 
-void ADolbyIoConference::OnOutputDeviceChanged(const Dolby::FDeviceName& Name)
+void ADolbyIoConference::OnOutputDeviceChanged(int Index)
 {
-	CurrentOutputDevice = Name;
-	ON_GAME_THREAD(OnOutputDeviceChanged);
+	CurrentOutputDeviceIndex = Index;
+	RunOnGameThread(&ADolbyIoConference::OnOutputDeviceChanged);
 }
 
 void ADolbyIoConference::OnRefreshTokenRequested()
 {
-	ON_GAME_THREAD(OnRefreshTokenNeeded);
+	RunOnGameThread(&ADolbyIoConference::OnRefreshTokenNeeded);
 }
 
 void ADolbyIoConference::OnSpatialUpdateNeeded_Implementation()
@@ -101,4 +102,17 @@ void ADolbyIoConference::OnSpatialUpdateNeeded_Implementation()
 			player->GetActorEyesViewPoint(Position, Rotation);
 		}
 	}
+}
+DEFINE_LOG_CATEGORY(LogDolby);
+
+TArray<FText> ADolbyIoConference::GetInputDevices() const
+{
+	UE_LOG(LogDolby, Log, TEXT("GetInputDevices()"));
+	return CppSdk->GetInputDeviceNames();
+}
+
+TArray<FText> ADolbyIoConference::GetOutputDevices() const
+{
+	UE_LOG(LogDolby, Log, TEXT("GetOutputDevices()"));
+	return CppSdk->GetOutputDeviceNames();
 }

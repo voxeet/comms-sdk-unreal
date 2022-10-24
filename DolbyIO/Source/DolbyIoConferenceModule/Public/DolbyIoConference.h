@@ -64,22 +64,34 @@ public:
 	FString Status;
 
 	/** List of all input audio devices registered in the Dolby.io C++ SDK. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, BluePrintGetter = GetInputDevices, Category = "Dolby")
 	TArray<FText> InputDevices;
 
 	/** List of all output audio devices registered in the Dolby.io C++ SDK. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, BluePrintGetter = GetOutputDevices, Category = "Dolby")
 	TArray<FText> OutputDevices;
 
-	/** The current input audio device used by the Dolby.io C++ SDK. */
+	/** The index of current input audio device used by the Dolby.io C++ SDK. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
-	FText CurrentInputDevice;
+	int CurrentInputDeviceIndex;
+
+	/** The index of current output audio device used by the Dolby.io C++ SDK. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
+	int CurrentOutputDeviceIndex;
 
 	/** The current output audio device used by the Dolby.io C++ SDK. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
-	FText CurrentOutputDevice;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
+	//FText CurrentOutputDevice;
 
 	// functions for controlling the SDK, callable from Blueprints
+
+	/** Gets current list of available input deveices */
+	UFUNCTION(BlueprintCallable, Category = "Dolby")
+	TArray<FText> GetInputDevices() const;
+
+	/** Gets current list of available input deveices */
+	UFUNCTION(BlueprintCallable, Category = "Dolby")
+	TArray<FText> GetOutputDevices() const;
 
 	/** Connects to Dolby.io conference using the client access token, conference name and user name set using
 	 * properties. */
@@ -150,6 +162,7 @@ public:
 	void OnSpatialUpdateNeeded();
 
 	// other functions
+	void RunOnGameThread(void (ADolbyIoConference::*Function)());
 
 	/** Retrieves the pointer to the current Dolby.io C++ SDK instance to allow controlling the SDK at the lowest level.
 	 */
@@ -163,10 +176,10 @@ private:
 	void OnStatusChanged(const Dolby::FMessage&) override;
 
 	// Dolby::ISdkApi - used by FSdkAccess
-	void OnNewListOfInputDevices(const Dolby::FDeviceNames&) override;
-	void OnNewListOfOutputDevices(const Dolby::FDeviceNames&) override;
-	void OnInputDeviceChanged(const Dolby::FDeviceName&) override;
-	void OnOutputDeviceChanged(const Dolby::FDeviceName&) override;
+	void OnListOfInputDevicesChanged() override;
+	void OnListOfOutputDevicesChanged() override;
+	void OnInputDeviceChanged(int Index) override;
+	void OnOutputDeviceChanged(int Index) override;
 
 	void OnRefreshTokenRequested() override;
 
