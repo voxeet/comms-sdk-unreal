@@ -47,7 +47,7 @@ Therefore, the typical work flow to provide new features is to extend ADolbyIoCo
 
 ## Building from source
 1. Download [Dolby.io Communications C++ SDK release 2.1.0](https://github.com/DolbyIO/comms-sdk-cpp/releases/tag/2.1.0).
-2. Launch your game project ([create a game](#create) using the First Person template if you're starting out from scratch).
+2. Launch your game project (create a game using the First Person C++ template if you're starting out from scratch).
 3. Unzip the Dolby.io Communications C++ SDK release.
 4. Copy or link the unzipped sdk-release folder into the DolbyIO/Source/ThirdParty folder.
 5. Create folder named "Plugins" in your game's root folder if it does not exist.
