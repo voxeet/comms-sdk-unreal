@@ -12,8 +12,7 @@ Note: If you want to use the plugin on macOS, see our [advice](#macos).
 - [Client access token](https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) copied from the [Dolby.io dashboard](https://dashboard.dolby.io/). To create the token, log into the dashboard, create an application, and navigate to the API keys section.
 
 ## <a name="usage"></a> How to use the sample Blueprints
-1. Download the latest plugin [release](https://github.com/DolbyIO/comms-sdk-unreal/releases).  
-*The location above does not yet work as there is no CI for this project yet. Use the build from [Box](https://dolby.box.com/s/dp6seu7ezine09my1tgmlc21k4w7pmmc)*.
+1. Download the latest plugin [release](https://github.com/DolbyIO/comms-sdk-unreal/releases).
 2. Copy the plugin to {UnrealEngineRoot}/Engine/Plugins, so that you have a folder such as C:\Epic Games\UE_4.27\Engine\Plugins\DolbyIO.  
 *Alternatively, copy the plugin to {YourGameRoot}/Plugins.*
 3. Launch your game project. If you are starting out from scratch, create a game using the First Person template.
