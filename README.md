@@ -1,4 +1,4 @@
-# Dolby.io Communications plugin for Unreal
+# Dolby.io Virtual World plugin for Unreal Engine
 Plugin integrating [Dolby.io Communications C++ SDK](https://github.com/DolbyIO/comms-sdk-cpp) with the Unreal Engine.
 
 ## Supported environments
