@@ -2,179 +2,71 @@
 
 #include "SdkStatus.h"
 
-#include "SdkStatusObserver.h"
+#include "Common.h"
+#include "SdkEventsObserver.h"
 
-DEFINE_LOG_CATEGORY_STATIC(LogDolby, Log, All);
-#define DLB_UE_LOG(Format, ...) UE_LOG(LogDolby, Log, TEXT(Format), ##__VA_ARGS__)
-#define DLB_UE_LOG_DEVICE(Type, Event) DLB_UE_LOG(Type " device " Event ": %s", *Name.ToString())
+#include <dolbyio/comms/conference.h>
+
+DEFINE_LOG_CATEGORY(LogDolby);
 
 namespace Dolby
 {
-	void FSdkStatus::SetObserver(ISdkStatusObserver* Obs)
+	inline FMessage ToString(EConferenceStatus Status)
 	{
-		Observer = Obs;
+		switch (Status)
+		{
+			case dolbyio::comms::conference_status::creating:
+				return "Disconnected (creating)";
+			case dolbyio::comms::conference_status::created:
+				return "created";
+			case dolbyio::comms::conference_status::joining:
+				return "joining";
+			case dolbyio::comms::conference_status::joined:
+				return "Connected (joined)";
+			case dolbyio::comms::conference_status::leaving:
+				return "leaving";
+			case dolbyio::comms::conference_status::left:
+				return "Disconnected (left)";
+			case dolbyio::comms::conference_status::destroyed:
+				return "Disconnected (destroyed)";
+			case dolbyio::comms::conference_status::error:
+				return "Disconnected (error)";
+			default:
+				return "unknown";
+		};
 	}
 
-	bool FSdkStatus::IsDisconnected() const
+	void FSdkStatus::SetObserver(ISdkEventsObserver* AnObserver)
 	{
-		return ConnectionStatus == EConnectionStatus::Disconnected;
+		Observer = AnObserver;
+		UpdateStatus = &FSdkStatus::NotifyObserver;
 	}
-	bool FSdkStatus::IsConnecting() const
-	{
-		return ConnectionStatus == EConnectionStatus::Connecting;
-	}
+
 	bool FSdkStatus::IsConnected() const
 	{
-		return ConnectionStatus == EConnectionStatus::Connected;
+		return ConferenceStatus == EConferenceStatus::joined;
 	}
 
-	void FSdkStatus::OnDisconnected()
+	void FSdkStatus::SetMsg(const FMessage& Msg)
 	{
-		SetConnection(EConnectionStatus::Disconnected);
-	}
-	void FSdkStatus::OnConnecting()
-	{
-		SetConnection(EConnectionStatus::Connecting);
-	}
-	void FSdkStatus::OnConnected()
-	{
-		SetConnection(EConnectionStatus::Connected);
-	}
-	void FSdkStatus::OnDisconnecting()
-	{
-		SetConnection(EConnectionStatus::Disconnecting);
+		(this->*UpdateStatus)(ToString(ConferenceStatus) + " - " + Msg);
 	}
 
-	void FSdkStatus::OnNewListOfInputDevices(const FDeviceNames& Names)
+	void FSdkStatus::SetStatus(dolbyio::comms::conference_status Status)
 	{
-		if (Observer)
-		{
-			Observer->OnNewListOfInputDevices(Names);
-		}
-	}
-	void FSdkStatus::OnNewListOfOutputDevices(const FDeviceNames& Names)
-	{
-		if (Observer)
-		{
-			Observer->OnNewListOfOutputDevices(Names);
-		}
-	}
-	void FSdkStatus::OnInputDeviceAdded(const FDeviceName& Name)
-	{
-		DLB_UE_LOG_DEVICE("Input", "added");
-	}
-	void FSdkStatus::OnOutputDeviceAdded(const FDeviceName& Name)
-	{
-		DLB_UE_LOG_DEVICE("Output", "added");
-	}
-	void FSdkStatus::OnInputDeviceRemoved(const FDeviceName& Name)
-	{
-		DLB_UE_LOG_DEVICE("Input", "removed");
-	}
-	void FSdkStatus::OnOutputDeviceRemoved(const FDeviceName& Name)
-	{
-		DLB_UE_LOG_DEVICE("Output", "removed");
-	}
-	void FSdkStatus::OnInputDeviceChanged(const FDeviceName& Name)
-	{
-		DLB_UE_LOG_DEVICE("Input", "changed");
-		if (Observer)
-		{
-			Observer->OnInputDeviceChanged(Name);
-		}
-	}
-	void FSdkStatus::OnOutputDeviceChanged(const FDeviceName& Name)
-	{
-		DLB_UE_LOG_DEVICE("Output", "changed");
-		if (Observer)
-		{
-			Observer->OnOutputDeviceChanged(Name);
-		}
+		ConferenceStatus = Status;
+		(this->*UpdateStatus)(ToString(ConferenceStatus));
 	}
 
-	void FSdkStatus::OnLocalParticipantChanged(const FParticipant& Participant)
+	void FSdkStatus::NotifyObserver(const FMessage& Msg)
 	{
-		if (Observer)
-		{
-			Observer->OnLocalParticipantChanged(Participant);
-		}
-	}
-	void FSdkStatus::OnNewListOfRemoteParticipants(const FParticipants& Participants)
-	{
-		if (Observer)
-		{
-			Observer->OnNewListOfRemoteParticipants(Participants);
-		}
-	}
-	void FSdkStatus::OnNewListOfActiveSpeakers(const FParticipants& Participants)
-	{
-		if (Observer)
-		{
-			Observer->OnNewListOfActiveSpeakers(Participants);
-		}
-	}
-	void FSdkStatus::OnNewAudioLevels(const FAudioLevels& Levels)
-	{
-		if (Observer)
-		{
-			Observer->OnNewAudioLevels(Levels);
-		}
+		LogMsg(Msg);
+		Observer->OnStatusChanged(Msg);
 	}
 
-	void FSdkStatus::OnRefreshTokenRequested()
+	void FSdkStatus::LogMsg(const FMessage& Msg)
 	{
-		DLB_UE_LOG("Refresh token requested");
-		if (Observer)
-		{
-			Observer->OnRefreshTokenRequested();
-		}
+		DLB_UE_LOG("Status: %s", *Msg);
 	}
 
-	void FSdkStatus::SetMsg(const FMessage& M)
-	{
-		Msg = M;
-		IsConnecting() ? OnDisconnected() : OnStatusChanged();
-	}
-
-	void FSdkStatus::SetConnection(EConnectionStatus S)
-	{
-		ConnectionStatus = S;
-		OnStatusChanged();
-	}
-
-	void FSdkStatus::OnStatusChanged()
-	{
-		const FMessage Status = ToString();
-		DLB_UE_LOG("%s", *Status);
-		if (Observer)
-		{
-			Observer->OnStatusChanged(Status);
-		}
-		Msg.Reset();
-	}
-
-	FMessage FSdkStatus::ToString() const
-	{
-		FMessage Ret;
-		switch (ConnectionStatus)
-		{
-			case EConnectionStatus::Disconnected:
-				Ret = "Disconnected";
-				break;
-			case EConnectionStatus::Connecting:
-				Ret = "Connecting";
-				break;
-			case EConnectionStatus::Connected:
-				Ret = "Connected";
-				break;
-			case EConnectionStatus::Disconnecting:
-				Ret = "Disconnecting";
-				break;
-		}
-		if (!Msg.IsEmpty())
-		{
-			Ret += " - " + Msg;
-		}
-		return Ret;
-	}
 }
