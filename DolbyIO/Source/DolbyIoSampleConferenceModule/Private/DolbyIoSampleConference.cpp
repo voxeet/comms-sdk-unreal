@@ -38,7 +38,7 @@ void ADolbyIoSampleConference::BeginPlay()
 void ADolbyIoSampleConference::OnNewListOfInputDevices_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("New list of input devices:"));
-	for (const auto& Device : InputDevices)
+	for (const auto& Device : GetInputDevices())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("\t%s"), *Device.ToString());
 	}
@@ -47,7 +47,7 @@ void ADolbyIoSampleConference::OnNewListOfInputDevices_Implementation()
 void ADolbyIoSampleConference::OnNewListOfOutputDevices_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("New list of output devices:"));
-	for (const auto& Device : OutputDevices)
+	for (const auto& Device : GetOutputDevices())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("\t%s"), *Device.ToString());
 	}
@@ -110,50 +110,36 @@ void ADolbyIoSampleConference::MuteOutput()
 
 void ADolbyIoSampleConference::PreviousInputDevice()
 {
-	if (InputDevices.Num() < 2)
+	const auto MaxIndex = GetNumberOfInputDevices() - 1;
+	if (MaxIndex > 0)
 	{
-		return;
+		SetInputDevice(CurrentInputDeviceIndex > 0 ? CurrentInputDeviceIndex - 1 : MaxIndex);
 	}
-	const int Index = GetCurrentInputDeviceIndex() - 1;
-	SetInputDevice(Index >= 0 ? Index : InputDevices.Num() - 1);
 }
 
 void ADolbyIoSampleConference::NextInputDevice()
 {
-	if (InputDevices.Num() < 2)
+	const auto MaxIndex = GetNumberOfInputDevices() - 1;
+	if (MaxIndex > 0)
 	{
-		return;
+		SetInputDevice(CurrentInputDeviceIndex < MaxIndex ? CurrentInputDeviceIndex + 1 : 0);
 	}
-	const int Index = GetCurrentInputDeviceIndex() + 1;
-	SetInputDevice(Index < InputDevices.Num() ? Index : 0);
 }
 
 void ADolbyIoSampleConference::PreviousOutputDevice()
 {
-	if (OutputDevices.Num() < 2)
+	const auto MaxIndex = GetNumberOfOutputDevices() - 1;
+	if (MaxIndex > 0)
 	{
-		return;
+		SetOutputDevice(CurrentOutputDeviceIndex > 0 ? CurrentOutputDeviceIndex - 1 : MaxIndex);
 	}
-	const int Index = GetCurrentOutputDeviceIndex() - 1;
-	SetOutputDevice(Index >= 0 ? Index : OutputDevices.Num() - 1);
 }
 
 void ADolbyIoSampleConference::NextOutputDevice()
 {
-	if (OutputDevices.Num() < 2)
+	const auto MaxIndex = GetNumberOfOutputDevices() - 1;
+	if (MaxIndex > 0)
 	{
-		return;
+		SetOutputDevice(CurrentOutputDeviceIndex < MaxIndex ? CurrentOutputDeviceIndex + 1 : 0);
 	}
-	const int Index = GetCurrentOutputDeviceIndex() + 1;
-	SetOutputDevice(Index < OutputDevices.Num() ? Index : 0);
-}
-
-int ADolbyIoSampleConference::GetCurrentInputDeviceIndex() const
-{
-	return InputDevices.IndexOfByPredicate([this](const auto& Name) { return Name.EqualTo(CurrentInputDevice); });
-}
-
-int ADolbyIoSampleConference::GetCurrentOutputDeviceIndex() const
-{
-	return OutputDevices.IndexOfByPredicate([this](const auto& Name) { return Name.EqualTo(CurrentOutputDevice); });
 }
