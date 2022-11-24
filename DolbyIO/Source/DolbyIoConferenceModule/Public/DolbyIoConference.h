@@ -53,11 +53,11 @@ public:
 	bool bIsOutputMuted;
 
 	/** The position used to update the spatial audio configuration. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dolby")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Dolby")
 	FVector Position;
 
 	/** The rotation used to update the spatial audio configuration. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dolby")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Dolby")
 	FRotator Rotation;
 
 	// read-only values set by the SDK
