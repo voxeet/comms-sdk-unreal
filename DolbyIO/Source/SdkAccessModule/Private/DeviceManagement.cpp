@@ -153,19 +153,20 @@ namespace Dolby
 		        {
 			        {
 				        FScopeLock Lock{&AccessDevices};
-				        Devices.Add(Event.device);
+				        Devices.Add(Event.device); // adding devices changes lists and therefore may change
+				                                   // the index of the current (input or output) device
 			        }
 			        if (IsInput(Event.device.direction()))
 			        {
 				        DLB_UE_LOG_DEVICE("Input", "added", Event.device.name());
 				        UpdateCurrentInputDeviceIndex();
-				        Observer.OnListOfInputDevicesChanged();
+				        Observer.OnListOfInputDevicesChanged(GetDeviceNames(EDirection::input));
 			        }
 			        if (IsOutput(Event.device.direction()))
 			        {
 				        DLB_UE_LOG_DEVICE("Output", "added", Event.device.name());
 				        UpdateCurrentOutputDeviceIndex();
-				        Observer.OnListOfOutputDevicesChanged();
+				        Observer.OnListOfOutputDevicesChanged(GetDeviceNames(EDirection::output));
 			        }
 		        })
 		    .on_error(MakeHandler(__LINE__));
@@ -181,17 +182,18 @@ namespace Dolby
 				                                                      { return Uid == UidToRemove; });
 				        DLB_UE_LOG_DEVICE("", "removed", Devices[Index].name());
 				        Direction = Devices[Index].direction();
-				        Devices.RemoveAt(Index);
+				        Devices.RemoveAt(Index); // removing devices changes lists and therefore may change
+				                                 // the index of the current (input or output) device
 			        }
 			        if (IsInput(Direction))
 			        {
 				        UpdateCurrentInputDeviceIndex();
-				        Observer.OnListOfInputDevicesChanged();
+				        Observer.OnListOfInputDevicesChanged(GetDeviceNames(EDirection::input));
 			        }
 			        if (IsOutput(Direction))
 			        {
 				        UpdateCurrentOutputDeviceIndex();
-				        Observer.OnListOfOutputDevicesChanged();
+				        Observer.OnListOfOutputDevicesChanged(GetDeviceNames(EDirection::output));
 			        }
 		        })
 		    .on_error(MakeHandler(__LINE__));
@@ -210,16 +212,8 @@ namespace Dolby
 				        Devices.Append(DvcDevices.data(), DvcDevices.size());
 				        DLB_UE_LOG("%d device(s) added (%d in total)", DvcDevices.size(), Devices.Num());
 			        }
-			        Observer.OnListOfInputDevicesChanged();
-			        Observer.OnListOfOutputDevicesChanged();
-			        if (GetNumberOfDevices(EDirection::input) > 0)
-			        {
-				        SetInputDevice(0);
-			        }
-			        if (GetNumberOfDevices(EDirection::output) > 0)
-			        {
-				        SetOutputDevice(0);
-			        }
+			        Observer.OnListOfInputDevicesChanged(GetDeviceNames(EDirection::input));
+			        Observer.OnListOfOutputDevicesChanged(GetDeviceNames(EDirection::output));
 		        })
 		    .on_error(MakeHandler(__LINE__));
 	}

@@ -101,13 +101,15 @@ void ADolbyIoConference::OnStatusChanged(const Dolby::FMessage& Msg)
 	TriggerEvent(&ADolbyIoConference::OnStatusChanged);
 }
 
-void ADolbyIoConference::OnListOfInputDevicesChanged()
+void ADolbyIoConference::OnListOfInputDevicesChanged(const Dolby::FDeviceNames NewInputDevices)
 {
+	InputDevices = NewInputDevices;
 	TriggerEvent(&ADolbyIoConference::OnNewListOfInputDevices);
 }
 
-void ADolbyIoConference::OnListOfOutputDevicesChanged()
+void ADolbyIoConference::OnListOfOutputDevicesChanged(const Dolby::FDeviceNames NewOutputDevices)
 {
+	OutputDevices = NewOutputDevices;
 	TriggerEvent(&ADolbyIoConference::OnNewListOfOutputDevices);
 }
 
@@ -129,19 +131,19 @@ void ADolbyIoConference::OnLocalParticipantChanged(const Dolby::FParticipant& Pa
 	TriggerEvent(&ADolbyIoConference::OnLocalParticipantChanged);
 }
 
-void ADolbyIoConference::OnNewListOfRemoteParticipants(const Dolby::FParticipants& Participants)
+void ADolbyIoConference::OnListOfRemoteParticipantsChanged(const Dolby::FParticipants& NewListOfParticipants)
 {
-	RemoteParticipants = Participants;
+	RemoteParticipants = NewListOfParticipants;
 	TriggerEvent(&ADolbyIoConference::OnNewListOfRemoteParticipants);
 }
 
-void ADolbyIoConference::OnNewListOfActiveSpeakers(const Dolby::FParticipants& Speakers)
+void ADolbyIoConference::OnListOfActiveSpeakersChanged(const Dolby::FParticipants Speakers)
 {
 	ActiveSpeakers = Speakers;
 	TriggerEvent(&ADolbyIoConference::OnNewListOfActiveSpeakers);
 }
 
-void ADolbyIoConference::OnNewAudioLevels(const Dolby::FAudioLevels& Levels)
+void ADolbyIoConference::OnAudioLevelsChanged(const Dolby::FAudioLevels Levels)
 {
 	AudioLevels = Levels;
 	TriggerEvent(&ADolbyIoConference::OnNewAudioLevels);
@@ -170,23 +172,3 @@ void ADolbyIoConference::OnNewListOfRemoteParticipants_Implementation() {}
 void ADolbyIoConference::OnNewListOfActiveSpeakers_Implementation() {}
 void ADolbyIoConference::OnNewAudioLevels_Implementation() {}
 void ADolbyIoConference::OnRefreshTokenNeeded_Implementation() {}
-
-TArray<FText> ADolbyIoConference::GetInputDevices() const
-{
-	return CppSdk->GetInputDeviceNames();
-}
-
-TArray<FText> ADolbyIoConference::GetOutputDevices() const
-{
-	return CppSdk->GetOutputDeviceNames();
-}
-
-int ADolbyIoConference::GetNumberOfInputDevices() const
-{
-	return CppSdk->GetNumberOfInputDevices();
-}
-
-int ADolbyIoConference::GetNumberOfOutputDevices() const
-{
-	return CppSdk->GetNumberOfOutputDevices();
-}

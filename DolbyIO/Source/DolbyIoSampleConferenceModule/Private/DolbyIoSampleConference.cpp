@@ -38,7 +38,7 @@ void ADolbyIoSampleConference::BeginPlay()
 void ADolbyIoSampleConference::OnNewListOfInputDevices_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("New list of input devices:"));
-	for (const auto& Device : GetInputDevices())
+	for (const auto& Device : InputDevices)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("\t%s"), *Device.ToString());
 	}
@@ -47,7 +47,7 @@ void ADolbyIoSampleConference::OnNewListOfInputDevices_Implementation()
 void ADolbyIoSampleConference::OnNewListOfOutputDevices_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("New list of output devices:"));
-	for (const auto& Device : GetOutputDevices())
+	for (const auto& Device : OutputDevices)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("\t%s"), *Device.ToString());
 	}
@@ -110,7 +110,7 @@ void ADolbyIoSampleConference::MuteOutput()
 
 void ADolbyIoSampleConference::PreviousInputDevice()
 {
-	const auto MaxIndex = GetNumberOfInputDevices() - 1;
+	const auto MaxIndex = InputDevices.Num() - 1;
 	if (MaxIndex > 0)
 	{
 		SetInputDevice(CurrentInputDeviceIndex > 0 ? CurrentInputDeviceIndex - 1 : MaxIndex);
@@ -119,7 +119,7 @@ void ADolbyIoSampleConference::PreviousInputDevice()
 
 void ADolbyIoSampleConference::NextInputDevice()
 {
-	const auto MaxIndex = GetNumberOfInputDevices() - 1;
+	const auto MaxIndex = InputDevices.Num() - 1;
 	if (MaxIndex > 0)
 	{
 		SetInputDevice(CurrentInputDeviceIndex < MaxIndex ? CurrentInputDeviceIndex + 1 : 0);
@@ -128,7 +128,7 @@ void ADolbyIoSampleConference::NextInputDevice()
 
 void ADolbyIoSampleConference::PreviousOutputDevice()
 {
-	const auto MaxIndex = GetNumberOfOutputDevices() - 1;
+	const auto MaxIndex = OutputDevices.Num() - 1;
 	if (MaxIndex > 0)
 	{
 		SetOutputDevice(CurrentOutputDeviceIndex > 0 ? CurrentOutputDeviceIndex - 1 : MaxIndex);
@@ -137,7 +137,7 @@ void ADolbyIoSampleConference::PreviousOutputDevice()
 
 void ADolbyIoSampleConference::NextOutputDevice()
 {
-	const auto MaxIndex = GetNumberOfOutputDevices() - 1;
+	const auto MaxIndex = OutputDevices.Num() - 1;
 	if (MaxIndex > 0)
 	{
 		SetOutputDevice(CurrentOutputDeviceIndex < MaxIndex ? CurrentOutputDeviceIndex + 1 : 0);
