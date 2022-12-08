@@ -13,15 +13,14 @@ namespace Dolby
 
 		virtual void OnStatusChanged(const FMessage&) = 0;
 
-		virtual void OnListOfInputDevicesChanged() = 0;
-		virtual void OnListOfOutputDevicesChanged() = 0;
-		virtual void OnInputDeviceChanged(int Index) = 0;
-		virtual void OnOutputDeviceChanged(int Index) = 0;
-
+		virtual void OnListOfInputDevicesChanged(const FDeviceNames) = 0;
+		virtual void OnListOfOutputDevicesChanged(const FDeviceNames) = 0;
+		virtual void OnInputDeviceChanged(const int Index) = 0;
+		virtual void OnOutputDeviceChanged(const int Index) = 0;
 		virtual void OnLocalParticipantChanged(const FParticipant&) = 0;
-		virtual void OnNewListOfRemoteParticipants(const FParticipants&) = 0;
-		virtual void OnNewListOfActiveSpeakers(const FParticipants&) = 0;
-		virtual void OnNewAudioLevels(const FAudioLevels&) = 0;
+		virtual void OnListOfRemoteParticipantsChanged(const FParticipants&) = 0;
+		virtual void OnListOfActiveSpeakersChanged(const FParticipants) = 0;
+		virtual void OnAudioLevelsChanged(const Dolby::FAudioLevels Levels) = 0;
 
 		virtual void OnRefreshTokenRequested() = 0;
 	};

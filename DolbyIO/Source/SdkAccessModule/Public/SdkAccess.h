@@ -41,11 +41,6 @@ namespace Dolby
 		void SetInputDevice(const int Index);
 		void SetOutputDevice(const int Index);
 
-		FDeviceNames GetInputDeviceNames() const;
-		FDeviceNames GetOutputDeviceNames() const;
-		Index GetNumberOfInputDevices() const;
-		Index GetNumberOfOutputDevices() const;
-
 		void UpdateViewPoint(const FVector&, const FRotator&);
 
 		void GetAudioLevels();

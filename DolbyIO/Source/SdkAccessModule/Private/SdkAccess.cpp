@@ -146,6 +146,48 @@ namespace Dolby
 		Devices.Reset(MakeUnique<FDeviceManagement>(Sdk->device_management(), *Observer,
 		                                            [this](int Id) { return MakeHandler(Id); })
 		                  .Release());
+
+		Sdk->conference()
+		    .add_event_handler([this](const conference_status_updated& Event) { Status.SetStatus(Event.status); })
+		    .on_error(MakeHandler(__LINE__));
+
+		Sdk->conference()
+		    .add_event_handler(
+		        [this](const participant_added& Event)
+		        {
+			        ParticipantIDs.Add(Event.participant.user_id.c_str());
+			        Observer->OnListOfRemoteParticipantsChanged(ParticipantIDs);
+		        })
+		    .on_error(MakeHandler(__LINE__));
+
+		Sdk->conference()
+		    .add_event_handler(
+		        [this](const participant_updated& Event)
+		        {
+			        const auto& ParticipantStatus = Event.participant.status;
+			        if (ParticipantStatus)
+			        {
+				        if (*ParticipantStatus == participant_status::left)
+				        {
+					        ParticipantIDs.Remove(Event.participant.user_id.c_str());
+					        Observer->OnListOfRemoteParticipantsChanged(ParticipantIDs);
+				        }
+			        }
+		        })
+		    .on_error(MakeHandler(__LINE__));
+
+		Sdk->conference()
+		    .add_event_handler(
+		        [this](const active_speaker_change& Event)
+		        {
+			        FParticipants ActiveSpeakers;
+			        for (const auto& Speaker : Event.active_speakers)
+			        {
+				        ActiveSpeakers.Add(Speaker.c_str());
+			        }
+			        Observer->OnListOfActiveSpeakersChanged(ActiveSpeakers);
+		        })
+		    .on_error(MakeHandler(__LINE__));
 	}
 	catch (...)
 	{
@@ -158,8 +200,11 @@ namespace Dolby
 		                     { Status.SetMsg(Msg + " {" + std::to_string(Id).c_str() + "}"); },
 		                     [this]()
 		                     {
-			                     Status.SetStatus(EConferenceStatus::leaving);
-			                     Disconnect();
+			                     if (Status.IsConnected())
+			                     {
+				                     Status.SetStatus(EConferenceStatus::leaving);
+				                     Disconnect();
+			                     }
 		                     });
 	}
 
@@ -214,51 +259,6 @@ namespace Dolby
 		    .then(
 		        [this](auto&& ConferenceInfo)
 		        {
-			        Status.SetStatus(ConferenceInfo.status);
-
-			        Sdk->conference()
-			            .add_event_handler([this](const conference_status_updated& Event)
-			                               { Status.SetStatus(Event.status); })
-			            .on_error(MakeHandler(__LINE__));
-
-			        Sdk->conference()
-			            .add_event_handler(
-			                [this](const participant_added& Event)
-			                {
-				                ParticipantIDs.Add(Event.participant.user_id.c_str());
-				                Observer->OnNewListOfRemoteParticipants(ParticipantIDs);
-			                })
-			            .on_error(MakeHandler(__LINE__));
-
-			        Sdk->conference()
-			            .add_event_handler(
-			                [this](const participant_updated& Event)
-			                {
-				                const auto& ParticipantStatus = Event.participant.status;
-				                if (ParticipantStatus)
-				                {
-					                if (*ParticipantStatus == participant_status::left)
-					                {
-						                ParticipantIDs.Remove(Event.participant.user_id.c_str());
-						                Observer->OnNewListOfRemoteParticipants(ParticipantIDs);
-					                }
-				                }
-			                })
-			            .on_error(MakeHandler(__LINE__));
-
-			        Sdk->conference()
-			            .add_event_handler(
-			                [this](const active_speaker_change& Event)
-			                {
-				                FParticipants ActiveSpeakers;
-				                for (const auto& Speaker : Event.active_speakers)
-				                {
-					                ActiveSpeakers.Add(Speaker.c_str());
-				                }
-				                Observer->OnNewListOfActiveSpeakers(ActiveSpeakers);
-			                })
-			            .on_error(MakeHandler(__LINE__));
-
 			        if (bIsDemo)
 			        {
 				        return async_result<conference_info>{MoveTemp(ConferenceInfo)};
@@ -283,26 +283,6 @@ namespace Dolby
 		{
 			Sdk->conference().leave().then([this]() { return Sdk->session().close(); }).on_error(MakeHandler(__LINE__));
 		}
-	}
-
-	FDeviceNames FSdkAccess::GetInputDeviceNames() const
-	{
-		return Devices->GetDeviceNames(EDirection::input);
-	}
-
-	FDeviceNames FSdkAccess::GetOutputDeviceNames() const
-	{
-		return Devices->GetDeviceNames(EDirection::output);
-	}
-
-	Index FSdkAccess::GetNumberOfInputDevices() const
-	{
-		return Devices->GetNumberOfDevices(EDirection::input);
-	}
-
-	Index FSdkAccess::GetNumberOfOutputDevices() const
-	{
-		return Devices->GetNumberOfDevices(EDirection::output);
 	}
 
 	void FSdkAccess::MuteInput(const bool bIsMuted)
@@ -381,7 +361,7 @@ namespace Dolby
 			        {
 				        AudioLevels.Emplace(Level.participant_id.c_str(), Level.level);
 			        }
-			        Observer->OnNewAudioLevels(AudioLevels);
+			        Observer->OnAudioLevelsChanged(AudioLevels);
 		        })
 		    .on_error(MakeHandler(__LINE__));
 	}

@@ -19,7 +19,7 @@ namespace Dolby
 	struct FErrorHandler;
 	class ISdkEventsObserver;
 
-	using FDvcDevice = class dolbyio::comms::dvc_device;
+	using FDvcDevice = dolbyio::comms::dvc_device;
 	using EDirection = enum dolbyio::comms::dvc_device::direction;
 	using Uid = std::string;
 	using FHandlersMaker = std::function<FErrorHandler(int)>;
@@ -27,7 +27,7 @@ namespace Dolby
 	class FDeviceManagement final
 	{
 	public:
-		using FDvcDeviceManagement = class dolbyio::comms::services::device_management;
+		using FDvcDeviceManagement = dolbyio::comms::services::device_management;
 
 		FDeviceManagement(FDvcDeviceManagement&, ISdkEventsObserver&, FHandlersMaker);
 		~FDeviceManagement();
