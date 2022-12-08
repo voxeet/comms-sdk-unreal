@@ -27,21 +27,22 @@ void ADolbyIoConference::BeginPlay()
 	{
 		FirstPlayerController = World->GetFirstPlayerController();
 	}
-
 	CppSdk->SetObserver(this);
-	CppSdk->Initialize(Token);
+	if (!Token.IsEmpty())
+	{
+		CppSdk->RefreshToken(Token);
+	}
 }
 
 void ADolbyIoConference::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	CppSdk->SetObserver(nullptr);
-
+	CppSdk->ShutDown();
 	Super::EndPlay(EndPlayReason);
 }
 
 void ADolbyIoConference::Connect()
 {
-	CppSdk->Connect(ConferenceName, UserName);
+	CppSdk->Connect(Token, ConferenceName, UserName);
 }
 void ADolbyIoConference::Disconnect()
 {
@@ -69,7 +70,11 @@ void ADolbyIoConference::GetAudioLevels()
 }
 void ADolbyIoConference::RefreshToken()
 {
-	CppSdk->RefreshToken(Token);
+	if (Token != PreviousToken)
+	{
+		CppSdk->RefreshToken(Token);
+		PreviousToken = Token;
+	}
 }
 
 dolbyio::comms::sdk* ADolbyIoConference::GetRawSdk()
@@ -85,65 +90,68 @@ void ADolbyIoConference::Tick(float DeltaTime)
 	CppSdk->UpdateViewPoint(Position, Rotation);
 }
 
-#define ON_GAME_THREAD(Func) AsyncTask(ENamedThreads::GameThread, [this] { Func(); });
+inline void ADolbyIoConference::TriggerEvent(void (ADolbyIoConference::*Function)())
+{
+	AsyncTask(ENamedThreads::GameThread, [this, Function] { (this->*Function)(); });
+}
 
 void ADolbyIoConference::OnStatusChanged(const Dolby::FMessage& Msg)
 {
 	Status = Msg;
-	ON_GAME_THREAD(OnStatusChanged);
+	TriggerEvent(&ADolbyIoConference::OnStatusChanged);
 }
 
-void ADolbyIoConference::OnNewListOfInputDevices(const Dolby::FDeviceNames& Names)
+void ADolbyIoConference::OnListOfInputDevicesChanged(const Dolby::FDeviceNames NewInputDevices)
 {
-	InputDevices = Names;
-	ON_GAME_THREAD(OnNewListOfInputDevices);
+	InputDevices = NewInputDevices;
+	TriggerEvent(&ADolbyIoConference::OnNewListOfInputDevices);
 }
 
-void ADolbyIoConference::OnNewListOfOutputDevices(const Dolby::FDeviceNames& Names)
+void ADolbyIoConference::OnListOfOutputDevicesChanged(const Dolby::FDeviceNames NewOutputDevices)
 {
-	OutputDevices = Names;
-	ON_GAME_THREAD(OnNewListOfOutputDevices);
+	OutputDevices = NewOutputDevices;
+	TriggerEvent(&ADolbyIoConference::OnNewListOfOutputDevices);
 }
 
-void ADolbyIoConference::OnInputDeviceChanged(const Dolby::FDeviceName& Name)
+void ADolbyIoConference::OnInputDeviceChanged(const int Index)
 {
-	CurrentInputDevice = Name;
-	ON_GAME_THREAD(OnInputDeviceChanged);
+	CurrentInputDeviceIndex = Index;
+	TriggerEvent(&ADolbyIoConference::OnInputDeviceChanged);
 }
 
-void ADolbyIoConference::OnOutputDeviceChanged(const Dolby::FDeviceName& Name)
+void ADolbyIoConference::OnOutputDeviceChanged(const int Index)
 {
-	CurrentOutputDevice = Name;
-	ON_GAME_THREAD(OnOutputDeviceChanged);
+	CurrentOutputDeviceIndex = Index;
+	TriggerEvent(&ADolbyIoConference::OnOutputDeviceChanged);
 }
 
 void ADolbyIoConference::OnLocalParticipantChanged(const Dolby::FParticipant& Participant)
 {
 	LocalParticipant = Participant;
-	ON_GAME_THREAD(OnLocalParticipantChanged);
+	TriggerEvent(&ADolbyIoConference::OnLocalParticipantChanged);
 }
 
-void ADolbyIoConference::OnNewListOfRemoteParticipants(const Dolby::FParticipants& Participants)
+void ADolbyIoConference::OnListOfRemoteParticipantsChanged(const Dolby::FParticipants& NewListOfParticipants)
 {
-	RemoteParticipants = Participants;
-	ON_GAME_THREAD(OnNewListOfRemoteParticipants);
+	RemoteParticipants = NewListOfParticipants;
+	TriggerEvent(&ADolbyIoConference::OnNewListOfRemoteParticipants);
 }
 
-void ADolbyIoConference::OnNewListOfActiveSpeakers(const Dolby::FParticipants& Speakers)
+void ADolbyIoConference::OnListOfActiveSpeakersChanged(const Dolby::FParticipants Speakers)
 {
 	ActiveSpeakers = Speakers;
-	ON_GAME_THREAD(OnNewListOfActiveSpeakers);
+	TriggerEvent(&ADolbyIoConference::OnNewListOfActiveSpeakers);
 }
 
-void ADolbyIoConference::OnNewAudioLevels(const Dolby::FAudioLevels& Levels)
+void ADolbyIoConference::OnAudioLevelsChanged(const Dolby::FAudioLevels Levels)
 {
 	AudioLevels = Levels;
-	ON_GAME_THREAD(OnNewAudioLevels);
+	TriggerEvent(&ADolbyIoConference::OnNewAudioLevels);
 }
 
 void ADolbyIoConference::OnRefreshTokenRequested()
 {
-	ON_GAME_THREAD(OnRefreshTokenNeeded);
+	TriggerEvent(&ADolbyIoConference::OnRefreshTokenNeeded);
 }
 
 void ADolbyIoConference::OnSpatialUpdateNeeded_Implementation()

@@ -48,7 +48,7 @@ It is also not difficult to extend plugin functionality by just knowing that:
 Therefore, the typical workflow to provide new features is to extend ADolbyIoConference's API and implement the functionality in FSdkAccess.
 
 ## Building from source
-1. Download [Dolby.io Communications C++ SDK release 2.1.0](https://github.com/DolbyIO/comms-sdk-cpp/releases/tag/2.1.0).
+1. Download the latest release from [Dolby.io Communications C++ SDK releases](https://github.com/DolbyIO/comms-sdk-cpp/releases).
 2. Launch your game project. If you are starting out from scratch, create a game using the First Person C++ template.
 3. Unzip the Dolby.io Communications C++ SDK release.
 4. Copy or link the unzipped sdk-release folder into the DolbyIO/Source/ThirdParty folder.

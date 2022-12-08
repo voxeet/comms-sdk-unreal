@@ -4,13 +4,15 @@
 
 #include "Common.h"
 #include "DeviceManagement.h"
-#include "Events.h"
-
+#include "ErrorHandler.h"
 #include "HAL/PlatformProcess.h"
 #include "Interfaces/IPluginManager.h"
 #include "Math/Rotator.h"
 #include "Misc/Paths.h"
 #include "Modules/ModuleManager.h"
+#include "SdkEventsObserver.h"
+
+#include <dolbyio/comms/async_result.h>
 
 IMPLEMENT_MODULE(Dolby::FSdkAccess, SdkAccessModule)
 
@@ -23,7 +25,10 @@ namespace Dolby
 {
 	using namespace dolbyio::comms;
 
-	FSdkAccess::FSdkAccess() : Events(MakeUnique<FEvents>(Status)) {}
+	FSdkAccess::FSdkAccess()
+	{
+		Status.SetStatus(EConferenceStatus::destroyed);
+	}
 
 	FSdkAccess::~FSdkAccess() {}
 
@@ -42,14 +47,16 @@ namespace Dolby
 		    +[](void* Ptr, std::size_t Al) { operator delete(Ptr, static_cast<std::align_val_t>(Al)); };
 		sdk::set_app_allocator({operator new, AlignedNew, operator delete, AlignedDelete});
 #endif
-
 		sdk::log_settings LogSettings;
 		LogSettings.sdk_log_level = log_level::INFO;
 		LogSettings.media_log_level = log_level::OFF;
 		LogSettings.log_directory = "";
 		sdk::set_log_settings(LogSettings);
 	}
-	DLB_CATCH_ALL
+	catch (...)
+	{
+		MakeHandler(__LINE__).RethrowAndUpdateStatus();
+	}
 
 	void FSdkAccess::LoadDll(const FString& Dll)
 	{
@@ -67,57 +74,159 @@ namespace Dolby
 
 	void FSdkAccess::ShutdownModule()
 	{
+		DLB_UE_LOG("Shutting down SdkAccessModule");
 		for (auto Handle : DllHandles)
 		{
 			FPlatformProcess::FreeDllHandle(Handle);
 		}
 	}
 
-	void FSdkAccess::SetObserver(ISdkStatusObserver* Observer)
-	try
+	void FSdkAccess::ShutDown()
 	{
+		DLB_UE_LOG("Shutting down SdkAccess");
+		WaitForDisconnect();
+	}
+
+	void FSdkAccess::WaitForDisconnect()
+	{
+		if (Sdk && Status.IsConnected())
+			try
+			{
+				dolbyio::comms::wait(Sdk->conference().leave().then([this]() { return Sdk->session().close(); }));
+			}
+			catch (...)
+			{
+				MakeHandler(__LINE__).RethrowAndUpdateStatus();
+			}
+	}
+
+	void FSdkAccess::SetObserver(ISdkEventsObserver* AnObserver)
+	{
+		Observer = AnObserver;
 		Status.SetObserver(Observer);
 	}
-	DLB_CATCH_ALL
+
+	void FSdkAccess::RefreshToken(const FToken& Token)
+	try
+	{
+		if (RefreshTokenCb)
+		{
+			(*RefreshTokenCb)(ToStdString(Token));
+			RefreshTokenCb.Reset(); // RefreshToken callback can be called only once
+		}
+		else
+		{
+			Initialize(Token);
+		}
+	}
+	catch (...)
+	{
+		MakeHandler(__LINE__).RethrowAndUpdateStatus();
+	}
 
 	void FSdkAccess::Initialize(const FToken& Token)
 	try
 	{
-		Status.OnDisconnected();
-		Devices.Reset();
-		Sdk.Reset();
+		if (Status.IsConnected())
+		{
+			DLB_UE_LOG("SDK already initialized and conference connected - skipping initialization");
+			return;
+		}
 		RefreshTokenCb.Reset();
 		LocalParticipantID.Reset();
 		ParticipantIDs.Empty();
-
 		Sdk.Reset(sdk::create(ToStdString(Token),
 		                      [this](auto&& cb)
 		                      {
+			                      DLB_UE_LOG("Refresh token requested");
 			                      RefreshTokenCb.Reset(cb.release());
-			                      Status.OnRefreshTokenRequested();
+			                      Observer->OnRefreshTokenRequested();
 		                      })
 		              .release());
-		Devices = MakeUnique<FDeviceManagement>(Sdk->device_management(), Status);
-	}
-	DLB_CATCH_ALL
+		Devices.Reset(MakeUnique<FDeviceManagement>(Sdk->device_management(), *Observer,
+		                                            [this](int Id) { return MakeHandler(Id); })
+		                  .Release());
 
-	void FSdkAccess::Connect(const FConferenceName& Conf, const FUserName& User)
+		Sdk->conference()
+		    .add_event_handler([this](const conference_status_updated& Event) { Status.SetStatus(Event.status); })
+		    .on_error(MakeHandler(__LINE__));
+
+		Sdk->conference()
+		    .add_event_handler(
+		        [this](const participant_added& Event)
+		        {
+			        ParticipantIDs.Add(Event.participant.user_id.c_str());
+			        Observer->OnListOfRemoteParticipantsChanged(ParticipantIDs);
+		        })
+		    .on_error(MakeHandler(__LINE__));
+
+		Sdk->conference()
+		    .add_event_handler(
+		        [this](const participant_updated& Event)
+		        {
+			        const auto& ParticipantStatus = Event.participant.status;
+			        if (ParticipantStatus)
+			        {
+				        if (*ParticipantStatus == participant_status::left)
+				        {
+					        ParticipantIDs.Remove(Event.participant.user_id.c_str());
+					        Observer->OnListOfRemoteParticipantsChanged(ParticipantIDs);
+				        }
+			        }
+		        })
+		    .on_error(MakeHandler(__LINE__));
+
+		Sdk->conference()
+		    .add_event_handler(
+		        [this](const active_speaker_change& Event)
+		        {
+			        FParticipants ActiveSpeakers;
+			        for (const auto& Speaker : Event.active_speakers)
+			        {
+				        ActiveSpeakers.Add(Speaker.c_str());
+			        }
+			        Observer->OnListOfActiveSpeakersChanged(ActiveSpeakers);
+		        })
+		    .on_error(MakeHandler(__LINE__));
+	}
+	catch (...)
+	{
+		MakeHandler(__LINE__).RethrowAndUpdateStatus();
+	}
+
+	FErrorHandler FSdkAccess::MakeHandler(int Id)
+	{
+		return FErrorHandler([this, Id](const FMessage& Msg)
+		                     { Status.SetMsg(Msg + " {" + std::to_string(Id).c_str() + "}"); },
+		                     [this]()
+		                     {
+			                     if (Status.IsConnected())
+			                     {
+				                     Status.SetStatus(EConferenceStatus::leaving);
+				                     Disconnect();
+			                     }
+		                     });
+	}
+
+	void FSdkAccess::Connect(const FToken& Token, const FConferenceName& Conf, const FUserName& User)
 	try
 	{
 		if (!Sdk)
 		{
-			throw std::logic_error{"Must initialize SDK first"};
+			Initialize(Token);
+			if (!Sdk)
+			{
+				return Status.SetMsg("Enter valid token");
+			}
 		}
 		if (Conf.IsEmpty() || User.IsEmpty())
 		{
-			throw std::logic_error{"Conference name and user name cannot be empty"};
+			return Status.SetMsg("Conference name and user name cannot be empty");
 		}
-		if (!Status.IsDisconnected())
+		if (Status.IsConnected())
 		{
-			throw std::logic_error{"Must disconnect first"};
+			return Status.SetMsg("Must disconnect first");
 		}
-
-		Status.OnConnecting();
 
 		bIsDemo = Conf == "demo";
 
@@ -133,7 +242,7 @@ namespace Dolby
 			        if (User.participant_id)
 			        {
 				        LocalParticipantID = User.participant_id->c_str();
-				        Status.OnLocalParticipantChanged(LocalParticipantID);
+				        Observer->OnLocalParticipantChanged(LocalParticipantID);
 			        }
 
 			        if (bIsDemo)
@@ -148,7 +257,7 @@ namespace Dolby
 			        return Sdk->conference().create(Options);
 		        })
 		    .then(
-		        [this, Conf](auto&& ConferenceInfo)
+		        [this](auto&& ConferenceInfo)
 		        {
 			        if (bIsDemo)
 			        {
@@ -160,109 +269,54 @@ namespace Dolby
 			        Options.connection.spatial_audio = true;
 			        return Sdk->conference().join(ConferenceInfo, Options);
 		        })
-		    .then(
-		        [this](auto&&)
-		        {
-			        Status.OnConnected();
-
-			        Sdk->conference()
-			            .add_event_handler(
-			                [this](const participant_added& Event)
-			                {
-				                ParticipantIDs.Add(Event.participant.user_id.c_str());
-				                Status.OnNewListOfRemoteParticipants(ParticipantIDs);
-			                })
-			            .then([this](auto&& Event) { Events->AddEvent(MoveTemp(Event)); })
-			            .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
-
-			        Sdk->conference()
-			            .add_event_handler(
-			                [this](const participant_updated& Event)
-			                {
-				                const auto& ParticipantStatus = Event.participant.status;
-				                if (ParticipantStatus)
-				                {
-					                if (*ParticipantStatus == participant_status::left)
-					                {
-						                ParticipantIDs.Remove(Event.participant.user_id.c_str());
-						                Status.OnNewListOfRemoteParticipants(ParticipantIDs);
-					                }
-				                }
-			                })
-			            .then([this](auto&& Event) { Events->AddEvent(MoveTemp(Event)); })
-			            .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
-
-			        Sdk->conference()
-			            .add_event_handler(
-			                [this](const active_speaker_change& Event)
-			                {
-				                FParticipants ActiveSpeakers;
-				                for (const auto& Speaker : Event.active_speakers)
-				                {
-					                ActiveSpeakers.Add(Speaker.c_str());
-				                }
-				                Status.OnNewListOfActiveSpeakers(ActiveSpeakers);
-			                })
-			            .then([this](auto&& Event) { Events->AddEvent(MoveTemp(Event)); })
-			            .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
-		        })
-		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+		    .on_error(MakeHandler(__LINE__));
 	}
-	DLB_CATCH_ALL
-
-#define DLB_MUST_BE_CONNECTED  \
-	if (!Status.IsConnected()) \
-	{                          \
-		return;                \
+	catch (...)
+	{
+		MakeHandler(__LINE__).RethrowAndUpdateStatus();
 	}
 
 	void FSdkAccess::Disconnect()
-	try
 	{
-		DLB_MUST_BE_CONNECTED
-		Events.Reset();
 		ParticipantIDs.Empty();
-		Status.OnDisconnecting();
-		Sdk->conference()
-		    .leave()
-		    .then([this] { return Sdk->session().close(); })
-		    .then([this] { Status.OnDisconnected(); })
-		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+		if (Sdk)
+		{
+			Sdk->conference().leave().then([this]() { return Sdk->session().close(); }).on_error(MakeHandler(__LINE__));
+		}
 	}
-	DLB_CATCH_ALL
 
 	void FSdkAccess::MuteInput(const bool bIsMuted)
-	try
 	{
-		DLB_MUST_BE_CONNECTED Sdk->conference().mute(bIsMuted).on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+		if (Status.IsConnected())
+		{
+			Sdk->conference().mute(bIsMuted).on_error(MakeHandler(__LINE__));
+		}
 	}
-	DLB_CATCH_ALL
 
 	void FSdkAccess::MuteOutput(const bool bIsMuted)
-	try
 	{
-		DLB_MUST_BE_CONNECTED Sdk->conference().mute_output(bIsMuted).on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+		if (Status.IsConnected())
+		{
+			Sdk->conference().mute_output(bIsMuted).on_error(MakeHandler(__LINE__));
+		}
 	}
-	DLB_CATCH_ALL
 
 	void FSdkAccess::SetInputDevice(const int Index)
-	try
 	{
 		Devices->SetInputDevice(Index);
 	}
-	DLB_CATCH_ALL
 
 	void FSdkAccess::SetOutputDevice(const int Index)
-	try
 	{
 		Devices->SetOutputDevice(Index);
 	}
-	DLB_CATCH_ALL
 
 	void FSdkAccess::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
-	try
 	{
-		DLB_MUST_BE_CONNECTED
+		if (!Status.IsConnected())
+		{
+			return;
+		}
 
 		spatial_audio_batch_update Update;
 
@@ -282,20 +336,21 @@ namespace Dolby
 
 		// The default SDK spatial settings expect meters as unit of length,
 		// Unreal uses centimeters for scale, so we divide every length by 100.
-		// The default SDK coordinate system expects position arguments to mean (in order) right, up and forward.
-		// In Unreal, right axis is +Y, up is +Z and forward is +X.
+		// The default SDK coordinate system expects position arguments to mean (in order) right, up and
+		// forward. In Unreal, right axis is +Y, up is +Z and forward is +X.
 		const auto ScaledPosition = Position / 100;
 		Update.set_spatial_position(ToStdString(LocalParticipantID),
 		                            {ScaledPosition.Y, ScaledPosition.Z, ScaledPosition.X});
 		Update.set_spatial_direction({Rotation.Pitch, Rotation.Yaw, Rotation.Roll});
-		Sdk->conference().update_spatial_audio_configuration(MoveTemp(Update)).on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+		Sdk->conference().update_spatial_audio_configuration(MoveTemp(Update)).on_error(MakeHandler(__LINE__));
 	}
-	DLB_CATCH_ALL
 
 	void FSdkAccess::GetAudioLevels()
-	try
 	{
-		DLB_MUST_BE_CONNECTED
+		if (!Status.IsConnected())
+		{
+			return;
+		}
 		Sdk->conference()
 		    .get_all_audio_levels()
 		    .then(
@@ -306,25 +361,10 @@ namespace Dolby
 			        {
 				        AudioLevels.Emplace(Level.participant_id.c_str(), Level.level);
 			        }
-			        Status.OnNewAudioLevels(AudioLevels);
+			        Observer->OnAudioLevelsChanged(AudioLevels);
 		        })
-		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+		    .on_error(MakeHandler(__LINE__));
 	}
-	DLB_CATCH_ALL
-
-	void FSdkAccess::RefreshToken(const FToken& Token)
-	try
-	{
-		if (RefreshTokenCb)
-		{
-			(*RefreshTokenCb)(ToStdString(Token));
-		}
-		else
-		{
-			Initialize(Token);
-		}
-	}
-	DLB_CATCH_ALL
 
 	sdk* FSdkAccess::GetRawSdk()
 	{

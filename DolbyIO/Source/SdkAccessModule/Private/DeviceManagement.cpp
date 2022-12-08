@@ -3,132 +3,279 @@
 #include "DeviceManagement.h"
 
 #include "Common.h"
-#include "Devices.h"
-#include "Events.h"
+#include "ErrorHandler.h"
+#include "SdkEventsObserver.h"
+
+#include "Misc/ScopeLock.h"
 
 namespace Dolby
 {
-	FDeviceManagement::FDeviceManagement(FDvcDeviceManagement& DeviceManagement, FSdkStatus& Status)
-	    : Status(Status), Events(MakeUnique<FEvents>(Status)),
-	      InputDevices(MakeUnique<FDevices>(FDevices::EDirection::Input, DeviceManagement, Status)),
-	      OutputDevices(MakeUnique<FDevices>(FDevices::EDirection::Output, DeviceManagement, Status))
+	inline auto ToFText(const std::string& String)
 	{
-		InitializeDevices(DeviceManagement);
+		return FText::FromString(UTF8_TO_TCHAR(String.c_str()));
+	}
+
+#define DLB_UE_LOG_DEVICE(Type, Event, Name) \
+	UE_LOG(LogDolby, Log, TEXT(Type " device " Event ": %s"), *ToFText(Name).ToString())
+
+	FDeviceManagement::FDeviceManagement(FDvcDeviceManagement& DeviceManagement, ISdkEventsObserver& Observer,
+	                                     FHandlersMaker MakeHandler)
+	    : DeviceManagement(DeviceManagement), MakeHandler(MakeHandler), Observer(Observer)
+	{
+		InitializeDevices();
 	}
 
 	FDeviceManagement::~FDeviceManagement() {}
 
-	void FDeviceManagement::SetInputDevice(const int Index)
+	void FDeviceManagement::SetInputDevice(const Index Index)
+	try
 	{
-		InputDevices->Set(Index);
+		FScopeLock Lock{&AccessDevices};
+		const FDvcDevice& Device = GetDeviceAt(EDirection::input, Index);
+		DLB_UE_LOG_DEVICE("Input", "change requested", Device.name());
+		DeviceManagement.set_preferred_input_audio_device(Device).on_error(
+		    [this](auto&& Ex)
+		    {
+			    UpdateCurrentInputDeviceIndex();
+			    MakeHandler(__LINE__)(MoveTemp(Ex));
+		    });
+	}
+	catch (...)
+	{
+		MakeHandler(__LINE__).RethrowAndUpdateStatus();
 	}
 
-	void FDeviceManagement::SetOutputDevice(const int Index)
+	void FDeviceManagement::UpdateCurrentInputDeviceIndex()
 	{
-		OutputDevices->Set(Index);
+		DeviceManagement.get_current_audio_input_device()
+		    .then([this](auto&& Device)
+		          { Device ? UpdateCurrentInputDeviceIndex(*Device) : UpdateCurrentInputDeviceIndex(-1, "<None>"); })
+		    .on_error(MakeHandler(__LINE__));
+	}
+
+	void FDeviceManagement::UpdateCurrentInputDeviceIndex(const FDvcDevice& Device)
+	{
+		UpdateCurrentInputDeviceIndex(GetDeviceIndex(EDirection::input, Device), Device.name());
+	}
+
+	void FDeviceManagement::UpdateCurrentInputDeviceIndex(const Index Index, const std::string& DeviceName)
+	{
+		DLB_UE_LOG_DEVICE("Input", "changed", DeviceName);
+		Observer.OnInputDeviceChanged(Index);
+	}
+
+	void FDeviceManagement::SetOutputDevice(const Index Index)
+	{
+		try
+		{
+			FScopeLock Lock{&AccessDevices};
+			const FDvcDevice& Device = GetDeviceAt(EDirection::output, Index);
+			DLB_UE_LOG_DEVICE("Output", "change requested", Device.name());
+			DeviceManagement.set_preferred_output_audio_device(Device).on_error(
+			    [this](auto&& Ex)
+			    {
+				    UpdateCurrentOutputDeviceIndex();
+				    MakeHandler(__LINE__)(MoveTemp(Ex));
+			    });
+		}
+		catch (...)
+		{
+			MakeHandler(__LINE__).RethrowAndUpdateStatus();
+		}
+	}
+
+	void FDeviceManagement::UpdateCurrentOutputDeviceIndex()
+	{
+		DeviceManagement.get_current_audio_output_device()
+		    .then([this](auto&& Device)
+		          { Device ? UpdateCurrentOutputDeviceIndex(*Device) : UpdateCurrentOutputDeviceIndex(-1, "<None>"); })
+		    .on_error(MakeHandler(__LINE__));
+	}
+
+	void FDeviceManagement::UpdateCurrentOutputDeviceIndex(const FDvcDevice& Device)
+	{
+		UpdateCurrentOutputDeviceIndex(GetDeviceIndex(EDirection::output, Device), Device.name());
+	}
+
+	void FDeviceManagement::UpdateCurrentOutputDeviceIndex(const Index Index, const std::string& DeviceName)
+	{
+		DLB_UE_LOG_DEVICE("Output", "changed", DeviceName);
+		Observer.OnOutputDeviceChanged(Index);
 	}
 
 	using namespace dolbyio::comms;
 	namespace
 	{
-		bool IsInput(const dvc_device& Device)
+		bool IsInput(const EDirection Direction)
 		{
-			return Device.direction() & dvc_device::input;
+			return Direction & EDirection::input;
 		}
-		bool IsOutput(const dvc_device& Device)
+		bool IsOutput(const EDirection Direction)
 		{
-			return Device.direction() & dvc_device::output;
+			return Direction & EDirection::output;
 		}
 	}
 
-	void FDeviceManagement::InitializeDevices(FDvcDeviceManagement& DeviceManagement)
+	void FDeviceManagement::InitializeDevices()
 	{
-		GetAllDevices(DeviceManagement);
-
 		DeviceManagement
 		    .add_event_handler(
-		        [this](const device_changed& Event)
+		        [this](const audio_device_changed& Event)
 		        {
-			        if (Event.no_device)
+			        if (IsInput(Event.utilized_direction))
 			        {
-				        if (IsInput(Event.device))
+				        if (Event.no_device)
 				        {
-					        InputDevices->OnChangedToNone();
+					        UpdateCurrentInputDeviceIndex(-1, "<None>");
 				        }
-				        if (IsOutput(Event.device))
+				        else
 				        {
-					        OutputDevices->OnChangedToNone();
+					        UpdateCurrentInputDeviceIndex(Event.device);
 				        }
 			        }
-			        else
+			        if (IsOutput(Event.utilized_direction))
 			        {
-				        if (Event.utilized_direction & dvc_device::input)
+				        if (Event.no_device)
 				        {
-					        InputDevices->OnChanged(Event.device);
+					        UpdateCurrentOutputDeviceIndex(-1, "<None>");
 				        }
-				        if (Event.utilized_direction & dvc_device::output)
+				        else
 				        {
-					        OutputDevices->OnChanged(Event.device);
+					        UpdateCurrentOutputDeviceIndex(Event.device);
 				        }
 			        }
 		        })
-		    .then([this](auto&& Event) { Events->AddEvent(MoveTemp(Event)); })
-		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+		    .on_error(MakeHandler(__LINE__));
 
 		DeviceManagement
 		    .add_event_handler(
-		        [this](const device_added& Event)
+		        [this](const audio_device_added& Event)
 		        {
-			        if (IsInput(Event.device))
 			        {
-				        InputDevices->OnAdded(Event.device);
+				        FScopeLock Lock{&AccessDevices};
+				        Devices.Add(Event.device); // adding devices changes lists and therefore may change
+				                                   // the index of the current (input or output) device
 			        }
-			        if (IsOutput(Event.device))
+			        if (IsInput(Event.device.direction()))
 			        {
-				        OutputDevices->OnAdded(Event.device);
+				        DLB_UE_LOG_DEVICE("Input", "added", Event.device.name());
+				        UpdateCurrentInputDeviceIndex();
+				        Observer.OnListOfInputDevicesChanged(GetDeviceNames(EDirection::input));
+			        }
+			        if (IsOutput(Event.device.direction()))
+			        {
+				        DLB_UE_LOG_DEVICE("Output", "added", Event.device.name());
+				        UpdateCurrentOutputDeviceIndex();
+				        Observer.OnListOfOutputDevicesChanged(GetDeviceNames(EDirection::output));
 			        }
 		        })
-		    .then([this](auto&& Event) { Events->AddEvent(MoveTemp(Event)); })
-		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+		    .on_error(MakeHandler(__LINE__));
 
 		DeviceManagement
 		    .add_event_handler(
-		        [this](const device_removed& Event)
+		        [this](const audio_device_removed& Event)
 		        {
-			        InputDevices->OnRemoved(Event.uid);
-			        OutputDevices->OnRemoved(Event.uid);
+			        EDirection Direction{EDirection::none};
+			        {
+				        FScopeLock Lock{&AccessDevices};
+				        const auto Index = Devices.IndexOfByPredicate([UidToRemove = Event.uid](const auto& Uid)
+				                                                      { return Uid == UidToRemove; });
+				        DLB_UE_LOG_DEVICE("", "removed", Devices[Index].name());
+				        Direction = Devices[Index].direction();
+				        Devices.RemoveAt(Index); // removing devices changes lists and therefore may change
+				                                 // the index of the current (input or output) device
+			        }
+			        if (IsInput(Direction))
+			        {
+				        UpdateCurrentInputDeviceIndex();
+				        Observer.OnListOfInputDevicesChanged(GetDeviceNames(EDirection::input));
+			        }
+			        if (IsOutput(Direction))
+			        {
+				        UpdateCurrentOutputDeviceIndex();
+				        Observer.OnListOfOutputDevicesChanged(GetDeviceNames(EDirection::output));
+			        }
 		        })
-		    .then([this](auto&& Event) { Events->AddEvent(MoveTemp(Event)); })
-		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+		    .on_error(MakeHandler(__LINE__));
+
+		GetAllDevices();
 	}
 
-	void FDeviceManagement::GetAllDevices(FDvcDeviceManagement& DeviceManagement)
+	void FDeviceManagement::GetAllDevices()
 	{
 		DeviceManagement.get_audio_devices()
 		    .then(
-		        [this](auto&& Devices)
+		        [this](auto&& DvcDevices)
 		        {
-			        FDevices::FDvcDevices InitInputDevices;
-			        FDevices::FDvcDevices InitOutputDevices;
-			        FDevices::FDeviceNames InitInputDeviceNames;
-			        FDevices::FDeviceNames InitOutputDeviceNames;
-			        for (const auto& Device : Devices)
 			        {
-				        const auto DeviceName = ToFText(Device.name());
-				        if (IsInput(Device))
-				        {
-					        InitInputDevices.Add(Device);
-					        InitInputDeviceNames.Add(DeviceName);
-				        }
-				        if (IsOutput(Device))
-				        {
-					        InitOutputDevices.Add(Device);
-					        InitOutputDeviceNames.Add(DeviceName);
-				        }
+				        FScopeLock Lock{&AccessDevices};
+				        Devices.Append(DvcDevices.data(), DvcDevices.size());
+				        DLB_UE_LOG("%d device(s) added (%d in total)", DvcDevices.size(), Devices.Num());
 			        }
-			        InputDevices->Initialize(MoveTemp(InitInputDevices), MoveTemp(InitInputDeviceNames));
-			        OutputDevices->Initialize(MoveTemp(InitOutputDevices), MoveTemp(InitOutputDeviceNames));
+			        Observer.OnListOfInputDevicesChanged(GetDeviceNames(EDirection::input));
+			        Observer.OnListOfOutputDevicesChanged(GetDeviceNames(EDirection::output));
 		        })
-		    .on_error(DLB_HANDLE_ASYNC_EXCEPTION);
+		    .on_error(MakeHandler(__LINE__));
+	}
+
+	FDeviceNames FDeviceManagement::GetDeviceNames(const EDirection direction) const
+	{
+		FDeviceNames Names;
+		FScopeLock Lock{&AccessDevices};
+		for (const auto& Device : Devices)
+		{
+			if (Device.direction() & direction)
+			{
+				Names.Add(ToFText(Device.name()));
+			}
+		}
+		return Names;
+	}
+
+	const FDvcDevice& FDeviceManagement::GetDeviceAt(const EDirection direction, Index Index) const
+	{
+		for (const auto& Device : Devices) // Devices are locked at caller
+		{
+			if (Device.direction() & direction)
+			{
+				if (Index-- == 0) // check if we are at Index'th device for given direction
+				{
+					return Device;
+				}
+			}
+		}
+		throw std::logic_error{std::string{"Wrong "} + (IsInput(direction) ? "input" : "output") + " device Index"};
+	}
+
+	Index FDeviceManagement::GetNumberOfDevices(const EDirection direction) const
+	{
+		Index Count{0};
+		FScopeLock Lock{&AccessDevices};
+		for (const auto& Device : Devices)
+		{
+			if (Device.direction() & direction)
+			{
+				++Count;
+			}
+		}
+		return Count;
+	}
+
+	Index FDeviceManagement::GetDeviceIndex(const EDirection direction, const FDvcDevice& GivenDevice) const
+	{
+		Index Index = 0;
+		FScopeLock Lock{&AccessDevices};
+		for (const auto& Device : Devices)
+		{
+			if (Device == GivenDevice)
+			{
+				return Index;
+			}
+			if (Device.direction() & direction)
+			{
+				++Index;
+			}
+		}
+		return -1;
 	}
 }

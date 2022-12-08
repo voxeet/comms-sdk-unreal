@@ -2,7 +2,6 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"EngineVersion" : "4.27.0",
 	"FriendlyName": "Dolby.io Communications",
 	"Description": "Plugin integrating the Dolby.io Communications C++ SDK.",
 	"Category": "Audio",

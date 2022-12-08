@@ -31,7 +31,4 @@ private:
 	void NextInputDevice();
 	void PreviousOutputDevice();
 	void NextOutputDevice();
-
-	int GetCurrentInputDeviceIndex() const;
-	int GetCurrentOutputDeviceIndex() const;
 };

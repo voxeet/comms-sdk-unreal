@@ -2,61 +2,38 @@
 
 #pragma once
 
-#include "SdkStatusObserver.h"
+#include "CommonTypes.h"
+
+namespace dolbyio
+{
+	namespace comms
+	{
+		enum class conference_status;
+	}
+}
 
 namespace Dolby
 {
+	class ISdkEventsObserver;
+	using EConferenceStatus = dolbyio::comms::conference_status;
+
 	class FSdkStatus final
 	{
 	public:
-		void SetObserver(ISdkStatusObserver*);
+		using NotifyingMethod = void (FSdkStatus::*)(const FMessage&);
 
-		bool IsDisconnected() const;
-		bool IsConnecting() const;
+		void SetObserver(ISdkEventsObserver*);
 		bool IsConnected() const;
-
-		void OnDisconnected();
-		void OnConnecting();
-		void OnConnected();
-		void OnDisconnecting();
-
-		void OnNewListOfInputDevices(const FDeviceNames&);
-		void OnNewListOfOutputDevices(const FDeviceNames&);
-
-		void OnInputDeviceAdded(const FDeviceName&);
-		void OnOutputDeviceAdded(const FDeviceName&);
-
-		void OnInputDeviceRemoved(const FDeviceName&);
-		void OnOutputDeviceRemoved(const FDeviceName&);
-
-		void OnInputDeviceChanged(const FDeviceName&);
-		void OnOutputDeviceChanged(const FDeviceName&);
-
-		void OnLocalParticipantChanged(const FParticipant&);
-		void OnNewListOfRemoteParticipants(const FParticipants&);
-		void OnNewListOfActiveSpeakers(const FParticipants&);
-		void OnNewAudioLevels(const FAudioLevels&);
-
-		void OnRefreshTokenRequested();
-
 		void SetMsg(const FMessage&);
+		void SetStatus(EConferenceStatus);
 
 	private:
-		enum class EConnectionStatus
-		{
-			Disconnected,
-			Connecting,
-			Connected,
-			Disconnecting
-		};
+		// notifying methods
+		void LogMsg(const FMessage&);
+		void NotifyObserver(const FMessage&);
 
-		void SetConnection(EConnectionStatus);
-		void OnStatusChanged();
-		FMessage ToString() const;
-
-		EConnectionStatus ConnectionStatus = EConnectionStatus::Disconnected;
-		FMessage Msg;
-
-		ISdkStatusObserver* Observer;
+		EConferenceStatus ConferenceStatus;
+		NotifyingMethod UpdateStatus = &FSdkStatus::LogMsg;
+		ISdkEventsObserver* Observer = nullptr;
 	};
 }

@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include "SdkStatusObserver.h"
-
 #include "GameFramework/Actor.h"
+#include "SdkEventsObserver.h"
 
 #include "DolbyIoConference.generated.h"
 
@@ -21,10 +20,10 @@ namespace Dolby
 	class FSdkAccess;
 }
 
-/** Interface to the Dolby.io C++ SDK. On BeginPlay, initializes the Dolby.io C++ SDK using the client access token set
- * using a property. */
+/** Interface to the Dolby.io C++ SDK. On BeginPlay, initializes the Dolby.io C++ SDK using the client access token
+ * property if set. */
 UCLASS()
-class DOLBYIOCONFERENCEMODULE_API ADolbyIoConference : public AActor, public Dolby::ISdkStatusObserver
+class DOLBYIOCONFERENCEMODULE_API ADolbyIoConference : public AActor, public Dolby::ISdkEventsObserver
 {
 	GENERATED_BODY()
 
@@ -75,13 +74,13 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
 	TArray<FText> OutputDevices;
 
-	/** The current input audio device used by the Dolby.io C++ SDK. */
+	/** The index of the current input audio device used by the Dolby.io C++ SDK. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
-	FText CurrentInputDevice;
+	int CurrentInputDeviceIndex{0};
 
-	/** The current output audio device used by the Dolby.io C++ SDK. */
+	/** The index of the current output audio device used by the Dolby.io C++ SDK. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
-	FText CurrentOutputDevice;
+	int CurrentOutputDeviceIndex{0};
 
 	/** The participant ID of the local user. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dolby")
@@ -204,20 +203,21 @@ protected:
 	class APlayerController* FirstPlayerController;
 
 private:
-	// Dolby::ISdkStatusObserver
-	void OnStatusChanged(const Dolby::FMessage&) override;
+	void TriggerEvent(void (ADolbyIoConference::*Function)());
 
-	void OnNewListOfInputDevices(const Dolby::FDeviceNames&) override;
-	void OnNewListOfOutputDevices(const Dolby::FDeviceNames&) override;
-	void OnInputDeviceChanged(const Dolby::FDeviceName&) override;
-	void OnOutputDeviceChanged(const Dolby::FDeviceName&) override;
-
-	void OnLocalParticipantChanged(const Dolby::FParticipant&) override;
-	void OnNewListOfRemoteParticipants(const Dolby::FParticipants&) override;
-	void OnNewListOfActiveSpeakers(const Dolby::FParticipants&) override;
-	void OnNewAudioLevels(const Dolby::FAudioLevels&) override;
+	// Dolby::ISdkEventsObserver
+	void OnStatusChanged(const Dolby::FMessage& Status) override;
+	void OnListOfInputDevicesChanged(const Dolby::FDeviceNames NewInputDevices) override;
+	void OnListOfOutputDevicesChanged(const Dolby::FDeviceNames NewOutputDevices) override;
+	void OnInputDeviceChanged(const int Index) override;
+	void OnOutputDeviceChanged(const int Index) override;
+	void OnLocalParticipantChanged(const Dolby::FParticipant& ParticipantId) override;
+	void OnListOfRemoteParticipantsChanged(const Dolby::FParticipants& NewListOfParticipants) override;
+	void OnListOfActiveSpeakersChanged(const Dolby::FParticipants Speakers) override;
+	void OnAudioLevelsChanged(const Dolby::FAudioLevels NewAudioLevels) override;
 
 	void OnRefreshTokenRequested() override;
 
 	TSharedPtr<Dolby::FSdkAccess> CppSdk;
+	FString PreviousToken;
 };

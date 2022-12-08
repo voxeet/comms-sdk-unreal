@@ -17,12 +17,10 @@ namespace dolbyio
 
 namespace Dolby
 {
+	struct FErrorHandler;
+
 	class SDKACCESSMODULE_API FSdkAccess final : public IModuleInterface
 	{
-		using FToken = FString;
-		using FConferenceName = FString;
-		using FUserName = FString;
-
 	public:
 		FSdkAccess();
 		~FSdkAccess();
@@ -30,11 +28,12 @@ namespace Dolby
 		void StartupModule() override;
 		void ShutdownModule() override;
 
-		void SetObserver(class ISdkStatusObserver*);
+		FErrorHandler MakeHandler(int Id);
+		void SetObserver(class ISdkEventsObserver*);
 
-		void Initialize(const FToken&);
-		void Connect(const FConferenceName&, const FUserName&);
+		void Connect(const FToken&, const FConferenceName&, const FUserName&);
 		void Disconnect();
+		void ShutDown();
 
 		void MuteInput(const bool bIsMuted);
 		void MuteOutput(const bool bIsMuted);
@@ -52,12 +51,14 @@ namespace Dolby
 
 	private:
 		void LoadDll(const FString&);
+		void Initialize(const FToken&);
+		void WaitForDisconnect();
 
 		TArray<void*> DllHandles;
+		ISdkEventsObserver* Observer = nullptr;
 		FSdkStatus Status;
 		TUniquePtr<dolbyio::comms::sdk> Sdk;
 		TUniquePtr<dolbyio::comms::refresh_token> RefreshTokenCb;
-		TUniquePtr<class FEvents> Events;
 		TUniquePtr<class FDeviceManagement> Devices;
 		FString LocalParticipantID;
 		TSet<FString> ParticipantIDs;
