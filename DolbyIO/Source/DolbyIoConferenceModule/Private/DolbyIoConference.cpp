@@ -7,12 +7,14 @@
 #include "Async/Async.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
+#include "Json.h"
 #include "Modules/ModuleManager.h"
 
 IMPLEMENT_MODULE(FDefaultModuleImpl, DolbyIoConferenceModule)
 
 ADolbyIoConference::ADolbyIoConference()
-    : ConferenceName("unreal"), UserName("unreal"), Status("Disconnected"), CppSdk(MakeShared<Dolby::FSdkAccess>())
+    : TokenExpirationTime(3600), ConferenceName("unreal"), UserName("unreal"), Status("Disconnected"),
+      CppSdk(MakeShared<Dolby::FSdkAccess>())
 {
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	PrimaryActorTick.bCanEverTick = true;
@@ -27,10 +29,16 @@ void ADolbyIoConference::BeginPlay()
 	{
 		FirstPlayerController = World->GetFirstPlayerController();
 	}
+
 	CppSdk->SetObserver(this);
-	if (!Token.IsEmpty())
+
+	if (Token.IsEmpty())
 	{
-		CppSdk->RefreshToken(Token);
+		ObtainToken();
+	}
+	else
+	{
+		RefreshToken();
 	}
 }
 
@@ -70,11 +78,7 @@ void ADolbyIoConference::GetAudioLevels()
 }
 void ADolbyIoConference::RefreshToken()
 {
-	if (Token != PreviousToken)
-	{
-		CppSdk->RefreshToken(Token);
-		PreviousToken = Token;
-	}
+	CppSdk->RefreshToken(Token);
 }
 
 dolbyio::comms::sdk* ADolbyIoConference::GetRawSdk()
@@ -154,12 +158,44 @@ void ADolbyIoConference::OnRefreshTokenRequested()
 	TriggerEvent(&ADolbyIoConference::OnRefreshTokenNeeded);
 }
 
+void ADolbyIoConference::ObtainToken()
+{
+	if (AppKey.IsEmpty() || AppSecret.IsEmpty())
+	{
+		return;
+	}
+
+	FHttpRequestRef Request = FHttpModule::Get().CreateRequest();
+	Request->SetURL("https://session.voxeet.com/v1/oauth2/token");
+	Request->SetVerb("POST");
+	Request->AppendToHeader("Authorization", "Basic " + FBase64::Encode(AppKey + ":" + AppSecret));
+	Request->AppendToHeader("Content-Type", "application/x-www-form-urlencoded");
+	Request->SetContentAsString("grant_type=client_credentials&expires_in=" + FString::FromInt(TokenExpirationTime));
+	Request->OnProcessRequestComplete().BindUObject(this, &ADolbyIoConference::OnTokenObtained);
+	Request->ProcessRequest();
+}
+
+void ADolbyIoConference::OnTokenObtained(FHttpRequestPtr Request, FHttpResponsePtr Response,
+                                         bool bConnectedSuccessfully)
+{
+	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+	TSharedPtr<FJsonObject> ResponseObj;
+	FJsonSerializer::Deserialize(Reader, ResponseObj);
+	Token = ResponseObj->GetStringField("access_token");
+	CppSdk->RefreshToken(Token);
+}
+
 void ADolbyIoConference::OnSpatialUpdateNeeded_Implementation()
 {
 	if (FirstPlayerController)
 	{
 		FirstPlayerController->GetActorEyesViewPoint(Position, Rotation);
 	}
+}
+
+void ADolbyIoConference::OnRefreshTokenNeeded_Implementation()
+{
+	ObtainToken();
 }
 
 void ADolbyIoConference::OnStatusChanged_Implementation() {}
@@ -171,4 +207,3 @@ void ADolbyIoConference::OnLocalParticipantChanged_Implementation() {}
 void ADolbyIoConference::OnNewListOfRemoteParticipants_Implementation() {}
 void ADolbyIoConference::OnNewListOfActiveSpeakers_Implementation() {}
 void ADolbyIoConference::OnNewAudioLevels_Implementation() {}
-void ADolbyIoConference::OnRefreshTokenNeeded_Implementation() {}
