@@ -85,11 +85,6 @@ void ADolbyIoSampleConference::OnNewAudioLevels_Implementation()
 	}
 }
 
-void ADolbyIoSampleConference::OnRefreshTokenNeeded_Implementation()
-{
-	Super::RefreshToken();
-}
-
 void ADolbyIoSampleConference::Disconnect()
 {
 	Super::Disconnect();
