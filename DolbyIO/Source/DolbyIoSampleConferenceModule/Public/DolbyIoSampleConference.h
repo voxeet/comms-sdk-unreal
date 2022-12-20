@@ -21,7 +21,6 @@ public:
 	void OnNewListOfRemoteParticipants_Implementation() override;
 	void OnNewListOfActiveSpeakers_Implementation() override;
 	void OnNewAudioLevels_Implementation() override;
-	void OnRefreshTokenNeeded_Implementation() override;
 
 private:
 	void Disconnect();
