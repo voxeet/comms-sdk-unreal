@@ -2,6 +2,7 @@
 
 #include "DolbyIoConference.h"
 
+#include "DolbyLogging.h"
 #include "SdkAccess.h"
 
 #include "Async/Async.h"
@@ -13,6 +14,8 @@
 #include "Serialization/JsonSerializer.h"
 
 IMPLEMENT_MODULE(FDefaultModuleImpl, DolbyIoConferenceModule)
+
+DEFINE_LOG_CATEGORY(LogDolby);
 
 ADolbyIoConference::ADolbyIoConference()
     : TokenExpirationTime(3600), ConferenceName("unreal"), UserName("unreal"), Status("Disconnected"),
@@ -177,14 +180,24 @@ void ADolbyIoConference::ObtainToken()
 	Request->ProcessRequest();
 }
 
-void ADolbyIoConference::OnTokenObtained(FHttpRequestPtr Request, FHttpResponsePtr Response,
-                                         bool bConnectedSuccessfully)
+void ADolbyIoConference::OnTokenObtained(FHttpRequestPtr, FHttpResponsePtr Response, bool bConnectedSuccessfully)
 {
-	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+	if (!bConnectedSuccessfully)
+	{
+		UE_LOG(LogDolby, Error, TEXT("Could not connect to backend serving access tokens"));
+		return;
+	}
+
 	TSharedPtr<FJsonObject> ResponseObj;
-	FJsonSerializer::Deserialize(Reader, ResponseObj);
-	Token = ResponseObj->GetStringField("access_token");
-	CppSdk->RefreshToken(Token);
+	FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Response->GetContentAsString()), ResponseObj);
+	if (ResponseObj->TryGetStringField("access_token", Token))
+	{
+		CppSdk->RefreshToken(Token);
+	}
+	else
+	{
+		UE_LOG(LogDolby, Error, TEXT("Could not get access token - verify app key and secret and validity"));
+	}
 }
 
 void ADolbyIoConference::OnSpatialUpdateNeeded_Implementation()
