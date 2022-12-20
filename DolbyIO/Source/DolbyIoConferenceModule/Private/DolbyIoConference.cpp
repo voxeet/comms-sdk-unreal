@@ -7,8 +7,10 @@
 #include "Async/Async.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
-#include "Json.h"
+#include "Misc/Base64.h"
 #include "Modules/ModuleManager.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 
 IMPLEMENT_MODULE(FDefaultModuleImpl, DolbyIoConferenceModule)
 
