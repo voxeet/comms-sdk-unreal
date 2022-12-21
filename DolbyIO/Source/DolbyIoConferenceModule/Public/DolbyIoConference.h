@@ -3,6 +3,7 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
+#include "Http.h"
 #include "SdkEventsObserver.h"
 
 #include "DolbyIoConference.generated.h"
@@ -31,6 +32,18 @@ public:
 	ADolbyIoConference();
 
 	// read-write values for controlling the SDK
+
+	/** Dolby.io app key. DO NOT fill this property in production. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dolby")
+	FString AppKey;
+
+	/** Dolby.io app secret. DO NOT fill this property in production. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dolby")
+	FString AppSecret;
+
+	/** Expiration time of tokens obtained using the app key and secret (in seconds). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dolby")
+	int TokenExpirationTime;
 
 	/** Dolby.io client access token. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dolby")
@@ -207,10 +220,12 @@ private:
 
 	// Dolby::ISdkEventsObserver
 	void OnStatusChanged(const Dolby::FMessage& Status) override;
+
 	void OnListOfInputDevicesChanged(const Dolby::FDeviceNames NewInputDevices) override;
 	void OnListOfOutputDevicesChanged(const Dolby::FDeviceNames NewOutputDevices) override;
 	void OnInputDeviceChanged(const int Index) override;
 	void OnOutputDeviceChanged(const int Index) override;
+
 	void OnLocalParticipantChanged(const Dolby::FParticipant& ParticipantId) override;
 	void OnListOfRemoteParticipantsChanged(const Dolby::FParticipants& NewListOfParticipants) override;
 	void OnListOfActiveSpeakersChanged(const Dolby::FParticipants Speakers) override;
@@ -218,6 +233,9 @@ private:
 
 	void OnRefreshTokenRequested() override;
 
+	// HTTP authentication
+	void ObtainToken();
+	void OnTokenObtained(FHttpRequestPtr, FHttpResponsePtr, bool bConnectedSuccessfully);
+
 	TSharedPtr<Dolby::FSdkAccess> CppSdk;
-	FString PreviousToken;
 };

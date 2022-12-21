@@ -17,6 +17,7 @@ namespace Dolby
 		virtual void OnListOfOutputDevicesChanged(const FDeviceNames) = 0;
 		virtual void OnInputDeviceChanged(const int Index) = 0;
 		virtual void OnOutputDeviceChanged(const int Index) = 0;
+
 		virtual void OnLocalParticipantChanged(const FParticipant&) = 0;
 		virtual void OnListOfRemoteParticipantsChanged(const FParticipants&) = 0;
 		virtual void OnListOfActiveSpeakersChanged(const FParticipants) = 0;
