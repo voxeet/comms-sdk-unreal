@@ -6,6 +6,3 @@
 #define DOLBYIO_COMMS_SUPPRESS_APPLE_NO_RTTI_WARNING
 #endif
 #include <dolbyio/comms/sdk.h>
-
-#include "CommonTypes.h"
-#include "DolbyLogging.h"

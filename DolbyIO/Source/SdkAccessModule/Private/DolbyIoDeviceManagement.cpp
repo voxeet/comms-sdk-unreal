@@ -1,10 +1,11 @@
 // Copyright 2022 Dolby Laboratories
 
-#include "DeviceManagement.h"
+#include "DolbyIoDeviceManagement.h"
 
-#include "Common.h"
-#include "ErrorHandler.h"
-#include "SdkEventsObserver.h"
+#include "DolbyIoErrorHandler.h"
+#include "DolbyIoLogging.h"
+#include "DolbyIoSdk.h"
+#include "DolbyIoSdkEventObserver.h"
 
 #include "Misc/ScopeLock.h"
 
@@ -16,9 +17,9 @@ namespace Dolby
 	}
 
 #define DLB_UE_LOG_DEVICE(Type, Event, Name) \
-	UE_LOG(LogDolby, Log, TEXT(Type " device " Event ": %s"), *ToFText(Name).ToString())
+	UE_LOG(LogDolby, Warning, TEXT(Type " device " Event ": %s"), *ToFText(Name).ToString())
 
-	FDeviceManagement::FDeviceManagement(FDvcDeviceManagement& DeviceManagement, ISdkEventsObserver& Observer,
+	FDeviceManagement::FDeviceManagement(FDvcDeviceManagement& DeviceManagement, ISdkEventObserver& Observer,
 	                                     FHandlersMaker MakeHandler)
 	    : DeviceManagement(DeviceManagement), MakeHandler(MakeHandler), Observer(Observer)
 	{
@@ -27,7 +28,7 @@ namespace Dolby
 
 	FDeviceManagement::~FDeviceManagement() {}
 
-	void FDeviceManagement::SetInputDevice(const Index Index)
+	void FDeviceManagement::SetInputDevice(int Index)
 	try
 	{
 		FScopeLock Lock{&AccessDevices};
@@ -58,13 +59,13 @@ namespace Dolby
 		UpdateCurrentInputDeviceIndex(GetDeviceIndex(EDirection::input, Device), Device.name());
 	}
 
-	void FDeviceManagement::UpdateCurrentInputDeviceIndex(const Index Index, const std::string& DeviceName)
+	void FDeviceManagement::UpdateCurrentInputDeviceIndex(int Index, const std::string& DeviceName)
 	{
 		DLB_UE_LOG_DEVICE("Input", "changed", DeviceName);
-		Observer.OnInputDeviceChanged(Index);
+		Observer.OnCurrentInputDeviceChangedEvent(Index);
 	}
 
-	void FDeviceManagement::SetOutputDevice(const Index Index)
+	void FDeviceManagement::SetOutputDevice(int Index)
 	{
 		try
 		{
@@ -97,10 +98,10 @@ namespace Dolby
 		UpdateCurrentOutputDeviceIndex(GetDeviceIndex(EDirection::output, Device), Device.name());
 	}
 
-	void FDeviceManagement::UpdateCurrentOutputDeviceIndex(const Index Index, const std::string& DeviceName)
+	void FDeviceManagement::UpdateCurrentOutputDeviceIndex(int Index, const std::string& DeviceName)
 	{
 		DLB_UE_LOG_DEVICE("Output", "changed", DeviceName);
-		Observer.OnOutputDeviceChanged(Index);
+		Observer.OnCurrentOutputDeviceChangedEvent(Index);
 	}
 
 	using namespace dolbyio::comms;
@@ -160,13 +161,13 @@ namespace Dolby
 			        {
 				        DLB_UE_LOG_DEVICE("Input", "added", Event.device.name());
 				        UpdateCurrentInputDeviceIndex();
-				        Observer.OnListOfInputDevicesChanged(GetDeviceNames(EDirection::input));
+				        Observer.OnListOfInputDevicesChangedEvent(GetDeviceNames(EDirection::input));
 			        }
 			        if (IsOutput(Event.device.direction()))
 			        {
 				        DLB_UE_LOG_DEVICE("Output", "added", Event.device.name());
 				        UpdateCurrentOutputDeviceIndex();
-				        Observer.OnListOfOutputDevicesChanged(GetDeviceNames(EDirection::output));
+				        Observer.OnListOfOutputDevicesChangedEvent(GetDeviceNames(EDirection::output));
 			        }
 		        })
 		    .on_error(MakeHandler(__LINE__));
@@ -188,12 +189,12 @@ namespace Dolby
 			        if (IsInput(Direction))
 			        {
 				        UpdateCurrentInputDeviceIndex();
-				        Observer.OnListOfInputDevicesChanged(GetDeviceNames(EDirection::input));
+				        Observer.OnListOfInputDevicesChangedEvent(GetDeviceNames(EDirection::input));
 			        }
 			        if (IsOutput(Direction))
 			        {
 				        UpdateCurrentOutputDeviceIndex();
-				        Observer.OnListOfOutputDevicesChanged(GetDeviceNames(EDirection::output));
+				        Observer.OnListOfOutputDevicesChangedEvent(GetDeviceNames(EDirection::output));
 			        }
 		        })
 		    .on_error(MakeHandler(__LINE__));
@@ -212,8 +213,8 @@ namespace Dolby
 				        Devices.Append(DvcDevices.data(), DvcDevices.size());
 				        DLB_UE_LOG("%d device(s) added (%d in total)", DvcDevices.size(), Devices.Num());
 			        }
-			        Observer.OnListOfInputDevicesChanged(GetDeviceNames(EDirection::input));
-			        Observer.OnListOfOutputDevicesChanged(GetDeviceNames(EDirection::output));
+			        Observer.OnListOfInputDevicesChangedEvent(GetDeviceNames(EDirection::input));
+			        Observer.OnListOfOutputDevicesChangedEvent(GetDeviceNames(EDirection::output));
 		        })
 		    .on_error(MakeHandler(__LINE__));
 	}
@@ -232,11 +233,11 @@ namespace Dolby
 		return Names;
 	}
 
-	const FDvcDevice& FDeviceManagement::GetDeviceAt(const EDirection direction, Index Index) const
+	const FDvcDevice& FDeviceManagement::GetDeviceAt(EDirection Direction, int Index) const
 	{
 		for (const auto& Device : Devices) // Devices are locked at caller
 		{
-			if (Device.direction() & direction)
+			if (Device.direction() & Direction)
 			{
 				if (Index-- == 0) // check if we are at Index'th device for given direction
 				{
@@ -244,16 +245,16 @@ namespace Dolby
 				}
 			}
 		}
-		throw std::logic_error{std::string{"Wrong "} + (IsInput(direction) ? "input" : "output") + " device Index"};
+		throw std::logic_error{std::string{"Wrong "} + (IsInput(Direction) ? "input" : "output") + " device Index"};
 	}
 
-	Index FDeviceManagement::GetNumberOfDevices(const EDirection direction) const
+	int FDeviceManagement::GetNumberOfDevices(EDirection Direction) const
 	{
-		Index Count{0};
+		int Count = 0;
 		FScopeLock Lock{&AccessDevices};
 		for (const auto& Device : Devices)
 		{
-			if (Device.direction() & direction)
+			if (Device.direction() & Direction)
 			{
 				++Count;
 			}
@@ -261,9 +262,9 @@ namespace Dolby
 		return Count;
 	}
 
-	Index FDeviceManagement::GetDeviceIndex(const EDirection direction, const FDvcDevice& GivenDevice) const
+	int FDeviceManagement::GetDeviceIndex(const EDirection direction, const FDvcDevice& GivenDevice) const
 	{
-		Index Index = 0;
+		int Index = 0;
 		FScopeLock Lock{&AccessDevices};
 		for (const auto& Device : Devices)
 		{

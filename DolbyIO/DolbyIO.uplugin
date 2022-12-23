@@ -15,19 +15,13 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "DolbyIoConferenceModule",
+			"Name": "DolbyIoSubsystemModule",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [ "Win64", "Mac" ]
 		},
 		{
 			"Name": "SdkAccessModule",
-			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"WhitelistPlatforms": [ "Win64", "Mac" ]
-		},
-		{
-			"Name": "DolbyIoSampleConferenceModule",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [ "Win64", "Mac" ]

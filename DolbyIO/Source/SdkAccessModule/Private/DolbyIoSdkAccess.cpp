@@ -1,20 +1,17 @@
 // Copyright 2022 Dolby Laboratories
 
-#include "SdkAccess.h"
+#include "DolbyIoSdkAccess.h"
 
-#include "Common.h"
-#include "DeviceManagement.h"
-#include "ErrorHandler.h"
-#include "HAL/PlatformProcess.h"
-#include "Interfaces/IPluginManager.h"
+#include "DolbyIoDeviceManagement.h"
+#include "DolbyIoErrorHandler.h"
+#include "DolbyIoLogging.h"
+#include "DolbyIoSdk.h"
+#include "DolbyIoSdkEventObserver.h"
+#include "DolbyIoSdkStatus.h"
+
 #include "Math/Rotator.h"
-#include "Misc/Paths.h"
-#include "Modules/ModuleManager.h"
-#include "SdkEventsObserver.h"
 
 #include <dolbyio/comms/async_result.h>
-
-IMPLEMENT_MODULE(Dolby::FSdkAccess, SdkAccessModule)
 
 static std::string ToStdString(const FString& String)
 {
@@ -25,98 +22,36 @@ namespace Dolby
 {
 	using namespace dolbyio::comms;
 
-	FSdkAccess::FSdkAccess()
+	FSdkAccess::FSdkAccess(ISdkEventObserver& Observer) : Observer(Observer), Status(MakeUnique<FSdkStatus>(Observer))
 	{
-		Status.SetStatus(EConferenceStatus::destroyed);
 	}
 
-	FSdkAccess::~FSdkAccess() {}
-
-	void FSdkAccess::StartupModule()
-	try
+	FSdkAccess::~FSdkAccess()
 	{
-#if PLATFORM_WINDOWS
-		LoadDll("avutil-56.dll");
-		LoadDll("dvclient.dll");
-		LoadDll("dolbyio_comms_media.dll");
-		LoadDll("dolbyio_comms_sdk.dll");
-
-		static auto AlignedNew =
-		    +[](std::size_t Count, std::size_t Al) { return operator new(Count, static_cast<std::align_val_t>(Al)); };
-		static auto AlignedDelete =
-		    +[](void* Ptr, std::size_t Al) { operator delete(Ptr, static_cast<std::align_val_t>(Al)); };
-		sdk::set_app_allocator({operator new, AlignedNew, operator delete, AlignedDelete});
-#endif
-		sdk::log_settings LogSettings;
-		LogSettings.sdk_log_level = log_level::INFO;
-		LogSettings.media_log_level = log_level::OFF;
-		LogSettings.log_directory = "";
-		sdk::set_log_settings(LogSettings);
-	}
-	catch (...)
-	{
-		MakeHandler(__LINE__).RethrowAndUpdateStatus();
-	}
-
-	void FSdkAccess::LoadDll(const FString& Dll)
-	{
-		const static auto BaseDir =
-		    FPaths::Combine(*IPluginManager::Get().FindPlugin("DolbyIO")->GetBaseDir(), TEXT("Binaries/Win64"));
-		if (const auto Handle = FPlatformProcess::GetDllHandle(*FPaths::Combine(*BaseDir, *Dll)))
+		if (Status->IsConnected())
 		{
-			DllHandles.Add(Handle);
-		}
-		else
-		{
-			throw std::runtime_error{std::string{"Failed to load "} + ToStdString(Dll)};
-		}
-	}
-
-	void FSdkAccess::ShutdownModule()
-	{
-		DLB_UE_LOG("Shutting down SdkAccessModule");
-		for (auto Handle : DllHandles)
-		{
-			FPlatformProcess::FreeDllHandle(Handle);
-		}
-	}
-
-	void FSdkAccess::ShutDown()
-	{
-		DLB_UE_LOG("Shutting down SdkAccess");
-		WaitForDisconnect();
-	}
-
-	void FSdkAccess::WaitForDisconnect()
-	{
-		if (Sdk && Status.IsConnected())
 			try
 			{
-				dolbyio::comms::wait(Sdk->conference().leave().then([this]() { return Sdk->session().close(); }));
+				wait(Sdk->conference().leave().then([this]() { return Sdk->session().close(); }));
 			}
 			catch (...)
 			{
 				MakeHandler(__LINE__).RethrowAndUpdateStatus();
 			}
+		}
 	}
 
-	void FSdkAccess::SetObserver(ISdkEventsObserver* AnObserver)
-	{
-		Observer = AnObserver;
-		Status.SetObserver(Observer);
-	}
-
-	void FSdkAccess::RefreshToken(const FToken& Token)
+	void FSdkAccess::SetToken(const FToken& Token)
 	try
 	{
-		if (RefreshTokenCb)
+		if (!RefreshTokenCb)
 		{
-			(*RefreshTokenCb)(ToStdString(Token));
-			RefreshTokenCb.Reset(); // RefreshToken callback can be called only once
+			Initialize(Token);
 		}
 		else
 		{
-			Initialize(Token);
+			(*RefreshTokenCb)(ToStdString(Token));
+			RefreshTokenCb.Reset(); // RefreshToken callback can be called only once
 		}
 	}
 	catch (...)
@@ -127,12 +62,6 @@ namespace Dolby
 	void FSdkAccess::Initialize(const FToken& Token)
 	try
 	{
-		if (Status.IsConnected())
-		{
-			DLB_UE_LOG("SDK already initialized and conference connected - skipping initialization");
-			return;
-		}
-		RefreshTokenCb.Reset();
 		LocalParticipantID.Reset();
 		ParticipantIDs.Empty();
 		Sdk.Reset(sdk::create(ToStdString(Token),
@@ -140,15 +69,15 @@ namespace Dolby
 		                      {
 			                      DLB_UE_LOG("Refresh token requested");
 			                      RefreshTokenCb.Reset(cb.release());
-			                      Observer->OnRefreshTokenRequested();
+			                      Observer.OnTokenNeededEvent();
 		                      })
 		              .release());
-		Devices.Reset(MakeUnique<FDeviceManagement>(Sdk->device_management(), *Observer,
+		Devices.Reset(MakeUnique<FDeviceManagement>(Sdk->device_management(), Observer,
 		                                            [this](int Id) { return MakeHandler(Id); })
 		                  .Release());
 
 		Sdk->conference()
-		    .add_event_handler([this](const conference_status_updated& Event) { Status.SetStatus(Event.status); })
+		    .add_event_handler([this](const conference_status_updated& Event) { Status->SetStatus(Event.status); })
 		    .on_error(MakeHandler(__LINE__));
 
 		Sdk->conference()
@@ -156,7 +85,7 @@ namespace Dolby
 		        [this](const participant_added& Event)
 		        {
 			        ParticipantIDs.Add(Event.participant.user_id.c_str());
-			        Observer->OnListOfRemoteParticipantsChanged(ParticipantIDs);
+			        Observer.OnListOfRemoteParticipantsChangedEvent(ParticipantIDs);
 		        })
 		    .on_error(MakeHandler(__LINE__));
 
@@ -170,7 +99,7 @@ namespace Dolby
 				        if (*ParticipantStatus == participant_status::left)
 				        {
 					        ParticipantIDs.Remove(Event.participant.user_id.c_str());
-					        Observer->OnListOfRemoteParticipantsChanged(ParticipantIDs);
+					        Observer.OnListOfRemoteParticipantsChangedEvent(ParticipantIDs);
 				        }
 			        }
 		        })
@@ -185,47 +114,34 @@ namespace Dolby
 			        {
 				        ActiveSpeakers.Add(Speaker.c_str());
 			        }
-			        Observer->OnListOfActiveSpeakersChanged(ActiveSpeakers);
+			        Observer.OnListOfActiveSpeakersChangedEvent(ActiveSpeakers);
 		        })
 		    .on_error(MakeHandler(__LINE__));
+
+		Observer.OnInitializedEvent();
 	}
 	catch (...)
 	{
 		MakeHandler(__LINE__).RethrowAndUpdateStatus();
 	}
 
-	FErrorHandler FSdkAccess::MakeHandler(int Id)
-	{
-		return FErrorHandler([this, Id](const FMessage& Msg)
-		                     { Status.SetMsg(Msg + " {" + std::to_string(Id).c_str() + "}"); },
-		                     [this]()
-		                     {
-			                     if (Status.IsConnected())
-			                     {
-				                     Status.SetStatus(EConferenceStatus::leaving);
-				                     Disconnect();
-			                     }
-		                     });
-	}
-
-	void FSdkAccess::Connect(const FToken& Token, const FConferenceName& Conf, const FUserName& User)
+	void FSdkAccess::Connect(const FConferenceName& Conf, const FUserName& User)
 	try
 	{
 		if (!Sdk)
 		{
-			Initialize(Token);
-			if (!Sdk)
-			{
-				return Status.SetMsg("Enter valid token");
-			}
+			DLB_UE_LOG("Cannot connect - not initialized");
+			return;
 		}
-		if (Conf.IsEmpty() || User.IsEmpty())
+		if (Status->IsConnected())
 		{
-			return Status.SetMsg("Conference name and user name cannot be empty");
+			DLB_UE_LOG("Cannot connect - already connected, please disconnect first");
+			return;
 		}
-		if (Status.IsConnected())
+		if (Conf.IsEmpty())
 		{
-			return Status.SetMsg("Must disconnect first");
+			DLB_UE_LOG("Cannot connect - conference name cannot be empty");
+			return;
 		}
 
 		bIsDemo = Conf == "demo";
@@ -242,7 +158,7 @@ namespace Dolby
 			        if (User.participant_id)
 			        {
 				        LocalParticipantID = User.participant_id->c_str();
-				        Observer->OnLocalParticipantChanged(LocalParticipantID);
+				        Observer.OnLocalParticipantChangedEvent(LocalParticipantID);
 			        }
 
 			        if (bIsDemo)
@@ -278,42 +194,20 @@ namespace Dolby
 
 	void FSdkAccess::Disconnect()
 	{
+		if (!Status->IsConnected())
+		{
+			DLB_UE_LOG("Cannot disconnect - not connected");
+			return;
+		}
+
+		LocalParticipantID.Reset();
 		ParticipantIDs.Empty();
-		if (Sdk)
-		{
-			Sdk->conference().leave().then([this]() { return Sdk->session().close(); }).on_error(MakeHandler(__LINE__));
-		}
-	}
-
-	void FSdkAccess::MuteInput(const bool bIsMuted)
-	{
-		if (Status.IsConnected())
-		{
-			Sdk->conference().mute(bIsMuted).on_error(MakeHandler(__LINE__));
-		}
-	}
-
-	void FSdkAccess::MuteOutput(const bool bIsMuted)
-	{
-		if (Status.IsConnected())
-		{
-			Sdk->conference().mute_output(bIsMuted).on_error(MakeHandler(__LINE__));
-		}
-	}
-
-	void FSdkAccess::SetInputDevice(const int Index)
-	{
-		Devices->SetInputDevice(Index);
-	}
-
-	void FSdkAccess::SetOutputDevice(const int Index)
-	{
-		Devices->SetOutputDevice(Index);
+		Sdk->conference().leave().then([this]() { return Sdk->session().close(); }).on_error(MakeHandler(__LINE__));
 	}
 
 	void FSdkAccess::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
 	{
-		if (!Status.IsConnected())
+		if (!Status->IsConnected())
 		{
 			return;
 		}
@@ -345,9 +239,53 @@ namespace Dolby
 		Sdk->conference().update_spatial_audio_configuration(MoveTemp(Update)).on_error(MakeHandler(__LINE__));
 	}
 
+	void FSdkAccess::MuteInput()
+	{
+		if (!Status->IsConnected())
+		{
+			DLB_UE_LOG("Cannot mute input - not connected");
+			return;
+		}
+
+		Sdk->conference().mute(true).on_error(MakeHandler(__LINE__));
+	}
+
+	void FSdkAccess::UnmuteInput()
+	{
+		if (!Status->IsConnected())
+		{
+			DLB_UE_LOG("Cannot unmute input - not connected");
+			return;
+		}
+
+		Sdk->conference().mute(false).on_error(MakeHandler(__LINE__));
+	}
+
+	void FSdkAccess::MuteOutput()
+	{
+		if (!Status->IsConnected())
+		{
+			DLB_UE_LOG("Cannot mute output - not connected");
+			return;
+		}
+
+		Sdk->conference().mute_output(true).on_error(MakeHandler(__LINE__));
+	}
+
+	void FSdkAccess::UnmuteOutput()
+	{
+		if (!Status->IsConnected())
+		{
+			DLB_UE_LOG("Cannot unmute output - not connected");
+			return;
+		}
+
+		Sdk->conference().mute_output(false).on_error(MakeHandler(__LINE__));
+	}
+
 	void FSdkAccess::GetAudioLevels()
 	{
-		if (!Status.IsConnected())
+		if (!Status->IsConnected())
 		{
 			return;
 		}
@@ -361,13 +299,31 @@ namespace Dolby
 			        {
 				        AudioLevels.Emplace(Level.participant_id.c_str(), Level.level);
 			        }
-			        Observer->OnAudioLevelsChanged(AudioLevels);
+			        Observer.OnListOfAudioLevelsChangedEvent(AudioLevels);
 		        })
 		    .on_error(MakeHandler(__LINE__));
 	}
 
-	sdk* FSdkAccess::GetRawSdk()
+	void FSdkAccess::SetInputDevice(const int Index)
 	{
-		return Sdk.Get();
+		Devices->SetInputDevice(Index);
+	}
+
+	void FSdkAccess::SetOutputDevice(const int Index)
+	{
+		Devices->SetOutputDevice(Index);
+	}
+
+	FErrorHandler FSdkAccess::MakeHandler(int Id)
+	{
+		return FErrorHandler([this, Id](const FString& Msg)
+		                     { Status->Log(Msg + " {" + std::to_string(Id).c_str() + "}"); },
+		                     [this]()
+		                     {
+			                     if (Status->IsConnected())
+			                     {
+				                     Disconnect();
+			                     }
+		                     });
 	}
 }

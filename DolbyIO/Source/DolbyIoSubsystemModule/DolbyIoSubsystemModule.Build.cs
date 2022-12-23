@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class DolbyIoConferenceModule : ModuleRules
+public class DolbyIoSubsystemModule : ModuleRules
 {
-	public DolbyIoConferenceModule(ReadOnlyTargetRules Target) : base(Target)
+	public DolbyIoSubsystemModule(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
