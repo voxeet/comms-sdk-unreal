@@ -1,6 +1,6 @@
 // Copyright 2022 Dolby Laboratories
 
-#include "DolbyIoSubsystem.h"
+#include "DolbyIO.h"
 
 #include "DolbyIO/Authenticator.h"
 #include "DolbyIO/SdkAccess.h"
@@ -11,7 +11,7 @@
 #include "GameFramework/PlayerController.h"
 #include "TimerManager.h"
 
-void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+void UDolbyIO::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 	CppSdk = MakeShared<DolbyIO::FSdkAccess>(*this);
@@ -23,34 +23,34 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	if (GameInstance)
 	{
 		GameInstance->GetTimerManager().SetTimer(SpatialUpdateTimerHandle, this,
-		                                         &UDolbyIOSubsystem::UpdateViewPointUsingFirstPlayer, 0.03, true);
+		                                         &UDolbyIO::UpdateViewPointUsingFirstPlayer, 0.03, true);
 	}
 }
 
-void UDolbyIOSubsystem::Deinitialize()
+void UDolbyIO::Deinitialize()
 {
 	CppSdk.Reset();
 	Super::Deinitialize();
 }
 
-void UDolbyIOSubsystem::SetToken(const FString& Token)
+void UDolbyIO::SetToken(const FString& Token)
 {
 	CppSdk->SetToken(Token);
 }
-void UDolbyIOSubsystem::SetTokenUsingKeyAndSecret(const FString& AppKey, const FString& AppSecret,
-                                                  int TokenExpirationTimeInSeconds)
+void UDolbyIO::SetTokenUsingKeyAndSecret(const FString& AppKey, const FString& AppSecret,
+                                         int TokenExpirationTimeInSeconds)
 {
 	Authenticator->GetToken(AppKey, AppSecret, TokenExpirationTimeInSeconds);
 }
-void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& UserName)
+void UDolbyIO::Connect(const FString& ConferenceName, const FString& UserName)
 {
 	CppSdk->Connect(ConferenceName, UserName);
 }
-void UDolbyIOSubsystem::Disconnect()
+void UDolbyIO::Disconnect()
 {
 	CppSdk->Disconnect();
 }
-void UDolbyIOSubsystem::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
+void UDolbyIO::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
 {
 	if (SpatialUpdateTimerHandle.IsValid())
 	{
@@ -59,36 +59,36 @@ void UDolbyIOSubsystem::UpdateViewPoint(const FVector& Position, const FRotator&
 
 	CppSdk->UpdateViewPoint(Position, Rotation);
 }
-void UDolbyIOSubsystem::MuteInput()
+void UDolbyIO::MuteInput()
 {
 	CppSdk->MuteInput();
 }
-void UDolbyIOSubsystem::UnmuteInput()
+void UDolbyIO::UnmuteInput()
 {
 	CppSdk->UnmuteInput();
 }
-void UDolbyIOSubsystem::MuteOutput()
+void UDolbyIO::MuteOutput()
 {
 	CppSdk->MuteOutput();
 }
-void UDolbyIOSubsystem::UnmuteOutput()
+void UDolbyIO::UnmuteOutput()
 {
 	CppSdk->UnmuteOutput();
 }
-void UDolbyIOSubsystem::GetAudioLevels()
+void UDolbyIO::GetAudioLevels()
 {
 	CppSdk->GetAudioLevels();
 }
-void UDolbyIOSubsystem::SetInputDevice(int Index)
+void UDolbyIO::SetInputDevice(int Index)
 {
 	CppSdk->SetInputDevice(Index);
 }
-void UDolbyIOSubsystem::SetOutputDevice(int Index)
+void UDolbyIO::SetOutputDevice(int Index)
 {
 	CppSdk->SetOutputDevice(Index);
 }
 
-void UDolbyIOSubsystem::UpdateViewPointUsingFirstPlayer()
+void UDolbyIO::UpdateViewPointUsingFirstPlayer()
 {
 	if (GameInstance)
 	{
@@ -105,51 +105,51 @@ void UDolbyIOSubsystem::UpdateViewPointUsingFirstPlayer()
 	}
 }
 
-void UDolbyIOSubsystem::OnTokenNeededEvent()
+void UDolbyIO::OnTokenNeededEvent()
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnTokenNeeded(); });
 }
-void UDolbyIOSubsystem::OnInitializedEvent()
+void UDolbyIO::OnInitializedEvent()
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnInitialized(); });
 }
-void UDolbyIOSubsystem::OnConnectedEvent()
+void UDolbyIO::OnConnectedEvent()
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnConnected(); });
 }
-void UDolbyIOSubsystem::OnDisconnectedEvent()
+void UDolbyIO::OnDisconnectedEvent()
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnDisconnected(); });
 }
-void UDolbyIOSubsystem::OnLocalParticipantChangedEvent(const DolbyIO::FParticipant& Participant)
+void UDolbyIO::OnLocalParticipantChangedEvent(const DolbyIO::FParticipant& Participant)
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnLocalParticipantChanged(Participant); });
 }
-void UDolbyIOSubsystem::OnListOfRemoteParticipantsChangedEvent(const DolbyIO::FParticipants& Participants)
+void UDolbyIO::OnListOfRemoteParticipantsChangedEvent(const DolbyIO::FParticipants& Participants)
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnListOfRemoteParticipantsChanged(Participants); });
 }
-void UDolbyIOSubsystem::OnListOfActiveSpeakersChangedEvent(const DolbyIO::FParticipants& Speakers)
+void UDolbyIO::OnListOfActiveSpeakersChangedEvent(const DolbyIO::FParticipants& Speakers)
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnListOfActiveSpeakersChanged(Speakers); });
 }
-void UDolbyIOSubsystem::OnListOfAudioLevelsChangedEvent(const DolbyIO::FAudioLevels& Levels)
+void UDolbyIO::OnListOfAudioLevelsChangedEvent(const DolbyIO::FAudioLevels& Levels)
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnListOfAudioLevelsChanged(Levels); });
 }
-void UDolbyIOSubsystem::OnListOfInputDevicesChangedEvent(const DolbyIO::FDeviceNames& Devices)
+void UDolbyIO::OnListOfInputDevicesChangedEvent(const DolbyIO::FDeviceNames& Devices)
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnListOfInputDevicesChanged(Devices); });
 }
-void UDolbyIOSubsystem::OnListOfOutputDevicesChangedEvent(const DolbyIO::FDeviceNames& Devices)
+void UDolbyIO::OnListOfOutputDevicesChangedEvent(const DolbyIO::FDeviceNames& Devices)
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnListOfOutputDevicesChanged(Devices); });
 }
-void UDolbyIOSubsystem::OnCurrentInputDeviceChangedEvent(int Index)
+void UDolbyIO::OnCurrentInputDeviceChangedEvent(int Index)
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnCurrentInputDeviceChanged(Index); });
 }
-void UDolbyIOSubsystem::OnCurrentOutputDeviceChangedEvent(int Index)
+void UDolbyIO::OnCurrentOutputDeviceChangedEvent(int Index)
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnCurrentOutputDeviceChanged(Index); });
 }

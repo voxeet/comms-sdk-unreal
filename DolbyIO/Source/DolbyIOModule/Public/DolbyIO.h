@@ -7,7 +7,7 @@
 
 #include "Engine/EngineTypes.h"
 
-#include "DolbyIOSubsystem.generated.h"
+#include "DolbyIO.generated.h"
 
 namespace DolbyIO
 {
@@ -16,7 +16,7 @@ namespace DolbyIO
 }
 
 UCLASS(Abstract, Blueprintable)
-class DOLBYIOMODULE_API UDolbyIOSubsystem : public UGameInstanceSubsystem, public DolbyIO::ISdkEventObserver
+class DOLBYIOMODULE_API UDolbyIO : public UGameInstanceSubsystem, public DolbyIO::ISdkEventObserver
 {
 	GENERATED_BODY()
 

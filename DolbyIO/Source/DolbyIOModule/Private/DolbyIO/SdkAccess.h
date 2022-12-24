@@ -4,19 +4,16 @@
 
 #include "DolbyIO/Typedefs.h"
 
-namespace dolbyio
+namespace dolbyio::comms
 {
-	namespace comms
-	{
-		class refresh_token;
-		class sdk;
-	}
+	enum class conference_status;
+	class refresh_token;
+	class sdk;
 }
 
 namespace DolbyIO
 {
 	struct FErrorHandler;
-	class FSdkStatus;
 	class ISdkEventObserver;
 
 	class FSdkAccess final
@@ -24,6 +21,7 @@ namespace DolbyIO
 		using FToken = FString;
 		using FConferenceName = FString;
 		using FUserName = FString;
+		using EConferenceStatus = dolbyio::comms::conference_status;
 
 	public:
 		FSdkAccess(ISdkEventObserver&);
@@ -48,13 +46,19 @@ namespace DolbyIO
 
 	private:
 		void Initialize(const FToken&);
+
+		bool IsConnected() const;
+
+		void UpdateStatus(EConferenceStatus);
+		void Log(const FString& = "") const;
+
 		FErrorHandler MakeHandler(int Id);
 
 		ISdkEventObserver& Observer;
-		TUniquePtr<FSdkStatus> Status;
 		TUniquePtr<dolbyio::comms::sdk> Sdk;
 		TUniquePtr<dolbyio::comms::refresh_token> RefreshTokenCb;
 		TUniquePtr<class FDeviceManagement> Devices;
+		EConferenceStatus ConferenceStatus;
 		FParticipant LocalParticipantID;
 		FParticipants ParticipantIDs;
 		bool bIsDemo;

@@ -4,20 +4,20 @@
 
 #include "Interfaces/IHttpRequest.h"
 
-class UDolbyIOSubsystem;
+class UDolbyIO;
 
 namespace DolbyIO
 {
 	class FAuthenticator final
 	{
 	public:
-		FAuthenticator(UDolbyIOSubsystem&);
+		FAuthenticator(UDolbyIO&);
 
 		void GetToken(const FString& AppKey, const FString& AppSecret, int TokenExpirationTimeInSeconds);
 
 	private:
 		void OnTokenObtained(FHttpRequestPtr, FHttpResponsePtr, bool bConnectedSuccessfully);
 
-		UDolbyIOSubsystem& DolbyIOSubsystem;
+		UDolbyIO& DolbyIO;
 	};
 }

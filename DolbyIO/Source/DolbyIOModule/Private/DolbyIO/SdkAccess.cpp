@@ -6,7 +6,6 @@
 #include "DolbyIO/ErrorHandler.h"
 #include "DolbyIO/Logging.h"
 #include "DolbyIO/SdkEventObserver.h"
-#include "DolbyIO/SdkStatus.h"
 
 #include <dolbyio/comms/async_result.h>
 #include <dolbyio/comms/sdk.h>
@@ -22,13 +21,26 @@ namespace DolbyIO
 {
 	using namespace dolbyio::comms;
 
-	FSdkAccess::FSdkAccess(ISdkEventObserver& Observer) : Observer(Observer), Status(MakeUnique<FSdkStatus>(Observer))
+	FSdkAccess::FSdkAccess(ISdkEventObserver& Observer) : Observer(Observer)
 	{
+#if PLATFORM_WINDOWS
+		static auto AlignedNew =
+		    +[](std::size_t Count, std::size_t Al) { return operator new(Count, static_cast<std::align_val_t>(Al)); };
+		static auto AlignedDelete =
+		    +[](void* Ptr, std::size_t Al) { operator delete(Ptr, static_cast<std::align_val_t>(Al)); };
+		sdk::set_app_allocator({operator new, AlignedNew, operator delete, AlignedDelete});
+#endif
+
+		sdk::log_settings LogSettings;
+		LogSettings.sdk_log_level = log_level::INFO;
+		LogSettings.media_log_level = log_level::OFF;
+		LogSettings.log_directory = "";
+		sdk::set_log_settings(LogSettings);
 	}
 
 	FSdkAccess::~FSdkAccess()
 	{
-		if (Status->IsConnected())
+		if (IsConnected())
 		{
 			try
 			{
@@ -77,7 +89,7 @@ namespace DolbyIO
 		                  .Release());
 
 		Sdk->conference()
-		    .add_event_handler([this](const conference_status_updated& Event) { Status->SetStatus(Event.status); })
+		    .add_event_handler([this](const conference_status_updated& Event) { UpdateStatus(Event.status); })
 		    .on_error(MakeHandler(__LINE__));
 
 		Sdk->conference()
@@ -125,6 +137,67 @@ namespace DolbyIO
 		MakeHandler(__LINE__).RethrowAndUpdateStatus();
 	}
 
+	bool FSdkAccess::IsConnected() const
+	{
+		return ConferenceStatus == EConferenceStatus::joined;
+	}
+
+	void FSdkAccess::UpdateStatus(EConferenceStatus Status)
+	{
+		ConferenceStatus = Status;
+		Log();
+
+		switch (ConferenceStatus)
+		{
+			case EConferenceStatus::joined:
+				Observer.OnConnectedEvent();
+				break;
+			case EConferenceStatus::left:
+			case EConferenceStatus::destroyed:
+			case EConferenceStatus::error:
+				Observer.OnDisconnectedEvent();
+				break;
+		}
+	}
+
+	namespace
+	{
+		FString ToString(dolbyio::comms::conference_status Status)
+		{
+			switch (Status)
+			{
+				case dolbyio::comms::conference_status::creating:
+					return "creating";
+				case dolbyio::comms::conference_status::created:
+					return "created";
+				case dolbyio::comms::conference_status::joining:
+					return "joining";
+				case dolbyio::comms::conference_status::joined:
+					return "joined";
+				case dolbyio::comms::conference_status::leaving:
+					return "leaving";
+				case dolbyio::comms::conference_status::left:
+					return "left";
+				case dolbyio::comms::conference_status::destroyed:
+					return "destroyed";
+				case dolbyio::comms::conference_status::error:
+					return "error";
+				default:
+					return "unknown";
+			};
+		}
+	}
+
+	void FSdkAccess::Log(const FString& Msg) const
+	{
+		FString LogMsg = ToString(ConferenceStatus);
+		if (!Msg.IsEmpty())
+		{
+			LogMsg += " - " + Msg;
+		}
+		DLB_UE_LOG("Conference status: %s", *LogMsg);
+	}
+
 	void FSdkAccess::Connect(const FConferenceName& Conf, const FUserName& User)
 	try
 	{
@@ -133,7 +206,7 @@ namespace DolbyIO
 			DLB_UE_LOG("Cannot connect - not initialized");
 			return;
 		}
-		if (Status->IsConnected())
+		if (IsConnected())
 		{
 			DLB_UE_LOG("Cannot connect - already connected, please disconnect first");
 			return;
@@ -194,7 +267,7 @@ namespace DolbyIO
 
 	void FSdkAccess::Disconnect()
 	{
-		if (!Status->IsConnected())
+		if (!IsConnected())
 		{
 			DLB_UE_LOG("Cannot disconnect - not connected");
 			return;
@@ -207,7 +280,7 @@ namespace DolbyIO
 
 	void FSdkAccess::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
 	{
-		if (!Status->IsConnected())
+		if (!IsConnected())
 		{
 			return;
 		}
@@ -241,7 +314,7 @@ namespace DolbyIO
 
 	void FSdkAccess::MuteInput()
 	{
-		if (!Status->IsConnected())
+		if (!IsConnected())
 		{
 			DLB_UE_LOG("Cannot mute input - not connected");
 			return;
@@ -252,7 +325,7 @@ namespace DolbyIO
 
 	void FSdkAccess::UnmuteInput()
 	{
-		if (!Status->IsConnected())
+		if (!IsConnected())
 		{
 			DLB_UE_LOG("Cannot unmute input - not connected");
 			return;
@@ -263,7 +336,7 @@ namespace DolbyIO
 
 	void FSdkAccess::MuteOutput()
 	{
-		if (!Status->IsConnected())
+		if (!IsConnected())
 		{
 			DLB_UE_LOG("Cannot mute output - not connected");
 			return;
@@ -274,7 +347,7 @@ namespace DolbyIO
 
 	void FSdkAccess::UnmuteOutput()
 	{
-		if (!Status->IsConnected())
+		if (!IsConnected())
 		{
 			DLB_UE_LOG("Cannot unmute output - not connected");
 			return;
@@ -285,7 +358,7 @@ namespace DolbyIO
 
 	void FSdkAccess::GetAudioLevels()
 	{
-		if (!Status->IsConnected())
+		if (!IsConnected())
 		{
 			return;
 		}
@@ -316,11 +389,10 @@ namespace DolbyIO
 
 	FErrorHandler FSdkAccess::MakeHandler(int Id)
 	{
-		return FErrorHandler([this, Id](const FString& Msg)
-		                     { Status->Log(Msg + " {" + std::to_string(Id).c_str() + "}"); },
+		return FErrorHandler([this, Id](const FString& Msg) { Log(Msg + " {" + std::to_string(Id).c_str() + "}"); },
 		                     [this]()
 		                     {
-			                     if (Status->IsConnected())
+			                     if (IsConnected())
 			                     {
 				                     Disconnect();
 			                     }
