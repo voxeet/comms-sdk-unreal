@@ -2,21 +2,21 @@
 
 #pragma once
 
-#include "DolbyIoSdkEventObserver.h"
+#include "DolbyIO/SdkEventObserver.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 
 #include "Engine/EngineTypes.h"
 
-#include "DolbyIoSubsystem.generated.h"
+#include "DolbyIOSubsystem.generated.h"
 
-namespace Dolby
+namespace DolbyIO
 {
 	class FAuthenticator;
 	class FSdkAccess;
 }
 
 UCLASS(Abstract, Blueprintable)
-class DOLBYIOSUBSYSTEMMODULE_API UDolbyIoSubsystem : public UGameInstanceSubsystem, public Dolby::ISdkEventObserver
+class DOLBYIOMODULE_API UDolbyIOSubsystem : public UGameInstanceSubsystem, public DolbyIO::ISdkEventObserver
 {
 	GENERATED_BODY()
 
@@ -195,18 +195,18 @@ private:
 	void OnConnectedEvent() override;
 	void OnDisconnectedEvent() override;
 
-	void OnLocalParticipantChangedEvent(const Dolby::FParticipant&) override;
-	void OnListOfRemoteParticipantsChangedEvent(const Dolby::FParticipants&) override;
-	void OnListOfActiveSpeakersChangedEvent(const Dolby::FParticipants&) override;
-	void OnListOfAudioLevelsChangedEvent(const Dolby::FAudioLevels&) override;
+	void OnLocalParticipantChangedEvent(const DolbyIO::FParticipant&) override;
+	void OnListOfRemoteParticipantsChangedEvent(const DolbyIO::FParticipants&) override;
+	void OnListOfActiveSpeakersChangedEvent(const DolbyIO::FParticipants&) override;
+	void OnListOfAudioLevelsChangedEvent(const DolbyIO::FAudioLevels&) override;
 
-	void OnListOfInputDevicesChangedEvent(const Dolby::FDeviceNames&) override;
-	void OnListOfOutputDevicesChangedEvent(const Dolby::FDeviceNames&) override;
+	void OnListOfInputDevicesChangedEvent(const DolbyIO::FDeviceNames&) override;
+	void OnListOfOutputDevicesChangedEvent(const DolbyIO::FDeviceNames&) override;
 	void OnCurrentInputDeviceChangedEvent(int Index) override;
 	void OnCurrentOutputDeviceChangedEvent(int Index) override;
 
-	TSharedPtr<Dolby::FSdkAccess> CppSdk;
-	TSharedPtr<Dolby::FAuthenticator> Authenticator;
+	TSharedPtr<DolbyIO::FSdkAccess> CppSdk;
+	TSharedPtr<DolbyIO::FAuthenticator> Authenticator;
 
 	class UGameInstance* GameInstance;
 	FTimerHandle SpatialUpdateTimerHandle;

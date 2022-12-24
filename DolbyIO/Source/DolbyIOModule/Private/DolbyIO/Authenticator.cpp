@@ -1,8 +1,9 @@
 // Copyright 2022 Dolby Laboratories
 
-#include "DolbyIoAuthentication.h"
+#include "DolbyIO/Authenticator.h"
 
-#include "DolbyIoSubsystem.h"
+#include "DolbyIO/Logging.h"
+#include "DolbyIOSubsystem.h"
 
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
@@ -10,11 +11,9 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
-DEFINE_LOG_CATEGORY_STATIC(LogDolbyAuth, Log, All);
-
-namespace Dolby
+namespace DolbyIO
 {
-	FAuthenticator::FAuthenticator(UDolbyIoSubsystem& DolbyIoSubsystem) : DolbyIoSubsystem(DolbyIoSubsystem) {}
+	FAuthenticator::FAuthenticator(UDolbyIOSubsystem& DolbyIOSubsystem) : DolbyIOSubsystem(DolbyIOSubsystem) {}
 
 	void FAuthenticator::GetToken(const FString& AppKey, const FString& AppSecret, int TokenExpirationTimeInSeconds)
 	{
@@ -38,7 +37,7 @@ namespace Dolby
 	{
 		if (!bConnectedSuccessfully)
 		{
-			UE_LOG(LogDolbyAuth, Error, TEXT("Could not connect to backend serving access tokens"));
+			DLB_UE_LOG_ERROR("Could not connect to backend serving access tokens");
 			return;
 		}
 
@@ -47,11 +46,11 @@ namespace Dolby
 		FString Token;
 		if (ResponseObj->TryGetStringField("access_token", Token))
 		{
-			DolbyIoSubsystem.SetToken(Token);
+			DolbyIOSubsystem.SetToken(Token);
 		}
 		else
 		{
-			UE_LOG(LogDolbyAuth, Error, TEXT("Could not get access token - verify app key and secret and validity"));
+			DLB_UE_LOG_ERROR("Could not get access token - verify app key and secret and validity");
 		}
 	}
 }

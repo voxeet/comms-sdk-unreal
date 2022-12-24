@@ -3,9 +3,9 @@
 using System.IO;
 using UnrealBuildTool;
 
-public class DolbyIoSubsystemModule : ModuleRules
+public class DolbyIOModule : ModuleRules
 {
-	public DolbyIoSubsystemModule(ReadOnlyTargetRules Target) : base(Target)
+	public DolbyIOModule(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 
@@ -36,6 +36,8 @@ public class DolbyIoSubsystemModule : ModuleRules
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
+			PublicDefinitions.Add("DOLBYIO_COMMS_SUPPRESS_APPLE_NO_RTTI_WARNING");
+
 			string[] Libs = new string[] {
 				Path.Combine(LibDir, "libdolbyio_comms_media.dylib"),
 				Path.Combine(LibDir, "libdolbyio_comms_sdk.dylib"),

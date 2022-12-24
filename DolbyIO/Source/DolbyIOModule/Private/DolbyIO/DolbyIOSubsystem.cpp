@@ -2,8 +2,8 @@
 
 #include "DolbyIoSubsystem.h"
 
-#include "DolbyIoAuthentication.h"
-#include "DolbyIoSdkAccess.h"
+#include "DolbyIO/Authenticator.h"
+#include "DolbyIO/SdkAccess.h"
 
 #include "Async/Async.h"
 #include "Engine/GameInstance.h"
@@ -11,11 +11,11 @@
 #include "GameFramework/PlayerController.h"
 #include "TimerManager.h"
 
-void UDolbyIoSubsystem::Initialize(FSubsystemCollectionBase& Collection)
+void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-	CppSdk = MakeShared<Dolby::FSdkAccess>(*this);
-	Authenticator = MakeShared<Dolby::FAuthenticator>(*this);
+	CppSdk = MakeShared<DolbyIO::FSdkAccess>(*this);
+	Authenticator = MakeShared<DolbyIO::FAuthenticator>(*this);
 	GameInstance = GetGameInstance();
 
 	OnTokenNeeded();
@@ -23,34 +23,34 @@ void UDolbyIoSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	if (GameInstance)
 	{
 		GameInstance->GetTimerManager().SetTimer(SpatialUpdateTimerHandle, this,
-		                                         &UDolbyIoSubsystem::UpdateViewPointUsingFirstPlayer, 0.03, true);
+		                                         &UDolbyIOSubsystem::UpdateViewPointUsingFirstPlayer, 0.03, true);
 	}
 }
 
-void UDolbyIoSubsystem::Deinitialize()
+void UDolbyIOSubsystem::Deinitialize()
 {
 	CppSdk.Reset();
 	Super::Deinitialize();
 }
 
-void UDolbyIoSubsystem::SetToken(const FString& Token)
+void UDolbyIOSubsystem::SetToken(const FString& Token)
 {
 	CppSdk->SetToken(Token);
 }
-void UDolbyIoSubsystem::SetTokenUsingKeyAndSecret(const FString& AppKey, const FString& AppSecret,
+void UDolbyIOSubsystem::SetTokenUsingKeyAndSecret(const FString& AppKey, const FString& AppSecret,
                                                   int TokenExpirationTimeInSeconds)
 {
 	Authenticator->GetToken(AppKey, AppSecret, TokenExpirationTimeInSeconds);
 }
-void UDolbyIoSubsystem::Connect(const FString& ConferenceName, const FString& UserName)
+void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& UserName)
 {
 	CppSdk->Connect(ConferenceName, UserName);
 }
-void UDolbyIoSubsystem::Disconnect()
+void UDolbyIOSubsystem::Disconnect()
 {
 	CppSdk->Disconnect();
 }
-void UDolbyIoSubsystem::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
+void UDolbyIOSubsystem::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
 {
 	if (SpatialUpdateTimerHandle.IsValid())
 	{
@@ -59,36 +59,36 @@ void UDolbyIoSubsystem::UpdateViewPoint(const FVector& Position, const FRotator&
 
 	CppSdk->UpdateViewPoint(Position, Rotation);
 }
-void UDolbyIoSubsystem::MuteInput()
+void UDolbyIOSubsystem::MuteInput()
 {
 	CppSdk->MuteInput();
 }
-void UDolbyIoSubsystem::UnmuteInput()
+void UDolbyIOSubsystem::UnmuteInput()
 {
 	CppSdk->UnmuteInput();
 }
-void UDolbyIoSubsystem::MuteOutput()
+void UDolbyIOSubsystem::MuteOutput()
 {
 	CppSdk->MuteOutput();
 }
-void UDolbyIoSubsystem::UnmuteOutput()
+void UDolbyIOSubsystem::UnmuteOutput()
 {
 	CppSdk->UnmuteOutput();
 }
-void UDolbyIoSubsystem::GetAudioLevels()
+void UDolbyIOSubsystem::GetAudioLevels()
 {
 	CppSdk->GetAudioLevels();
 }
-void UDolbyIoSubsystem::SetInputDevice(int Index)
+void UDolbyIOSubsystem::SetInputDevice(int Index)
 {
 	CppSdk->SetInputDevice(Index);
 }
-void UDolbyIoSubsystem::SetOutputDevice(int Index)
+void UDolbyIOSubsystem::SetOutputDevice(int Index)
 {
 	CppSdk->SetOutputDevice(Index);
 }
 
-void UDolbyIoSubsystem::UpdateViewPointUsingFirstPlayer()
+void UDolbyIOSubsystem::UpdateViewPointUsingFirstPlayer()
 {
 	if (GameInstance)
 	{
@@ -105,51 +105,51 @@ void UDolbyIoSubsystem::UpdateViewPointUsingFirstPlayer()
 	}
 }
 
-void UDolbyIoSubsystem::OnTokenNeededEvent()
+void UDolbyIOSubsystem::OnTokenNeededEvent()
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnTokenNeeded(); });
 }
-void UDolbyIoSubsystem::OnInitializedEvent()
+void UDolbyIOSubsystem::OnInitializedEvent()
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnInitialized(); });
 }
-void UDolbyIoSubsystem::OnConnectedEvent()
+void UDolbyIOSubsystem::OnConnectedEvent()
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnConnected(); });
 }
-void UDolbyIoSubsystem::OnDisconnectedEvent()
+void UDolbyIOSubsystem::OnDisconnectedEvent()
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnDisconnected(); });
 }
-void UDolbyIoSubsystem::OnLocalParticipantChangedEvent(const Dolby::FParticipant& Participant)
+void UDolbyIOSubsystem::OnLocalParticipantChangedEvent(const DolbyIO::FParticipant& Participant)
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnLocalParticipantChanged(Participant); });
 }
-void UDolbyIoSubsystem::OnListOfRemoteParticipantsChangedEvent(const Dolby::FParticipants& Participants)
+void UDolbyIOSubsystem::OnListOfRemoteParticipantsChangedEvent(const DolbyIO::FParticipants& Participants)
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnListOfRemoteParticipantsChanged(Participants); });
 }
-void UDolbyIoSubsystem::OnListOfActiveSpeakersChangedEvent(const Dolby::FParticipants& Speakers)
+void UDolbyIOSubsystem::OnListOfActiveSpeakersChangedEvent(const DolbyIO::FParticipants& Speakers)
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnListOfActiveSpeakersChanged(Speakers); });
 }
-void UDolbyIoSubsystem::OnListOfAudioLevelsChangedEvent(const Dolby::FAudioLevels& Levels)
+void UDolbyIOSubsystem::OnListOfAudioLevelsChangedEvent(const DolbyIO::FAudioLevels& Levels)
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnListOfAudioLevelsChanged(Levels); });
 }
-void UDolbyIoSubsystem::OnListOfInputDevicesChangedEvent(const Dolby::FDeviceNames& Devices)
+void UDolbyIOSubsystem::OnListOfInputDevicesChangedEvent(const DolbyIO::FDeviceNames& Devices)
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnListOfInputDevicesChanged(Devices); });
 }
-void UDolbyIoSubsystem::OnListOfOutputDevicesChangedEvent(const Dolby::FDeviceNames& Devices)
+void UDolbyIOSubsystem::OnListOfOutputDevicesChangedEvent(const DolbyIO::FDeviceNames& Devices)
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnListOfOutputDevicesChanged(Devices); });
 }
-void UDolbyIoSubsystem::OnCurrentInputDeviceChangedEvent(int Index)
+void UDolbyIOSubsystem::OnCurrentInputDeviceChangedEvent(int Index)
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnCurrentInputDeviceChanged(Index); });
 }
-void UDolbyIoSubsystem::OnCurrentOutputDeviceChangedEvent(int Index)
+void UDolbyIOSubsystem::OnCurrentOutputDeviceChangedEvent(int Index)
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnCurrentOutputDeviceChanged(Index); });
 }
