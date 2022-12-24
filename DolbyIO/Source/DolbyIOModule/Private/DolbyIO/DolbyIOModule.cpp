@@ -41,7 +41,7 @@ namespace DolbyIO
 			}
 			else
 			{
-				DLB_UE_LOG_ERROR("Failed to load %s", *Dll);
+				UE_LOG(LogDolbyIO, Fatal, TEXT("Failed to load %s"), *Dll);
 			}
 		}
 
@@ -50,4 +50,4 @@ namespace DolbyIO
 }
 
 IMPLEMENT_MODULE(DolbyIO::FDolbyIOModule, DolbyIOModule)
-DEFINE_LOG_CATEGORY(LogDolby);
+DEFINE_LOG_CATEGORY(LogDolbyIO);

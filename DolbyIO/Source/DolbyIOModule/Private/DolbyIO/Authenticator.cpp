@@ -37,7 +37,7 @@ namespace DolbyIO
 	{
 		if (!bConnectedSuccessfully)
 		{
-			DLB_UE_LOG_ERROR("Could not connect to backend serving access tokens");
+			UE_LOG(LogDolbyIO, Error, TEXT("Could not connect to backend serving access tokens"));
 			return;
 		}
 
@@ -50,7 +50,7 @@ namespace DolbyIO
 		}
 		else
 		{
-			DLB_UE_LOG_ERROR("Could not get access token - verify app key and secret and validity");
+			UE_LOG(LogDolbyIO, Error, TEXT("Could not get access token - verify app key and secret and validity"));
 		}
 	}
 }

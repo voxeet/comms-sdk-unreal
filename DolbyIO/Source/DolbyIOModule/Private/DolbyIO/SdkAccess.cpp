@@ -21,7 +21,8 @@ namespace DolbyIO
 {
 	using namespace dolbyio::comms;
 
-	FSdkAccess::FSdkAccess(ISdkEventObserver& Observer) : Observer(Observer)
+	FSdkAccess::FSdkAccess(ISdkEventObserver& Observer)
+	    : Observer(Observer), ConferenceStatus(EConferenceStatus::destroyed)
 	{
 #if PLATFORM_WINDOWS
 		static auto AlignedNew =
@@ -79,7 +80,7 @@ namespace DolbyIO
 		Sdk.Reset(sdk::create(ToStdString(Token),
 		                      [this](auto&& cb)
 		                      {
-			                      DLB_UE_LOG("Refresh token requested");
+			                      UE_LOG(LogDolbyIO, Log, TEXT("Refresh token requested"));
 			                      RefreshTokenCb.Reset(cb.release());
 			                      Observer.OnTokenNeededEvent();
 		                      })
@@ -142,10 +143,40 @@ namespace DolbyIO
 		return ConferenceStatus == EConferenceStatus::joined;
 	}
 
+	namespace
+	{
+		using EConferenceStatus = FSdkAccess::EConferenceStatus;
+
+		FString ToString(EConferenceStatus Status)
+		{
+			switch (Status)
+			{
+				case EConferenceStatus::creating:
+					return "creating";
+				case EConferenceStatus::created:
+					return "created";
+				case EConferenceStatus::joining:
+					return "joining";
+				case EConferenceStatus::joined:
+					return "joined";
+				case EConferenceStatus::leaving:
+					return "leaving";
+				case EConferenceStatus::left:
+					return "left";
+				case EConferenceStatus::destroyed:
+					return "destroyed";
+				case EConferenceStatus::error:
+					return "error";
+				default:
+					return "unknown";
+			};
+		}
+	}
+
 	void FSdkAccess::UpdateStatus(EConferenceStatus Status)
 	{
 		ConferenceStatus = Status;
-		Log();
+		UE_LOG(LogDolbyIO, Log, TEXT("Conference status: %s"), *ToString(ConferenceStatus));
 
 		switch (ConferenceStatus)
 		{
@@ -160,60 +191,22 @@ namespace DolbyIO
 		}
 	}
 
-	namespace
-	{
-		FString ToString(dolbyio::comms::conference_status Status)
-		{
-			switch (Status)
-			{
-				case dolbyio::comms::conference_status::creating:
-					return "creating";
-				case dolbyio::comms::conference_status::created:
-					return "created";
-				case dolbyio::comms::conference_status::joining:
-					return "joining";
-				case dolbyio::comms::conference_status::joined:
-					return "joined";
-				case dolbyio::comms::conference_status::leaving:
-					return "leaving";
-				case dolbyio::comms::conference_status::left:
-					return "left";
-				case dolbyio::comms::conference_status::destroyed:
-					return "destroyed";
-				case dolbyio::comms::conference_status::error:
-					return "error";
-				default:
-					return "unknown";
-			};
-		}
-	}
-
-	void FSdkAccess::Log(const FString& Msg) const
-	{
-		FString LogMsg = ToString(ConferenceStatus);
-		if (!Msg.IsEmpty())
-		{
-			LogMsg += " - " + Msg;
-		}
-		DLB_UE_LOG("Conference status: %s", *LogMsg);
-	}
-
 	void FSdkAccess::Connect(const FConferenceName& Conf, const FUserName& User)
 	try
 	{
 		if (!Sdk)
 		{
-			DLB_UE_LOG("Cannot connect - not initialized");
+			UE_LOG(LogDolbyIO, Warning, TEXT("Cannot connect - not initialized"));
 			return;
 		}
 		if (IsConnected())
 		{
-			DLB_UE_LOG("Cannot connect - already connected, please disconnect first");
+			UE_LOG(LogDolbyIO, Warning, TEXT("Cannot connect - already connected, please disconnect first"));
 			return;
 		}
 		if (Conf.IsEmpty())
 		{
-			DLB_UE_LOG("Cannot connect - conference name cannot be empty");
+			UE_LOG(LogDolbyIO, Warning, TEXT("Cannot connect - conference name cannot be empty"));
 			return;
 		}
 
@@ -269,13 +262,22 @@ namespace DolbyIO
 	{
 		if (!IsConnected())
 		{
-			DLB_UE_LOG("Cannot disconnect - not connected");
+			UE_LOG(LogDolbyIO, Warning, TEXT("Must be connected to disconnect"));
 			return;
 		}
 
-		LocalParticipantID.Reset();
-		ParticipantIDs.Empty();
-		Sdk->conference().leave().then([this]() { return Sdk->session().close(); }).on_error(MakeHandler(__LINE__));
+		Sdk->conference()
+		    .leave()
+		    .then(
+		        [this]()
+		        {
+			        LocalParticipantID.Reset();
+			        Observer.OnLocalParticipantChangedEvent(LocalParticipantID);
+			        ParticipantIDs.Empty();
+			        Observer.OnListOfRemoteParticipantsChangedEvent(ParticipantIDs);
+			        return Sdk->session().close();
+		        })
+		    .on_error(MakeHandler(__LINE__));
 	}
 
 	void FSdkAccess::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
@@ -316,7 +318,7 @@ namespace DolbyIO
 	{
 		if (!IsConnected())
 		{
-			DLB_UE_LOG("Cannot mute input - not connected");
+			UE_LOG(LogDolbyIO, Warning, TEXT("Must be connected to mute input"));
 			return;
 		}
 
@@ -327,7 +329,6 @@ namespace DolbyIO
 	{
 		if (!IsConnected())
 		{
-			DLB_UE_LOG("Cannot unmute input - not connected");
 			return;
 		}
 
@@ -338,7 +339,7 @@ namespace DolbyIO
 	{
 		if (!IsConnected())
 		{
-			DLB_UE_LOG("Cannot mute output - not connected");
+			UE_LOG(LogDolbyIO, Warning, TEXT("Must be connected to mute output"));
 			return;
 		}
 
@@ -349,7 +350,6 @@ namespace DolbyIO
 	{
 		if (!IsConnected())
 		{
-			DLB_UE_LOG("Cannot unmute output - not connected");
 			return;
 		}
 
@@ -360,8 +360,10 @@ namespace DolbyIO
 	{
 		if (!IsConnected())
 		{
+			UE_LOG(LogDolbyIO, Warning, TEXT("Must be connected to get audio levels"));
 			return;
 		}
+
 		Sdk->conference()
 		    .get_all_audio_levels()
 		    .then(
@@ -389,13 +391,18 @@ namespace DolbyIO
 
 	FErrorHandler FSdkAccess::MakeHandler(int Id)
 	{
-		return FErrorHandler([this, Id](const FString& Msg) { Log(Msg + " {" + std::to_string(Id).c_str() + "}"); },
-		                     [this]()
-		                     {
-			                     if (IsConnected())
-			                     {
-				                     Disconnect();
-			                     }
-		                     });
+		return FErrorHandler(
+		    [this, Id](const FString& Msg)
+		    {
+			    UE_LOG(LogDolbyIO, Error, TEXT("%s (conference status: %s)"),
+			           *(Msg + " {" + FString::FromInt(Id) + "}"), *ToString(ConferenceStatus));
+		    },
+		    [this]()
+		    {
+			    if (IsConnected())
+			    {
+				    Disconnect();
+			    }
+		    });
 	}
 }

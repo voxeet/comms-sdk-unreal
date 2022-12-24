@@ -18,7 +18,7 @@ namespace DolbyIO
 	}
 
 #define DLB_UE_LOG_DEVICE(Type, Event, Name) \
-	UE_LOG(LogDolby, Log, TEXT(Type " device " Event ": %s"), *ToFText(Name).ToString())
+	UE_LOG(LogDolbyIO, Log, TEXT(Type " device " Event ": %s"), *ToFText(Name).ToString())
 
 	FDeviceManagement::FDeviceManagement(FDvcDeviceManagement& DeviceManagement, ISdkEventObserver& Observer,
 	                                     FHandlersMaker MakeHandler)
@@ -212,7 +212,8 @@ namespace DolbyIO
 			        {
 				        FScopeLock Lock{&AccessDevices};
 				        Devices.Append(DvcDevices.data(), DvcDevices.size());
-				        DLB_UE_LOG("%d device(s) added (%d in total)", DvcDevices.size(), Devices.Num());
+				        UE_LOG(LogDolbyIO, Log, TEXT("%d device(s) added (%d in total)"), DvcDevices.size(),
+				               Devices.Num());
 			        }
 			        Observer.OnListOfInputDevicesChangedEvent(GetDeviceNames(EDirection::input));
 			        Observer.OnListOfOutputDevicesChangedEvent(GetDeviceNames(EDirection::output));
