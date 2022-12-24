@@ -9,10 +9,7 @@
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
-#include "Modules/ModuleManager.h"
 #include "TimerManager.h"
-
-IMPLEMENT_MODULE(FDefaultModuleImpl, DolbyIoSubsystemModule)
 
 void UDolbyIoSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {

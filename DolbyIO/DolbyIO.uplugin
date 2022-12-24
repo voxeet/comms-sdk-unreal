@@ -19,12 +19,6 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [ "Win64", "Mac" ]
-		},
-		{
-			"Name": "SdkAccessModule",
-			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"WhitelistPlatforms": [ "Win64", "Mac" ]
 		}
 	]
 }
