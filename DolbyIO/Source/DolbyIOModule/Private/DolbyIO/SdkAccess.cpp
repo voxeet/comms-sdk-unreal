@@ -12,11 +12,6 @@
 
 #include "Math/Rotator.h"
 
-static std::string ToStdString(const FString& String)
-{
-	return TCHAR_TO_UTF8(*String);
-}
-
 namespace DolbyIO
 {
 	using namespace dolbyio::comms;
@@ -51,6 +46,14 @@ namespace DolbyIO
 			{
 				MakeHandler(__LINE__).RethrowAndUpdateStatus();
 			}
+		}
+	}
+
+	namespace
+	{
+		std::string ToStdString(const FString& String)
+		{
+			return TCHAR_TO_UTF8(*String);
 		}
 	}
 

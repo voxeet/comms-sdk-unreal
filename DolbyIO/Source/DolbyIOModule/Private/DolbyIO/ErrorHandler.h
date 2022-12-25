@@ -6,7 +6,7 @@
 
 namespace DolbyIO
 {
-	class FErrorHandler
+	class FErrorHandler final
 	{
 		using FStatusUpdater = TFunction<void(const FString&)>;
 		using FDisconnector = TFunction<void()>;
