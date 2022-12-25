@@ -1,9 +1,11 @@
 #include "DolbyIO/ErrorHandler.h"
 
-#include "dolbyio/comms/sdk_exceptions.h"
+#include <dolbyio/comms/sdk_exceptions.h>
 
 namespace DolbyIO
 {
+	using namespace dolbyio::comms;
+
 	FErrorHandler::FErrorHandler(FStatusUpdater UpdateStatus, FDisconnector Disconnect)
 	    : UpdateStatus(UpdateStatus), Disconnect(Disconnect)
 	{
@@ -11,20 +13,20 @@ namespace DolbyIO
 
 	void FErrorHandler::operator()(std::exception_ptr&& ExcPtr)
 	{
-		NotifyIfThrows([ExcP = MoveTemp(ExcPtr)]() { std::rethrow_exception(ExcP); });
+		NotifyIfThrows([ExcP = MoveTemp(ExcPtr)] { std::rethrow_exception(ExcP); });
 	}
 
 	void FErrorHandler::RethrowAndUpdateStatus()
 	{
-		NotifyIfThrows([]() { throw; });
+		NotifyIfThrows([] { throw; });
 	}
 
-	template <typename FCallee> void FErrorHandler::NotifyIfThrows(FCallee Callee)
+	void FErrorHandler::NotifyIfThrows(TFunction<void()> Callee)
 	try
 	{
 		Callee();
 	}
-	catch (const dolbyio::comms::conference_state_exception& Ex)
+	catch (const conference_state_exception& Ex)
 	{
 		auto constexpr NOT_JOINED = "3";
 		UpdateStatus(FString{"Caught dolbyio::comms::conference_state_exception: "} + Ex.what());
@@ -33,16 +35,16 @@ namespace DolbyIO
 			Disconnect();
 		}
 	}
-	catch (const dolbyio::comms::invalid_token_exception& Ex)
+	catch (const invalid_token_exception& Ex)
 	{
 		UpdateStatus(FString{"Caught dolbyio::comms::invalid_token_exception: "} + Ex.what());
 		Disconnect();
 	}
-	catch (const dolbyio::comms::dvc_error_exception& Ex)
+	catch (const dvc_error_exception& Ex)
 	{
 		UpdateStatus(FString{"Caught dolbyio::comms::dvc_error_exception: "} + Ex.what());
 	}
-	catch (const dolbyio::comms::peer_connection_failed_exception& Ex)
+	catch (const peer_connection_failed_exception& Ex)
 	{
 		UpdateStatus(FString{"Caught dolbyio::comms::peer_connection_failed_exception: "} + Ex.what());
 	}

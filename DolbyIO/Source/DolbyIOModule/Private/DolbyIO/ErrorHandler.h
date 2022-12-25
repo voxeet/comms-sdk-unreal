@@ -4,23 +4,22 @@
 
 #include "Containers/UnrealString.h"
 
-#include <exception>
-#include <functional>
-
 namespace DolbyIO
 {
-	using FStatusUpdater = std::function<void(const FString&)>;
-	using FDisconnector = std::function<void()>;
-
-	struct FErrorHandler
+	class FErrorHandler
 	{
-		FErrorHandler(FStatusUpdater UpdateStatus, FDisconnector Disconnect);
+		using FStatusUpdater = TFunction<void(const FString&)>;
+		using FDisconnector = TFunction<void()>;
 
-		void operator()(std::exception_ptr&& ExcPtr);
-		template <typename FCallee> void NotifyIfThrows(FCallee Callee);
+	public:
+		FErrorHandler(FStatusUpdater, FDisconnector);
+
+		void operator()(class std::exception_ptr&&);
 		void RethrowAndUpdateStatus();
 
 	private:
+		void NotifyIfThrows(TFunction<void()>);
+
 		FStatusUpdater UpdateStatus;
 		FDisconnector Disconnect;
 	};

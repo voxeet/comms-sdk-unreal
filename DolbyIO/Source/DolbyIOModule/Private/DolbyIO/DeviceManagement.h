@@ -16,7 +16,7 @@ namespace dolbyio::comms::services
 
 namespace DolbyIO
 {
-	struct FErrorHandler;
+	class FErrorHandler;
 	class ISdkEventObserver;
 
 	using FDvcDevice = dolbyio::comms::dvc_device;

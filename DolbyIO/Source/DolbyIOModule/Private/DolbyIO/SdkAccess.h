@@ -13,7 +13,6 @@ namespace dolbyio::comms
 
 namespace DolbyIO
 {
-	struct FErrorHandler;
 	class ISdkEventObserver;
 
 	class FSdkAccess final
@@ -49,7 +48,7 @@ namespace DolbyIO
 		void Initialize(const FToken&);
 		bool IsConnected() const;
 		void UpdateStatus(EConferenceStatus);
-		FErrorHandler MakeHandler(int Id);
+		class FErrorHandler MakeHandler(int Id);
 
 		ISdkEventObserver& Observer;
 		TUniquePtr<dolbyio::comms::sdk> Sdk;
