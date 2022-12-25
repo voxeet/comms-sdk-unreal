@@ -9,6 +9,7 @@
 #include <dolbyio/comms/async_result.h>
 #include <dolbyio/comms/sdk.h>
 
+#include "HAL/PlatformProcess.h"
 #include "Math/Rotator.h"
 
 namespace DolbyIO
@@ -35,16 +36,13 @@ namespace DolbyIO
 
 	FSdkAccess::~FSdkAccess()
 	{
-		if (IsConnected())
+		while (ConferenceStatus < EConferenceStatus::left)
 		{
-			try
+			if (IsConnected())
 			{
-				wait(Sdk->conference().leave().then([this] { return Sdk->session().close(); }));
+				Disconnect();
 			}
-			catch (...)
-			{
-				MakeHandler(__LINE__).RethrowAndUpdateStatus();
-			}
+			FPlatformProcess::Sleep(0.1);
 		}
 	}
 
@@ -215,6 +213,7 @@ namespace DolbyIO
 		services::session::user_info UserInfo{};
 		UserInfo.name = ToStdString(UserName);
 
+		ConferenceStatus = EConferenceStatus::creating;
 		Sdk->session()
 		    .open(MoveTemp(UserInfo))
 		    .then(
@@ -261,7 +260,6 @@ namespace DolbyIO
 	{
 		if (!IsConnected())
 		{
-			UE_LOG(LogDolbyIO, Warning, TEXT("Must be connected to disconnect"));
 			return;
 		}
 
