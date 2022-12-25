@@ -2,7 +2,6 @@
 
 #include "DolbyIO/SdkAccess.h"
 
-#include "DolbyIO/DeviceManagement.h"
 #include "DolbyIO/ErrorHandler.h"
 #include "DolbyIO/Logging.h"
 #include "DolbyIO/SdkEventObserver.h"
@@ -88,9 +87,6 @@ namespace DolbyIO
 			                      Observer.OnTokenNeededEvent();
 		                      })
 		              .release());
-		Devices.Reset(MakeUnique<FDeviceManagement>(Sdk->device_management(), Observer,
-		                                            [this](int Id) { return MakeHandler(Id); })
-		                  .Release());
 
 		Sdk->conference()
 		    .add_event_handler([this](const conference_status_updated& Event) { UpdateStatus(Event.status); })
@@ -380,16 +376,6 @@ namespace DolbyIO
 			        Observer.OnListOfAudioLevelsChangedEvent(AudioLevels);
 		        })
 		    .on_error(MakeHandler(__LINE__));
-	}
-
-	void FSdkAccess::SetInputDevice(const int Index)
-	{
-		Devices->SetInputDevice(Index);
-	}
-
-	void FSdkAccess::SetOutputDevice(const int Index)
-	{
-		Devices->SetOutputDevice(Index);
 	}
 
 	FErrorHandler FSdkAccess::MakeHandler(int Id)

@@ -79,14 +79,6 @@ void UDolbyIO::GetAudioLevels()
 {
 	CppSdk->GetAudioLevels();
 }
-void UDolbyIO::SetInputDevice(int Index)
-{
-	CppSdk->SetInputDevice(Index);
-}
-void UDolbyIO::SetOutputDevice(int Index)
-{
-	CppSdk->SetOutputDevice(Index);
-}
 
 void UDolbyIO::UpdateViewPointUsingFirstPlayer()
 {
@@ -136,20 +128,4 @@ void UDolbyIO::OnListOfActiveSpeakersChangedEvent(const DolbyIO::FParticipants& 
 void UDolbyIO::OnListOfAudioLevelsChangedEvent(const DolbyIO::FAudioLevels& Levels)
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnListOfAudioLevelsChanged(Levels); });
-}
-void UDolbyIO::OnListOfInputDevicesChangedEvent(const DolbyIO::FDeviceNames& Devices)
-{
-	AsyncTask(ENamedThreads::GameThread, [=] { OnListOfInputDevicesChanged(Devices); });
-}
-void UDolbyIO::OnListOfOutputDevicesChangedEvent(const DolbyIO::FDeviceNames& Devices)
-{
-	AsyncTask(ENamedThreads::GameThread, [=] { OnListOfOutputDevicesChanged(Devices); });
-}
-void UDolbyIO::OnCurrentInputDeviceChangedEvent(int Index)
-{
-	AsyncTask(ENamedThreads::GameThread, [=] { OnCurrentInputDeviceChanged(Index); });
-}
-void UDolbyIO::OnCurrentOutputDeviceChangedEvent(int Index)
-{
-	AsyncTask(ENamedThreads::GameThread, [=] { OnCurrentOutputDeviceChanged(Index); });
 }

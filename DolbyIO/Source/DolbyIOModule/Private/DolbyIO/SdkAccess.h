@@ -39,9 +39,6 @@ namespace DolbyIO
 
 		void GetAudioLevels();
 
-		void SetInputDevice(int Index);
-		void SetOutputDevice(int Index);
-
 	private:
 		void Initialize(const FToken&);
 		bool IsConnected() const;
@@ -51,7 +48,6 @@ namespace DolbyIO
 		ISdkEventObserver& Observer;
 		TUniquePtr<dolbyio::comms::sdk> Sdk;
 		TUniquePtr<dolbyio::comms::refresh_token> RefreshTokenCb;
-		TUniquePtr<class FDeviceManagement> Devices;
 		EConferenceStatus ConferenceStatus;
 		FParticipant LocalParticipantID;
 		FParticipants ParticipantIDs;
