@@ -19,6 +19,12 @@ namespace DolbyIO
 	{
 		if (AppKey.IsEmpty() || AppSecret.IsEmpty())
 		{
+			UE_LOG(LogDolbyIO, Warning, TEXT("App key and secret must not be empty"));
+			return;
+		}
+		if (TokenExpirationTimeInSeconds <= 0)
+		{
+			UE_LOG(LogDolbyIO, Warning, TEXT("Token expiration time must be greater than zero"));
 			return;
 		}
 

@@ -28,9 +28,9 @@ namespace DolbyIO
 	}
 	catch (const conference_state_exception& Ex)
 	{
-		auto constexpr NOT_JOINED = "3";
+		constexpr auto NotJoined = "3";
 		UpdateStatus(FString{"Caught dolbyio::comms::conference_state_exception: "} + Ex.what());
-		if (Ex.current_state() != NOT_JOINED)
+		if (Ex.current_state() != NotJoined)
 		{
 			Disconnect();
 		}

@@ -380,18 +380,17 @@ namespace DolbyIO
 
 	FErrorHandler FSdkAccess::MakeHandler(int Id)
 	{
-		return FErrorHandler(
-		    [this, Id](const FString& Msg)
-		    {
-			    UE_LOG(LogDolbyIO, Error, TEXT("%s (conference status: %s)"),
-			           *(Msg + " {" + FString::FromInt(Id) + "}"), *ToString(ConferenceStatus));
-		    },
-		    [this]()
-		    {
-			    if (IsConnected())
-			    {
-				    Disconnect();
-			    }
-		    });
+		return FErrorHandler{[this, Id](const FString& Msg)
+		                     {
+			                     UE_LOG(LogDolbyIO, Error, TEXT("%s (conference status: %s)"),
+			                            *(Msg + " {" + FString::FromInt(Id) + "}"), *ToString(ConferenceStatus));
+		                     },
+		                     [this]()
+		                     {
+			                     if (IsConnected())
+			                     {
+				                     Disconnect();
+			                     }
+		                     }};
 	}
 }
