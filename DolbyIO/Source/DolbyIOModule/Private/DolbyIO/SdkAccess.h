@@ -18,8 +18,6 @@ namespace DolbyIO
 	class FSdkAccess final
 	{
 		using FToken = FString;
-		using FConferenceName = FString;
-		using FUserName = FString;
 
 	public:
 		using EConferenceStatus = dolbyio::comms::conference_status;
@@ -29,7 +27,7 @@ namespace DolbyIO
 
 		void SetToken(const FToken&);
 
-		void Connect(const FConferenceName&, const FUserName&);
+		void Connect(const FString& ConferenceName, const FString& UserName);
 		void Disconnect();
 
 		void UpdateViewPoint(const FVector&, const FRotator&);

@@ -191,7 +191,7 @@ namespace DolbyIO
 		}
 	}
 
-	void FSdkAccess::Connect(const FConferenceName& Conf, const FUserName& User)
+	void FSdkAccess::Connect(const FString& ConferenceName, const FString& UserName)
 	try
 	{
 		if (!Sdk)
@@ -204,22 +204,22 @@ namespace DolbyIO
 			UE_LOG(LogDolbyIO, Warning, TEXT("Cannot connect - already connected, please disconnect first"));
 			return;
 		}
-		if (Conf.IsEmpty())
+		if (ConferenceName.IsEmpty())
 		{
 			UE_LOG(LogDolbyIO, Warning, TEXT("Cannot connect - conference name cannot be empty"));
 			return;
 		}
 
-		bIsDemo = Conf == "demo";
+		bIsDemo = ConferenceName == "demo";
 
 		using namespace dolbyio::comms::services;
 		services::session::user_info UserInfo{};
-		UserInfo.name = ToStdString(User);
+		UserInfo.name = ToStdString(UserName);
 
 		Sdk->session()
 		    .open(MoveTemp(UserInfo))
 		    .then(
-		        [this, Conf](auto&& User)
+		        [this, ConferenceName](auto&& User)
 		        {
 			        if (User.participant_id)
 			        {
@@ -233,7 +233,7 @@ namespace DolbyIO
 			        }
 
 			        conference::conference_options Options{};
-			        Options.alias = ToStdString(Conf);
+			        Options.alias = ToStdString(ConferenceName);
 			        Options.params.spatial_audio_style = spatial_audio_style::shared;
 
 			        return Sdk->conference().create(Options);
