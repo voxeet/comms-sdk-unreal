@@ -39,7 +39,7 @@ namespace DolbyIO
 		{
 			try
 			{
-				wait(Sdk->conference().leave().then([this]() { return Sdk->session().close(); }));
+				wait(Sdk->conference().leave().then([this] { return Sdk->session().close(); }));
 			}
 			catch (...)
 			{
@@ -359,7 +359,6 @@ namespace DolbyIO
 	{
 		if (!IsConnected())
 		{
-			UE_LOG(LogDolbyIO, Warning, TEXT("Must be connected to get audio levels"));
 			return;
 		}
 
@@ -382,10 +381,13 @@ namespace DolbyIO
 	{
 		return FErrorHandler{[this, Id](const FString& Msg)
 		                     {
-			                     UE_LOG(LogDolbyIO, Error, TEXT("%s (conference status: %s)"),
-			                            *(Msg + " {" + FString::FromInt(Id) + "}"), *ToString(ConferenceStatus));
+			                     if (ConferenceStatus != EConferenceStatus::leaving)
+			                     {
+				                     UE_LOG(LogDolbyIO, Error, TEXT("%s (conference status: %s)"),
+				                            *(Msg + " {" + FString::FromInt(Id) + "}"), *ToString(ConferenceStatus));
+			                     }
 		                     },
-		                     [this]()
+		                     [this]
 		                     {
 			                     if (IsConnected())
 			                     {
