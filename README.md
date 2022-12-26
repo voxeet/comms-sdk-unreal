@@ -9,43 +9,18 @@ Note: If you want to use the plugin on macOS, see our [advice](#macos).
 
 ## Prerequisites
 - [Dolby.io](https://dolby.io) account - if you do not have an account, you can [sign up](https://dolby.io/signup) for free.
-- [Client access token](https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) copied from the [Dolby.io dashboard](https://dashboard.dolby.io/). To create the token, log into the dashboard, create an application, and navigate to the API keys section.
 
-## <a name="usage"></a> How to use the sample Blueprints
+## <a name="getting_started"></a> Getting started
 1. Download the latest plugin [release](https://github.com/DolbyIO/comms-sdk-unreal/releases).
 2. Copy the plugin to {UnrealEngineRoot}/Engine/Plugins, so that you have a folder such as C:\Epic Games\UE_4.27\Engine\Plugins\DolbyIO.  
 *Alternatively, copy the plugin to {YourGameRoot}/Plugins.*
 3. Launch your game project. If you are starting out from scratch, create a game using the First Person template.
-4. Enable the plugin.
-5. Place the DolbyIoSampleConferenceBP object in the scene.
-6. Launch the game.
-7. Press C to open the connection menu.
-8. Paste your Dolby.io client access token in the appropriate field.
-9. Connect.
-10. See the [section below](#how) for how the plugin works and how you can use it in practice.
-
-## How to use the sample C++ class
-1. Follow steps 1-4 from the [section above](#usage).
-2. Place the DolbyIoSampleConference object in the scene.
-3. Make sure the object is selected in the World Outliner.
-4. Paste your Dolby.io client access token in the appropriate field in the Details window.
-5. Launch the game.
-6. See DolbyIoSampleConference.cpp for available key bindings.
-
-## <a name="how"></a>How it works
-The plugin wraps the [Dolby.io Communications C++ SDK](https://github.com/DolbyIO/comms-sdk-cpp) and provides a subset of the SDK's functionality through its API, which is visible in Unreal Engine. As a user, the information in the ADolbyIoConference header, along with the samples mentioned below, should provide you with everything you need to get started.
-
-- DolbyIoSampleConferenceBP provides a sample Blueprint implementation to interface with the SDK using the API specified in ADolbyIoConference.
-- DolbyIoSampleConference.cpp is similar except it is a C++ example.
-- DolbyIoSampleConnectMenu provides a sample Blueprint implementation of a GUI using DolbyIoSampleConferenceBP.
-
-These samples serve as example uses of the plugin but are not meant to be used as-is. Users should implement their own Blueprints, possibly basing them on the samples provided, or implement C++ code using ADolbyIoConference.
-
-It is also not difficult to extend plugin functionality by just knowing that:
-- ADolbyIoConference is the interface between the Unreal Engine and the SDK
-- FSdkAccess is the class where most of the calls to the SDK are made
-
-Therefore, the typical workflow to provide new features is to extend ADolbyIoConference's API and implement the functionality in FSdkAccess.
+4. If the plugin is not enabled automatically, enable it manually in the Plugins window and restart Unreal Editor.
+5. Navigate to "DolbyIO C++ Classes/DolbyIOModule" in the Content Browser.
+6. Right-click on the DolbyIO class and select "Create Blueprint class based on DolbyIO".
+7. In the Event Graph of the newly created Blueprint class, hover over Functions on the left and select Override->On Token Needed. You will also need to override the "On Initialized" function. Both events should appear in the Blueprint. 
+8. The "On Token Needed" event is triggered when the game starts and when a refreshed [client access token](https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) is needed. In production, when this event is received, you should obtain a token for your Dolby.io application and call this Blueprint's "Set Token" function. For quick testing, you can manually obtain a token from the [Dolby.io dashboard](https://dashboard.dolby.io/) and paste it directly into the "Set Token" node. You can also use the "Set Token Using Key and Secret" function for even more convenience in development, but never use this function in production and do not allow your key and secret to leak.
+9. The "On Initialized" event is triggered when the plugin is initialized and ready for use. You can now, for example, call this Blueprint's "Connect" function. Once connected, the "On Connected" event will trigger. There are more events, but to get started, you only need to handle the "On Token Needed" and "On Initialized" events.
 
 ## Building from source
 1. Download the latest release from [Dolby.io Communications C++ SDK releases](https://github.com/DolbyIO/comms-sdk-cpp/releases).
@@ -58,7 +33,7 @@ Therefore, the typical workflow to provide new features is to extend ADolbyIoCon
 7. Close Unreal Editor.
 8. Build your game in the Development Editor configuration.
 9. Open Unreal Editor.
-10. Follow steps 5-10 from the [section above](#usage).
+10. Follow steps 5-10 from the [section above](#getting_started).
 
 ## <a name="macos"></a> macOS advice
 Using the plugin in Unreal Editor requires the Editor to obtain microphone permissions. However, Unreal Editor will never ask for the appropriate permissions, so we need to forcefully provide them to the application. One method to do so is to use [this tool](https://github.com/DocSystem/tccutil):  
