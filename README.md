@@ -31,7 +31,6 @@ Note: If you want to use the plugin on macOS, see our [advice](#macos).
 6. Regenerate IDE project files.
 7. Close Unreal Editor.
 8. Build your game in the Development Editor configuration.
-9. Follow the [section above](#getting_started), skipping steps which involve the packaged plugin.
 
 ## <a name="macos"></a> macOS advice
 Using the plugin in Unreal Editor requires the Editor to obtain microphone permissions. However, Unreal Editor will never ask for the appropriate permissions, so we need to forcefully provide them to the application. One method to do so is to use [this tool](https://github.com/DocSystem/tccutil):  
