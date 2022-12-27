@@ -1,4 +1,4 @@
-# Dolby.io Virtual World plugin for Unreal
+# Dolby.io Virtual World plugin for Unreal Engine
 Plugin integrating [Dolby.io Communications](https://dolby.io) with the Unreal Engine.
 
 ## Supported environments
