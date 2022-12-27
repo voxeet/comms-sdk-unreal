@@ -5,12 +5,12 @@ Plugin integrating [Dolby.io Communications](https://dolby.io) with the Unreal E
 - Unreal Engine 4.27.2 and 5.0.3
 - Windows 10 and macOS 12
 
-Note: If you want to use the plugin on macOS, see our [advice](#macos).
+Note: If you want to use the plugin on macOS, see our [advice](#macos-advice).
 
 ## Prerequisites
 - A [Dolby.io](https://dolby.io) account - if you do not have an account, you can [sign up](https://dolby.io/signup) for free.
 
-## <a name="getting_started"></a> Getting started
+## Getting started
 1. Download the latest plugin [release](https://github.com/DolbyIO/comms-sdk-unreal/releases).
 2. Copy the plugin to {UnrealEngineRoot}/Engine/Plugins, so that you have a folder such as C:\Epic Games\UE_4.27\Engine\Plugins\DolbyIO.  
 *Alternatively, copy the plugin to {YourGameRoot}/Plugins.*
@@ -32,7 +32,7 @@ Note: If you want to use the plugin on macOS, see our [advice](#macos).
 7. Close Unreal Editor.
 8. Build your game in the Development Editor configuration.
 
-## <a name="macos"></a> macOS advice
+## macOS advice
 Using the plugin in Unreal Editor requires the Editor to obtain microphone permissions. However, Unreal Editor will never ask for the appropriate permissions, so we need to forcefully provide them to the application. One method to do so is to use [this tool](https://github.com/DocSystem/tccutil):  
 - Unreal Engine 4: `sudo python tccutil.py -e -id com.epicgames.UE4Editor --microphone`  
 - Unreal Engine 5: `sudo python tccutil.py -e -id com.epicgames.UnrealEditor --microphone`
