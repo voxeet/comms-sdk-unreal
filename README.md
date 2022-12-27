@@ -1,5 +1,5 @@
-# Dolby.io Communications plugin for Unreal
-Plugin integrating [Dolby.io Communications C++ SDK](https://github.com/DolbyIO/comms-sdk-cpp) with the Unreal Engine.
+# Dolby.io Virtual World plugin for Unreal
+Plugin integrating [Dolby.io Communications](https://dolby.io) with the Unreal Engine.
 
 ## Supported environments
 - Unreal Engine 4.27.2 and 5.0.3
@@ -8,7 +8,7 @@ Plugin integrating [Dolby.io Communications C++ SDK](https://github.com/DolbyIO/
 Note: If you want to use the plugin on macOS, see our [advice](#macos).
 
 ## Prerequisites
-- [Dolby.io](https://dolby.io) account - if you do not have an account, you can [sign up](https://dolby.io/signup) for free.
+- A [Dolby.io](https://dolby.io) account - if you do not have an account, you can [sign up](https://dolby.io/signup) for free.
 
 ## <a name="getting_started"></a> Getting started
 1. Download the latest plugin [release](https://github.com/DolbyIO/comms-sdk-unreal/releases).
@@ -23,17 +23,15 @@ Note: If you want to use the plugin on macOS, see our [advice](#macos).
 9. The "On Initialized" event is triggered when the plugin is initialized and ready for use. You can now, for example, call this Blueprint's "Connect" function. Once connected, the "On Connected" event will trigger. There are more events, but to get started, you only need to handle the "On Token Needed" and "On Initialized" events.
 
 ## Building from source
-1. Download the latest release from [Dolby.io Communications C++ SDK releases](https://github.com/DolbyIO/comms-sdk-cpp/releases).
-2. Launch your game project. If you are starting out from scratch, create a game using the First Person C++ template.
-3. Unzip the Dolby.io Communications C++ SDK release.
-4. Copy or link the unzipped sdk-release folder into the DolbyIO/Source/ThirdParty folder.
-5. Create a folder named "Plugins" in your game's root folder if it does not exist.
-6. Copy or link the DolbyIO folder into the Plugins folder.
-7. Regenerate IDE project files.
+1. Download and unzip the latest Dolby.io Communications C++ SDK [release](https://github.com/DolbyIO/comms-sdk-cpp/releases).
+2. Copy or link the unzipped sdk-release folder into the DolbyIO/Source/ThirdParty folder.
+3. Launch your game project. If you are starting out from scratch, create a game using the First Person C++ template.
+4. Create a folder named "Plugins" in your game's root folder if it does not exist.
+5. Copy or link the DolbyIO folder into the Plugins folder.
+6. Regenerate IDE project files.
 7. Close Unreal Editor.
 8. Build your game in the Development Editor configuration.
-9. Open Unreal Editor.
-10. Follow steps 5-10 from the [section above](#getting_started).
+9. Follow the [section above](#getting_started), skipping steps which involve the packaged plugin.
 
 ## <a name="macos"></a> macOS advice
 Using the plugin in Unreal Editor requires the Editor to obtain microphone permissions. However, Unreal Editor will never ask for the appropriate permissions, so we need to forcefully provide them to the application. One method to do so is to use [this tool](https://github.com/DocSystem/tccutil):  
