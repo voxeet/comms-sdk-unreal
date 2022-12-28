@@ -120,7 +120,7 @@ Example:
 ![example](Images/get_audio_levels.PNG)
 
 ### Update View Point
-Updates the position and rotation for spatial audio purposes. Takes the position and rotation of the listener as parameters. Calling this function even once disables the default behavior, which is to automatically use the location and rotation of the first player controller.
+Updates the position and rotation of the listener for spatial audio purposes. Calling this function even once disables the default behavior, which is to automatically use the location and rotation of the first player controller.
 
 Example:  
 ![example](Images/update_view_point.PNG)

@@ -81,8 +81,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void GetAudioLevels();
 
-	/** Updates the position and rotation for spatial audio purposes. Calling this function even once disables the
-	 * default behavior, which is to automatically use the location and rotation of the first player controller.
+	/** Updates the position and rotation of the listener for spatial audio purposes. Calling this function even once
+	 * disables the default behavior, which is to automatically use the location and rotation of the first player
+	 * controller.
 	 * @param Position - The location of the listener.
 	 * @param Rotation - The rotation of the listener.
 	 */
@@ -112,7 +113,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnConnected(const FString& LocalParticipant);
 
-	/** Disconnected from conference. Triggered when disconnected by any means (in particular by the Disconnect function).
+	/** Disconnected from conference. Triggered when disconnected by any means (in particular by the Disconnect
+	 * function).
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnDisconnected();
