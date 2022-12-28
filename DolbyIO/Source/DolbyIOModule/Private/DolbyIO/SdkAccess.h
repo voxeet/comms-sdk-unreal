@@ -50,7 +50,7 @@ namespace DolbyIO
 		TUniquePtr<dolbyio::comms::refresh_token> RefreshTokenCb;
 		EConferenceStatus ConferenceStatus;
 		FParticipant LocalParticipantID;
-		FParticipants ParticipantIDs;
+		FParticipants RemoteParticipantIDs;
 		bool bIsDemo;
 	};
 }

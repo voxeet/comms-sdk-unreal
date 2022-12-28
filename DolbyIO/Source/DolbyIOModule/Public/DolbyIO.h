@@ -106,41 +106,34 @@ public:
 	void OnInitialized();
 
 	/** Successfully connected to conference. Triggered by the Connect function.
+	 * @param LocalParticipant - String holding the ID of the local participant (you).
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
-	void OnConnected();
+	void OnConnected(const FString& LocalParticipant);
 
 	/** Disconnected from conference. Triggered by the Disconnect function or when errors occur.
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnDisconnected();
 
-	/** The local participant ID has changed. Triggered by the Connect function, but does not mean that connection was
-	 * successful.
-	 * @param LocalParticipant - String holding the ID of the local participant (you).
+	/** Triggered when participants are added to or removed from the conference.
+	 * @param RemoteParticipants - Set of strings holding the IDs of the remote participants (them).
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
-	void OnLocalParticipantChanged(const FString& LocalParticipant);
+	void OnRemoteParticipantsChanged(const TSet<FString>& RemoteParticipants);
 
-	/** There is a new list of remote participants available. Triggered when remote participants are added to or removed
-	 * from the conference.
-	 * @param LocalParticipant - Set of strings holding the IDs of the remote participants (them).
-	 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
-	void OnListOfRemoteParticipantsChanged(const TSet<FString>& RemoteParticipants);
-
-	/** There is a new list of active speakers available. Triggered when participants start or stop speaking.
+	/** Triggered when participants start or stop speaking.
 	 * @param ActiveSpeakers - Set of strings holding the IDs of the current active speakers.
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
-	void OnListOfActiveSpeakersChanged(const TSet<FString>& ActiveSpeakers);
+	void OnActiveSpeakersChanged(const TSet<FString>& ActiveSpeakers);
 
 	/** There are new audio levels available. Triggered by the GetAudioLevels function.
 	 * @param AudioLevels - String-to-float mapping of participant IDs to their audio levels (0.0 is silent, 1.0 is
 	 * loudest).
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
-	void OnListOfAudioLevelsChanged(const TMap<FString, float>& AudioLevels);
+	void OnAudioLevelsChanged(const TMap<FString, float>& AudioLevels);
 
 private:
 	void UpdateViewPointUsingFirstPlayer();
@@ -152,12 +145,11 @@ private:
 	// ISdkEventObserver
 	void OnTokenNeededEvent() override;
 	void OnInitializedEvent() override;
-	void OnConnectedEvent() override;
+	void OnConnectedEvent(const DolbyIO::FParticipant&) override;
 	void OnDisconnectedEvent() override;
-	void OnLocalParticipantChangedEvent(const DolbyIO::FParticipant&) override;
-	void OnListOfRemoteParticipantsChangedEvent(const DolbyIO::FParticipants&) override;
-	void OnListOfActiveSpeakersChangedEvent(const DolbyIO::FParticipants&) override;
-	void OnListOfAudioLevelsChangedEvent(const DolbyIO::FAudioLevels&) override;
+	void OnRemoteParticipantsChangedEvent(const DolbyIO::FParticipants&) override;
+	void OnActiveSpeakersChangedEvent(const DolbyIO::FParticipants&) override;
+	void OnAudioLevelsChangedEvent(const DolbyIO::FAudioLevels&) override;
 
 	TSharedPtr<DolbyIO::FSdkAccess> CppSdk;
 	TSharedPtr<DolbyIO::FAuthenticator> Authenticator;

@@ -105,27 +105,24 @@ void UDolbyIO::OnInitializedEvent()
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnInitialized(); });
 }
-void UDolbyIO::OnConnectedEvent()
+void UDolbyIO::OnConnectedEvent(const DolbyIO::FParticipant& Participant)
 {
-	AsyncTask(ENamedThreads::GameThread, [=] { OnConnected(); });
+	AsyncTask(ENamedThreads::GameThread, [=] { OnConnected(Participant); });
 }
 void UDolbyIO::OnDisconnectedEvent()
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { OnDisconnected(); });
+	AsyncTask(ENamedThreads::GameThread, [=] { OnRemoteParticipantsChangedEvent({}); });
 }
-void UDolbyIO::OnLocalParticipantChangedEvent(const DolbyIO::FParticipant& Participant)
+void UDolbyIO::OnRemoteParticipantsChangedEvent(const DolbyIO::FParticipants& Participants)
 {
-	AsyncTask(ENamedThreads::GameThread, [=] { OnLocalParticipantChanged(Participant); });
+	AsyncTask(ENamedThreads::GameThread, [=] { OnRemoteParticipantsChanged(Participants); });
 }
-void UDolbyIO::OnListOfRemoteParticipantsChangedEvent(const DolbyIO::FParticipants& Participants)
+void UDolbyIO::OnActiveSpeakersChangedEvent(const DolbyIO::FParticipants& Speakers)
 {
-	AsyncTask(ENamedThreads::GameThread, [=] { OnListOfRemoteParticipantsChanged(Participants); });
+	AsyncTask(ENamedThreads::GameThread, [=] { OnActiveSpeakersChanged(Speakers); });
 }
-void UDolbyIO::OnListOfActiveSpeakersChangedEvent(const DolbyIO::FParticipants& Speakers)
+void UDolbyIO::OnAudioLevelsChangedEvent(const DolbyIO::FAudioLevels& Levels)
 {
-	AsyncTask(ENamedThreads::GameThread, [=] { OnListOfActiveSpeakersChanged(Speakers); });
-}
-void UDolbyIO::OnListOfAudioLevelsChangedEvent(const DolbyIO::FAudioLevels& Levels)
-{
-	AsyncTask(ENamedThreads::GameThread, [=] { OnListOfAudioLevelsChanged(Levels); });
+	AsyncTask(ENamedThreads::GameThread, [=] { OnAudioLevelsChanged(Levels); });
 }

@@ -75,8 +75,6 @@ namespace DolbyIO
 	void FSdkAccess::Initialize(const FToken& Token)
 	try
 	{
-		LocalParticipantID.Reset();
-		ParticipantIDs.Empty();
 		Sdk.Reset(sdk::create(ToStdString(Token),
 		                      [this](auto&& cb)
 		                      {
@@ -94,8 +92,8 @@ namespace DolbyIO
 		    .add_event_handler(
 		        [this](const participant_added& Event)
 		        {
-			        ParticipantIDs.Add(Event.participant.user_id.c_str());
-			        Observer.OnListOfRemoteParticipantsChangedEvent(ParticipantIDs);
+			        RemoteParticipantIDs.Add(Event.participant.user_id.c_str());
+			        Observer.OnRemoteParticipantsChangedEvent(RemoteParticipantIDs);
 		        })
 		    .on_error(MakeHandler(__LINE__));
 
@@ -108,8 +106,8 @@ namespace DolbyIO
 			        {
 				        if (*ParticipantStatus == participant_status::left)
 				        {
-					        ParticipantIDs.Remove(Event.participant.user_id.c_str());
-					        Observer.OnListOfRemoteParticipantsChangedEvent(ParticipantIDs);
+					        RemoteParticipantIDs.Remove(Event.participant.user_id.c_str());
+					        Observer.OnRemoteParticipantsChangedEvent(RemoteParticipantIDs);
 				        }
 			        }
 		        })
@@ -124,7 +122,7 @@ namespace DolbyIO
 			        {
 				        ActiveSpeakers.Add(Speaker.c_str());
 			        }
-			        Observer.OnListOfActiveSpeakersChangedEvent(ActiveSpeakers);
+			        Observer.OnActiveSpeakersChangedEvent(ActiveSpeakers);
 		        })
 		    .on_error(MakeHandler(__LINE__));
 
@@ -178,7 +176,7 @@ namespace DolbyIO
 		switch (ConferenceStatus)
 		{
 			case EConferenceStatus::joined:
-				Observer.OnConnectedEvent();
+				Observer.OnConnectedEvent(LocalParticipantID);
 				break;
 			case EConferenceStatus::left:
 			case EConferenceStatus::destroyed:
@@ -207,6 +205,7 @@ namespace DolbyIO
 			return;
 		}
 
+		RemoteParticipantIDs.Empty();
 		bIsDemo = ConferenceName == "demo";
 
 		using namespace dolbyio::comms::services;
@@ -222,7 +221,6 @@ namespace DolbyIO
 			        if (User.participant_id)
 			        {
 				        LocalParticipantID = User.participant_id->c_str();
-				        Observer.OnLocalParticipantChangedEvent(LocalParticipantID);
 			        }
 
 			        if (bIsDemo)
@@ -263,18 +261,7 @@ namespace DolbyIO
 			return;
 		}
 
-		Sdk->conference()
-		    .leave()
-		    .then(
-		        [this]()
-		        {
-			        LocalParticipantID.Reset();
-			        Observer.OnLocalParticipantChangedEvent(LocalParticipantID);
-			        ParticipantIDs.Empty();
-			        Observer.OnListOfRemoteParticipantsChangedEvent(ParticipantIDs);
-			        return Sdk->session().close();
-		        })
-		    .on_error(MakeHandler(__LINE__));
+		Sdk->conference().leave().then([this]() { return Sdk->session().close(); }).on_error(MakeHandler(__LINE__));
 	}
 
 	void FSdkAccess::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
@@ -290,7 +277,7 @@ namespace DolbyIO
 		{
 			static float Angle = 0;
 			Angle += 0.01f;
-			for (const auto& Participant : ParticipantIDs)
+			for (const auto& Participant : RemoteParticipantIDs)
 			{
 				Update.set_spatial_position(ToStdString(Participant),
 				                            Participant[0] == '1'
@@ -370,7 +357,7 @@ namespace DolbyIO
 			        {
 				        AudioLevels.Emplace(Level.participant_id.c_str(), Level.level);
 			        }
-			        Observer.OnListOfAudioLevelsChangedEvent(AudioLevels);
+			        Observer.OnAudioLevelsChangedEvent(AudioLevels);
 		        })
 		    .on_error(MakeHandler(__LINE__));
 	}
