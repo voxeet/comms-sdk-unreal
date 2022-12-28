@@ -179,7 +179,6 @@ namespace DolbyIO
 				Observer.OnConnectedEvent(LocalParticipantID);
 				break;
 			case EConferenceStatus::left:
-			case EConferenceStatus::destroyed:
 			case EConferenceStatus::error:
 				Observer.OnDisconnectedEvent();
 				break;
