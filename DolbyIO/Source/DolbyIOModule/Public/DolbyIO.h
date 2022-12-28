@@ -28,8 +28,8 @@ public:
 	 *
 	 */
 
-	/** Sets the client access token. Initializes the plugin unless already initialized. Triggers OnInitialized if
-	 * initialization was successful.
+	/** Initializes or refreshes the client access token. Initializes the plugin unless already initialized. Triggers
+	 * OnInitialized if initialization was successful.
 	 * @param Token - Client access token.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
@@ -56,33 +56,33 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void Disconnect();
 
-	/** Mutes audio input.
+	/** Mutes audio input. Has no effect unless connected.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void MuteInput();
 
-	/** Unmutes audio input.
+	/** Unmutes audio input. Has no effect unless connected.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void UnmuteInput();
 
-	/** Mutes audio output.
+	/** Mutes audio output. Has no effect unless connected.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void MuteOutput();
 
-	/** Unmutes audio output.
+	/** Unmutes audio output. Has no effect unless connected.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void UnmuteOutput();
 
-	/** Gets audio levels for all speaking participants. Triggers OnListOfAudioLevelsChanged if successful.
+	/** Gets audio levels for all speaking participants. Triggers OnAudioLevelsChanged if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void GetAudioLevels();
 
 	/** Updates the position and rotation for spatial audio purposes. Calling this function even once disables the
-	 * default behavior, which is to automatically use the location and rotaion of the first player controller.
+	 * default behavior, which is to automatically use the location and rotation of the first player controller.
 	 * @param Position - The location of the listener.
 	 * @param Rotation - The rotation of the listener.
 	 */
@@ -95,8 +95,8 @@ public:
 	 *
 	 */
 
-	/** An initial or refreshed client access token is needed. Triggered at game start or when a
-	 * refresh token is requested.
+	/** An initial or refreshed client access token is needed. Triggered when the game starts or when a refresh token is
+	 * requested.
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnTokenNeeded();
