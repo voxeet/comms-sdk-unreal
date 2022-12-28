@@ -52,7 +52,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void Connect(const FString& ConferenceName = "unreal", const FString& UserName = "unreal");
 
-	/** Disconnects from the current conference. Triggers OnDisconnected if successful. */
+	/** Disconnects from the current conference. Triggers OnDisconnected when complete. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void Disconnect();
 
@@ -112,7 +112,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnConnected(const FString& LocalParticipant);
 
-	/** Disconnected from conference. Triggered by the Disconnect function or when errors occur.
+	/** Disconnected from conference. Triggered when disconnected by any means (in particular by the Disconnect function).
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnDisconnected();
