@@ -29,6 +29,7 @@ void UDolbyIO::Initialize(FSubsystemCollectionBase& Collection)
 
 void UDolbyIO::Deinitialize()
 {
+	bIsAlive = false;
 	CppSdk.Reset();
 	Super::Deinitialize();
 }
@@ -99,30 +100,57 @@ void UDolbyIO::UpdateViewPointUsingFirstPlayer()
 
 void UDolbyIO::OnTokenNeededEvent()
 {
+	if (!bIsAlive)
+	{
+		return;
+	}
 	AsyncTask(ENamedThreads::GameThread, [=] { OnTokenNeeded(); });
 }
 void UDolbyIO::OnInitializedEvent()
 {
+	if (!bIsAlive)
+	{
+		return;
+	}
 	AsyncTask(ENamedThreads::GameThread, [=] { OnInitialized(); });
 }
 void UDolbyIO::OnConnectedEvent(const DolbyIO::FParticipant& Participant)
 {
+	if (!bIsAlive)
+	{
+		return;
+	}
 	AsyncTask(ENamedThreads::GameThread, [=] { OnConnected(Participant); });
 }
 void UDolbyIO::OnDisconnectedEvent()
 {
+	if (!bIsAlive)
+	{
+		return;
+	}
 	AsyncTask(ENamedThreads::GameThread, [=] { OnDisconnected(); });
-	AsyncTask(ENamedThreads::GameThread, [=] { OnRemoteParticipantsChangedEvent({}); });
 }
 void UDolbyIO::OnRemoteParticipantsChangedEvent(const DolbyIO::FParticipants& Participants)
 {
+	if (!bIsAlive)
+	{
+		return;
+	}
 	AsyncTask(ENamedThreads::GameThread, [=] { OnRemoteParticipantsChanged(Participants); });
 }
 void UDolbyIO::OnActiveSpeakersChangedEvent(const DolbyIO::FParticipants& Speakers)
 {
+	if (!bIsAlive)
+	{
+		return;
+	}
 	AsyncTask(ENamedThreads::GameThread, [=] { OnActiveSpeakersChanged(Speakers); });
 }
 void UDolbyIO::OnAudioLevelsChangedEvent(const DolbyIO::FAudioLevels& Levels)
 {
+	if (!bIsAlive)
+	{
+		return;
+	}
 	AsyncTask(ENamedThreads::GameThread, [=] { OnAudioLevelsChanged(Levels); });
 }

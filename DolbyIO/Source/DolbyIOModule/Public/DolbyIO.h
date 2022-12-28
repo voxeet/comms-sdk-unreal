@@ -6,6 +6,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 
 #include "Engine/EngineTypes.h"
+#include "HAL/ThreadSafeBool.h"
 
 #include "DolbyIO.generated.h"
 
@@ -156,4 +157,5 @@ private:
 
 	class UGameInstance* GameInstance;
 	FTimerHandle SpatialUpdateTimerHandle;
+	FThreadSafeBool bIsAlive = true;
 };
