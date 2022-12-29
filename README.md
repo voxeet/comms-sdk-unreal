@@ -48,17 +48,26 @@ Disconnected from conference. Triggered when disconnected by any means (in parti
 Example:  
 ![example](Images/on_disconnected.PNG)
 
-### On Remote Participants Changed
-Triggered when participants are added to or removed from the conference. Provides the IDs of the remote participants in its argument.
+### On Participant Added
+Triggered when a remote participant is added to the conference. Provides information about the participant in its argument.
 
 Example:  
-![example](Images/on_remote_participants_changed.PNG)
+![example](Images/on_participant_added.PNG)
+
+### On Participant Left
+Triggered when a remote participant leaves the conference. Provides information about the participant in its argument.
+
+Example:  
+![example](Images/on_participant_left.PNG)
 
 ### On Active Speakers Changed
 Triggered when participants start or stop speaking. Provides the IDs of the current speakers in its argument.
 
 Example:  
 ![example](Images/on_active_speakers_changed.PNG)
+
+Given helper function:  
+![example](Images/get_name_from_id.PNG)
 
 ### On Audio Levels Changed
 There are new audio levels available. Provides a string-to-float mapping of participant IDs to their audio levels (0.0 is silent, 1.0 is loudest) in its argument. Triggered by the [Get Audio Levels](#get-audio-levels) function.
