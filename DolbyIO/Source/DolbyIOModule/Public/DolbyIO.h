@@ -59,6 +59,14 @@ public:
 	void Connect(const FString& ConferenceName = "unreal", const FString& UserName = "", const FString& ExternalID = "",
 	             const FString& AvatarURL = "");
 
+	/** Connects to a demo conference, which automatically brings in 3 invisible bots into the conference as a quick way
+	 * to validate the connection to the service with audio functionality. One of the bots is placed to the left of
+	 * point {0, 0, 0} in the level, one is placed to the right and one circles around that point. Triggers OnConnected
+	 * if successful.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby")
+	void ConnectToDemoConference();
+
 	/** Disconnects from the current conference. Triggers OnDisconnected when complete. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void Disconnect();

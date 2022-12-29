@@ -90,7 +90,6 @@ namespace DolbyIO
 	}
 
 	void FSdkAccess::Initialize(const FToken& Token)
-	try
 	{
 		Sdk.Reset(sdk::create(ToStdString(Token),
 		                      [this](auto&& cb)
@@ -145,14 +144,25 @@ namespace DolbyIO
 
 		Observer.OnInitializedEvent();
 	}
-	catch (...)
-	{
-		MakeHandler(__LINE__).RethrowAndUpdateStatus();
-	}
 
 	bool FSdkAccess::IsConnected() const
 	{
 		return ConferenceStatus == EConferenceStatus::joined;
+	}
+
+	bool FSdkAccess::CanConnect() const
+	{
+		if (!Sdk)
+		{
+			UE_LOG(LogDolbyIO, Warning, TEXT("Cannot connect - not initialized"));
+			return false;
+		}
+		if (IsConnected())
+		{
+			UE_LOG(LogDolbyIO, Warning, TEXT("Cannot connect - already connected, please disconnect first"));
+			return false;
+		}
+		return true;
 	}
 
 	namespace
@@ -204,16 +214,9 @@ namespace DolbyIO
 
 	void FSdkAccess::Connect(const FString& ConferenceName, const FString& UserName, const FString& ExternalID,
 	                         const FString& AvatarURL)
-	try
 	{
-		if (!Sdk)
+		if (!CanConnect())
 		{
-			UE_LOG(LogDolbyIO, Warning, TEXT("Cannot connect - not initialized"));
-			return;
-		}
-		if (IsConnected())
-		{
-			UE_LOG(LogDolbyIO, Warning, TEXT("Cannot connect - already connected, please disconnect first"));
 			return;
 		}
 		if (ConferenceName.IsEmpty())
@@ -223,7 +226,7 @@ namespace DolbyIO
 		}
 
 		RemoteParticipantIDs.Empty();
-		bIsDemo = ConferenceName == "demo";
+		bIsDemo = false;
 
 		using namespace dolbyio::comms::services;
 		services::session::user_info UserInfo{};
@@ -242,11 +245,6 @@ namespace DolbyIO
 				        LocalParticipantID = User.participant_id->c_str();
 			        }
 
-			        if (bIsDemo)
-			        {
-				        return Sdk->conference().demo();
-			        }
-
 			        conference::conference_options Options{};
 			        Options.alias = ToStdString(ConferenceName);
 			        Options.params.spatial_audio_style = spatial_audio_style::shared;
@@ -256,11 +254,6 @@ namespace DolbyIO
 		    .then(
 		        [this](auto&& ConferenceInfo)
 		        {
-			        if (bIsDemo)
-			        {
-				        return async_result<conference_info>{MoveTemp(ConferenceInfo)};
-			        }
-
 			        conference::join_options Options{};
 			        Options.constraints.audio = true;
 			        Options.connection.spatial_audio = true;
@@ -268,9 +261,30 @@ namespace DolbyIO
 		        })
 		    .on_error(MakeHandler(__LINE__));
 	}
-	catch (...)
+
+	void FSdkAccess::ConnectToDemoConference()
 	{
-		MakeHandler(__LINE__).RethrowAndUpdateStatus();
+		if (!CanConnect())
+		{
+			return;
+		}
+
+		RemoteParticipantIDs.Empty();
+		bIsDemo = true;
+
+		ConferenceStatus = EConferenceStatus::creating;
+		Sdk->session()
+		    .open({})
+		    .then(
+		        [this](auto&& User)
+		        {
+			        if (User.participant_id)
+			        {
+				        LocalParticipantID = User.participant_id->c_str();
+			        }
+			        return Sdk->conference().demo();
+		        })
+		    .on_error(MakeHandler(__LINE__));
 	}
 
 	void FSdkAccess::Disconnect()
@@ -381,14 +395,14 @@ namespace DolbyIO
 		    .on_error(MakeHandler(__LINE__));
 	}
 
-	FErrorHandler FSdkAccess::MakeHandler(int Id)
+	FErrorHandler FSdkAccess::MakeHandler(int Line)
 	{
-		return FErrorHandler{[this, Id](const FString& Msg)
+		return FErrorHandler{[this, Line](const FString& Msg)
 		                     {
 			                     if (ConferenceStatus != EConferenceStatus::leaving)
 			                     {
 				                     UE_LOG(LogDolbyIO, Error, TEXT("%s (conference status: %s)"),
-				                            *(Msg + " {" + FString::FromInt(Id) + "}"), *ToString(ConferenceStatus));
+				                            *(Msg + " {" + FString::FromInt(Line) + "}"), *ToString(ConferenceStatus));
 			                     }
 		                     },
 		                     [this]

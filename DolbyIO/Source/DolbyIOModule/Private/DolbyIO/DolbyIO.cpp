@@ -48,6 +48,10 @@ void UDolbyIO::Connect(const FString& ConferenceName, const FString& UserName, c
 {
 	CppSdk->Connect(ConferenceName, UserName, ExternalID, AvatarURL);
 }
+void UDolbyIO::ConnectToDemoConference()
+{
+	CppSdk->ConnectToDemoConference();
+}
 void UDolbyIO::Disconnect()
 {
 	CppSdk->Disconnect();

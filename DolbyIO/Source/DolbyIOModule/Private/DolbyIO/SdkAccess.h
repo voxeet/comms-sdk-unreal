@@ -29,6 +29,7 @@ namespace DolbyIO
 
 		void Connect(const FString& ConferenceName, const FString& UserName, const FString& ExternalID,
 		             const FString& AvatarURL);
+		void ConnectToDemoConference();
 		void Disconnect();
 
 		void UpdateViewPoint(const FVector&, const FRotator&);
@@ -43,8 +44,9 @@ namespace DolbyIO
 	private:
 		void Initialize(const FToken&);
 		bool IsConnected() const;
+		bool CanConnect() const;
 		void UpdateStatus(EConferenceStatus);
-		class FErrorHandler MakeHandler(int Id);
+		class FErrorHandler MakeHandler(int Line);
 
 		ISdkEventObserver& Observer;
 		TUniquePtr<dolbyio::comms::sdk> Sdk;
