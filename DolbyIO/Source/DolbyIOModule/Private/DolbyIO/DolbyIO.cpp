@@ -43,9 +43,10 @@ void UDolbyIO::SetTokenUsingKeyAndSecret(const FString& AppKey, const FString& A
 {
 	Authenticator->GetToken(AppKey, AppSecret, TokenExpirationTimeInSeconds);
 }
-void UDolbyIO::Connect(const FString& ConferenceName, const FString& UserName)
+void UDolbyIO::Connect(const FString& ConferenceName, const FString& UserName, const FString& ExternalID,
+                       const FString& AvatarURL)
 {
-	CppSdk->Connect(ConferenceName, UserName);
+	CppSdk->Connect(ConferenceName, UserName, ExternalID, AvatarURL);
 }
 void UDolbyIO::Disconnect()
 {
@@ -114,13 +115,13 @@ void UDolbyIO::OnInitializedEvent()
 	}
 	AsyncTask(ENamedThreads::GameThread, [=] { OnInitialized(); });
 }
-void UDolbyIO::OnConnectedEvent(const DolbyIO::FParticipant& Participant)
+void UDolbyIO::OnConnectedEvent(const DolbyIO::FParticipantID& ParticipantID)
 {
 	if (!bIsAlive)
 	{
 		return;
 	}
-	AsyncTask(ENamedThreads::GameThread, [=] { OnConnected(Participant); });
+	AsyncTask(ENamedThreads::GameThread, [=] { OnConnected(ParticipantID); });
 }
 void UDolbyIO::OnDisconnectedEvent()
 {
@@ -130,15 +131,23 @@ void UDolbyIO::OnDisconnectedEvent()
 	}
 	AsyncTask(ENamedThreads::GameThread, [=] { OnDisconnected(); });
 }
-void UDolbyIO::OnRemoteParticipantsChangedEvent(const DolbyIO::FParticipants& Participants)
+void UDolbyIO::OnParticipantAddedEvent(const FDolbyIOParticipantInfo& ParticipantInfo)
 {
 	if (!bIsAlive)
 	{
 		return;
 	}
-	AsyncTask(ENamedThreads::GameThread, [=] { OnRemoteParticipantsChanged(Participants); });
+	AsyncTask(ENamedThreads::GameThread, [=] { OnParticipantAdded(ParticipantInfo); });
 }
-void UDolbyIO::OnActiveSpeakersChangedEvent(const DolbyIO::FParticipants& Speakers)
+void UDolbyIO::OnParticipantLeftEvent(const FDolbyIOParticipantInfo& ParticipantInfo)
+{
+	if (!bIsAlive)
+	{
+		return;
+	}
+	AsyncTask(ENamedThreads::GameThread, [=] { OnParticipantLeft(ParticipantInfo); });
+}
+void UDolbyIO::OnActiveSpeakersChangedEvent(const DolbyIO::FParticipantIDs& Speakers)
 {
 	if (!bIsAlive)
 	{

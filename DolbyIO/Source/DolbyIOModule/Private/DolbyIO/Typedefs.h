@@ -2,11 +2,12 @@
 
 #pragma once
 
-#include "Internationalization/Text.h"
+#include "Containers/Map.h"
+#include "Containers/UnrealString.h"
 
 namespace DolbyIO
 {
-	using FParticipant = FString;
-	using FParticipants = TSet<FParticipant>;
-	using FAudioLevels = TMap<FParticipant, float>;
+	using FParticipantID = FString;
+	using FParticipantIDs = TArray<FParticipantID>;
+	using FAudioLevels = TMap<FParticipantID, float>;
 }

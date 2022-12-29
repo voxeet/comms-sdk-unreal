@@ -27,7 +27,8 @@ namespace DolbyIO
 
 		void SetToken(const FToken&);
 
-		void Connect(const FString& ConferenceName, const FString& UserName);
+		void Connect(const FString& ConferenceName, const FString& UserName, const FString& ExternalID,
+		             const FString& AvatarURL);
 		void Disconnect();
 
 		void UpdateViewPoint(const FVector&, const FRotator&);
@@ -49,8 +50,8 @@ namespace DolbyIO
 		TUniquePtr<dolbyio::comms::sdk> Sdk;
 		TUniquePtr<dolbyio::comms::refresh_token> RefreshTokenCb;
 		EConferenceStatus ConferenceStatus;
-		FParticipant LocalParticipantID;
-		FParticipants RemoteParticipantIDs;
+		FParticipantID LocalParticipantID;
+		FParticipantIDs RemoteParticipantIDs;
 		bool bIsDemo;
 	};
 }

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "DolbyIO/SdkEventObserver.h"
+#include "DolbyIOParticipantInfo.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 
 #include "Engine/EngineTypes.h"
@@ -16,6 +17,7 @@ namespace DolbyIO
 	class FSdkAccess;
 }
 
+/** The Dolby.io Virtual World plugin game instance subsystem. */
 UCLASS(Abstract, Blueprintable)
 class DOLBYIOMODULE_API UDolbyIO : public UGameInstanceSubsystem, public DolbyIO::ISdkEventObserver
 {
@@ -47,37 +49,37 @@ public:
 
 	/** Connects to a conference. Triggers OnConnected if successful.
 	 * @param ConferenceName - Conference name. Must not be empty.
-	 * @param UserName - User name.
+	 * @param UserName - The name of the participant.
+	 * @param ExternalID - The external unique identifier that the customer's application can add to the participant
+	 * while opening a session. If a participant uses the same external ID in conferences, the participan's ID also
+	 * remains the same across all sessions.
+	 * @param AvatarURL - The URL of the participant's avatar.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
-	void Connect(const FString& ConferenceName = "unreal", const FString& UserName = "unreal");
+	void Connect(const FString& ConferenceName = "unreal", const FString& UserName = "", const FString& ExternalID = "",
+	             const FString& AvatarURL = "");
 
 	/** Disconnects from the current conference. Triggers OnDisconnected when complete. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void Disconnect();
 
-	/** Mutes audio input. Has no effect unless connected.
-	 */
+	/** Mutes audio input. Has no effect unless connected. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void MuteInput();
 
-	/** Unmutes audio input. Has no effect unless connected.
-	 */
+	/** Unmutes audio input. Has no effect unless connected. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void UnmuteInput();
 
-	/** Mutes audio output. Has no effect unless connected.
-	 */
+	/** Mutes audio output. Has no effect unless connected. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void MuteOutput();
 
-	/** Unmutes audio output. Has no effect unless connected.
-	 */
+	/** Unmutes audio output. Has no effect unless connected. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void UnmuteOutput();
 
-	/** Gets audio levels for all speaking participants. Triggers OnAudioLevelsChanged if successful.
-	 */
+	/** Gets audio levels for all speaking participants. Triggers OnAudioLevelsChanged if successful. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void GetAudioLevels();
 
@@ -102,16 +104,15 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnTokenNeeded();
 
-	/** The plugin is successfully initialized. Triggered by the SetToken function.
-	 */
+	/** The plugin is successfully initialized. Triggered by the SetToken function. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnInitialized();
 
 	/** Successfully connected to conference. Triggered by the Connect function.
-	 * @param LocalParticipant - String holding the ID of the local participant (you).
+	 * @param LocalParticipant - The unique ID for the participant opening the session.
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
-	void OnConnected(const FString& LocalParticipant);
+	void OnConnected(const FString& LocalParticipantID);
 
 	/** Disconnected from conference. Triggered when disconnected by any means (in particular by the Disconnect
 	 * function).
@@ -119,17 +120,25 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnDisconnected();
 
-	/** Triggered when participants are added to or removed from the conference.
-	 * @param RemoteParticipants - Set of strings holding the IDs of the remote participants (them).
+	/** Triggered when a remote participant is added to the conference.
+	 * @param ParticipantInfo - Contains the current status of a conference participant and information whether the
+	 * participant's audio is enabled.
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
-	void OnRemoteParticipantsChanged(const TSet<FString>& RemoteParticipants);
+	void OnParticipantAdded(const FDolbyIOParticipantInfo& ParticipantInfo);
+
+	/** Triggered when a remote participant leaves the conference.
+	 * @param ParticipantInfo - Contains the current status of a conference participant and information whether the
+	 * participant's audio is enabled.
+	 */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
+	void OnParticipantLeft(const FDolbyIOParticipantInfo& ParticipantInfo);
 
 	/** Triggered when participants start or stop speaking.
-	 * @param ActiveSpeakers - Set of strings holding the IDs of the current active speakers.
+	 * @param ActiveSpeakers - IDs of the current active speakers.
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
-	void OnActiveSpeakersChanged(const TSet<FString>& ActiveSpeakers);
+	void OnActiveSpeakersChanged(const TArray<FString>& ActiveSpeakers);
 
 	/** There are new audio levels available. Triggered by the GetAudioLevels function.
 	 * @param AudioLevels - String-to-float mapping of participant IDs to their audio levels (0.0 is silent, 1.0 is
@@ -148,10 +157,11 @@ private:
 	// ISdkEventObserver
 	void OnTokenNeededEvent() override;
 	void OnInitializedEvent() override;
-	void OnConnectedEvent(const DolbyIO::FParticipant&) override;
+	void OnConnectedEvent(const DolbyIO::FParticipantID&) override;
 	void OnDisconnectedEvent() override;
-	void OnRemoteParticipantsChangedEvent(const DolbyIO::FParticipants&) override;
-	void OnActiveSpeakersChangedEvent(const DolbyIO::FParticipants&) override;
+	void OnParticipantAddedEvent(const FDolbyIOParticipantInfo&) override;
+	void OnParticipantLeftEvent(const FDolbyIOParticipantInfo&) override;
+	void OnActiveSpeakersChangedEvent(const DolbyIO::FParticipantIDs&) override;
 	void OnAudioLevelsChangedEvent(const DolbyIO::FAudioLevels&) override;
 
 	TSharedPtr<DolbyIO::FSdkAccess> CppSdk;

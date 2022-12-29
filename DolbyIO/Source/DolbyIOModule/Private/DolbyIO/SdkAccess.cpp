@@ -5,6 +5,7 @@
 #include "DolbyIO/ErrorHandler.h"
 #include "DolbyIO/Logging.h"
 #include "DolbyIO/SdkEventObserver.h"
+#include "DolbyIOParticipantInfo.h"
 
 #include <dolbyio/comms/async_result.h>
 #include <dolbyio/comms/sdk.h>
@@ -72,6 +73,22 @@ namespace DolbyIO
 		MakeHandler(__LINE__).RethrowAndUpdateStatus();
 	}
 
+	namespace
+	{
+		auto ToUnrealParticipantInfo(const participant_info& Info)
+		{
+			FDolbyIOParticipantInfo Ret;
+			Ret.UserID = Info.user_id.c_str();
+			Ret.Name = Info.info.name.value_or("").c_str();
+			Ret.ExternalID = Info.info.external_id.value_or("").c_str();
+			Ret.AvatarURL = Info.info.avatar_url.value_or("").c_str();
+			Ret.bIsListener = Info.type && *Info.type == participant_type::listener;
+			Ret.bIsSendingAudio = Info.is_sending_audio.value_or(false);
+			Ret.bIsAudibleLocally = Info.audible_locally.value_or(false);
+			return Ret;
+		}
+	}
+
 	void FSdkAccess::Initialize(const FToken& Token)
 	try
 	{
@@ -93,7 +110,7 @@ namespace DolbyIO
 		        [this](const participant_added& Event)
 		        {
 			        RemoteParticipantIDs.Add(Event.participant.user_id.c_str());
-			        Observer.OnRemoteParticipantsChangedEvent(RemoteParticipantIDs);
+			        Observer.OnParticipantAddedEvent(ToUnrealParticipantInfo(Event.participant));
 		        })
 		    .on_error(MakeHandler(__LINE__));
 
@@ -107,7 +124,7 @@ namespace DolbyIO
 				        if (*ParticipantStatus == participant_status::left)
 				        {
 					        RemoteParticipantIDs.Remove(Event.participant.user_id.c_str());
-					        Observer.OnRemoteParticipantsChangedEvent(RemoteParticipantIDs);
+					        Observer.OnParticipantLeftEvent(ToUnrealParticipantInfo(Event.participant));
 				        }
 			        }
 		        })
@@ -117,7 +134,7 @@ namespace DolbyIO
 		    .add_event_handler(
 		        [this](const active_speaker_change& Event)
 		        {
-			        FParticipants ActiveSpeakers;
+			        FParticipantIDs ActiveSpeakers;
 			        for (const auto& Speaker : Event.active_speakers)
 			        {
 				        ActiveSpeakers.Add(Speaker.c_str());
@@ -185,7 +202,8 @@ namespace DolbyIO
 		}
 	}
 
-	void FSdkAccess::Connect(const FString& ConferenceName, const FString& UserName)
+	void FSdkAccess::Connect(const FString& ConferenceName, const FString& UserName, const FString& ExternalID,
+	                         const FString& AvatarURL)
 	try
 	{
 		if (!Sdk)
@@ -210,6 +228,8 @@ namespace DolbyIO
 		using namespace dolbyio::comms::services;
 		services::session::user_info UserInfo{};
 		UserInfo.name = ToStdString(UserName);
+		UserInfo.externalId = ToStdString(ExternalID);
+		UserInfo.avatarUrl = ToStdString(AvatarURL);
 
 		ConferenceStatus = EConferenceStatus::creating;
 		Sdk->session()
