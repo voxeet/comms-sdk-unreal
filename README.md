@@ -37,13 +37,13 @@ Example:
 ![example](Images/on_initialized.PNG)
 
 ### On Connected
-Triggered when a client is successfully connected to a conference after calling the [Connect](#connect) function. The event provides the ID of the local participant in its argument.
+Triggered when the client is successfully connected to the conference after calling the [Connect](#connect) function. The event provides the ID of the local participant in its argument.
 
 Example:  
 ![example](Images/on_connected.PNG)
 
 ### On Disconnected
-Triggered when a client is disconnected from a conference by any means; in particular, by the [Disconnect](#disconnect) function.
+Triggered when the client is disconnected from the conference by any means; in particular, by the [Disconnect](#disconnect) function.
 
 Example:  
 ![example](Images/on_disconnected.PNG)
@@ -77,7 +77,7 @@ Example:
 
 ## Functions
 ### Set Token
-Initializes or refreshes the client access token. The function takes the token as a parameter and initializes the plugin unless already initialized. A successful initialization triggers the [On Initialized](#on-initialized) event.
+Initializes or refreshes the client access token. The function takes the token as a parameter and initializes the plugin unless already initialized. Successful initialization triggers the [On Initialized](#on-initialized) event.
 
 For quick testing, you can manually obtain a token from the [Dolby.io dashboard](https://dashboard.dolby.io/) and paste it directly into the node.
 
@@ -87,13 +87,15 @@ Example:
 ![example](Images/on_token_needed.PNG)
 
 ### Set Token Using Key and Secret
-For convenience during early development and prototyping, this function is provided to acquire a client access token directly from within the application. However, please note **we do not recommend** using this mechanism in the production software for [security best practices](https://docs.dolby.io/communications-apis/docs/guides-client-authentication). App secret needs to be protected and not included in the application.
+Initializes or refreshes the client access token. The function is similar to [Set Token](#set-token), except it takes an app key and secret as parameters and automatically generates the token.
+
+For convenience during early development and prototyping, this function is provided to acquire the client access token directly from within the application. However, please note **we do not recommend** using this mechanism in the production software for [security best practices](https://docs.dolby.io/communications-apis/docs/guides-client-authentication). App secret needs to be protected and not included in the application.
 
 Example:  
 ![example](Images/set_token_using_key_and_secret.PNG)
 
 ### Connect
-Connects to a conference. Takes a conference name and user name as parameters. Triggers [On Connected](#on-connected) if successful.
+Connects to a conference. The method takes a conference name and user name as parameters. Triggers [On Connected](#on-connected) if successful.
 
 Example:  
 ![example](Images/connect.PNG)
@@ -111,19 +113,19 @@ Example:
 ![example](Images/disconnect.PNG)
 
 ### Mute Input
-Mutes audio input. The method has no effect unless an audio input device is connected.
+Mutes audio input. The method has no effect unless the client is connected to the conference.
 
 ### Unmute Input
-Unmutes audio input. The method has no effect unless an audio input device is connected.
+Unmutes audio input. The method has no effect unless the client is connected to the conference.
 
 Example:  
 ![example](Images/mute_input.PNG)
 
 ### Mute Output
-Mutes audio output. The method has no effect unless an audio output device is connected.
+Mutes audio output. The method has no effect unless the client is connected to the conference.
 
 ### Unmute Output
-Unmutes audio output. The method has no effect unless an audio output device is connected.
+Unmutes audio output. The method has no effect unless the client is connected to the conference.
 
 Example:  
 ![example](Images/mute_output.PNG)
