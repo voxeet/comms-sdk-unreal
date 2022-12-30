@@ -44,7 +44,7 @@ namespace DolbyIO
 		bool IsConnected() const;
 		bool CanConnect() const;
 		void UpdateStatus(dolbyio::comms::conference_status);
-		class FErrorHandler MakeHandler(int Line);
+		class FErrorHandler MakeErrorHandler(int Line);
 
 		TUniquePtr<dolbyio::comms::sdk> Sdk;
 		TUniquePtr<dolbyio::comms::refresh_token> RefreshTokenCb;

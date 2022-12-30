@@ -10,7 +10,7 @@
 #include <dolbyio/comms/async_result.h>
 #include <dolbyio/comms/sdk.h>
 
-#include "HAL/PlatformProcess.h"
+#include "HAL/PlatformProcess.h" // to be removed when fix lands in C++ SDK
 #include "Math/Rotator.h"
 
 namespace DolbyIO
@@ -56,6 +56,7 @@ namespace DolbyIO
 		}
 	}
 
+#define DLB_HANDLE_ERROR MakeErrorHandler(__LINE__)
 	void FSdkAccess::SetToken(const FToken& Token)
 	try
 	{
@@ -71,7 +72,7 @@ namespace DolbyIO
 	}
 	catch (...)
 	{
-		MakeHandler(__LINE__).RethrowAndUpdateStatus();
+		DLB_HANDLE_ERROR.RethrowAndUpdateStatus();
 	}
 
 	namespace
@@ -145,7 +146,7 @@ namespace DolbyIO
 			            });
 		        })
 		    .then([this](auto) { Observer.OnInitializedEvent(); })
-		    .on_error(MakeHandler(__LINE__));
+		    .on_error(DLB_HANDLE_ERROR);
 	}
 
 	bool FSdkAccess::IsConnected() const
@@ -260,7 +261,7 @@ namespace DolbyIO
 			        Options.connection.spatial_audio = true;
 			        return Sdk->conference().join(ConferenceInfo, Options);
 		        })
-		    .on_error(MakeHandler(__LINE__));
+		    .on_error(DLB_HANDLE_ERROR);
 	}
 
 	void FSdkAccess::ConnectToDemoConference()
@@ -285,7 +286,7 @@ namespace DolbyIO
 			        }
 			        return Sdk->conference().demo();
 		        })
-		    .on_error(MakeHandler(__LINE__));
+		    .on_error(DLB_HANDLE_ERROR);
 	}
 
 	void FSdkAccess::Disconnect()
@@ -295,7 +296,7 @@ namespace DolbyIO
 			return;
 		}
 
-		Sdk->conference().leave().then([this]() { return Sdk->session().close(); }).on_error(MakeHandler(__LINE__));
+		Sdk->conference().leave().then([this]() { return Sdk->session().close(); }).on_error(DLB_HANDLE_ERROR);
 	}
 
 	void FSdkAccess::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
@@ -329,7 +330,7 @@ namespace DolbyIO
 		Update.set_spatial_position(ToStdString(LocalParticipantID),
 		                            {ScaledPosition.Y, ScaledPosition.Z, ScaledPosition.X});
 		Update.set_spatial_direction({Rotation.Pitch, Rotation.Yaw, Rotation.Roll});
-		Sdk->conference().update_spatial_audio_configuration(MoveTemp(Update)).on_error(MakeHandler(__LINE__));
+		Sdk->conference().update_spatial_audio_configuration(MoveTemp(Update)).on_error(DLB_HANDLE_ERROR);
 	}
 
 	void FSdkAccess::MuteInput()
@@ -340,7 +341,7 @@ namespace DolbyIO
 			return;
 		}
 
-		Sdk->conference().mute(true).on_error(MakeHandler(__LINE__));
+		Sdk->conference().mute(true).on_error(DLB_HANDLE_ERROR);
 	}
 
 	void FSdkAccess::UnmuteInput()
@@ -350,7 +351,7 @@ namespace DolbyIO
 			return;
 		}
 
-		Sdk->conference().mute(false).on_error(MakeHandler(__LINE__));
+		Sdk->conference().mute(false).on_error(DLB_HANDLE_ERROR);
 	}
 
 	void FSdkAccess::MuteOutput()
@@ -361,7 +362,7 @@ namespace DolbyIO
 			return;
 		}
 
-		Sdk->conference().mute_output(true).on_error(MakeHandler(__LINE__));
+		Sdk->conference().mute_output(true).on_error(DLB_HANDLE_ERROR);
 	}
 
 	void FSdkAccess::UnmuteOutput()
@@ -371,7 +372,7 @@ namespace DolbyIO
 			return;
 		}
 
-		Sdk->conference().mute_output(false).on_error(MakeHandler(__LINE__));
+		Sdk->conference().mute_output(false).on_error(DLB_HANDLE_ERROR);
 	}
 
 	void FSdkAccess::GetAudioLevels()
@@ -393,18 +394,18 @@ namespace DolbyIO
 			        }
 			        Observer.OnAudioLevelsChangedEvent(AudioLevels);
 		        })
-		    .on_error(MakeHandler(__LINE__));
+		    .on_error(DLB_HANDLE_ERROR);
 	}
 
-	FErrorHandler FSdkAccess::MakeHandler(int Line)
+	FErrorHandler FSdkAccess::MakeErrorHandler(int Line)
 	{
-		return FErrorHandler{[this, Line](const FString& Msg)
-		                     {
-			                     if (ConferenceStatus != conference_status::leaving)
-			                     {
-				                     UE_LOG(LogDolbyIO, Error, TEXT("%s (conference status: %s)"),
-				                            *(Msg + " {" + FString::FromInt(Line) + "}"), *ToString(ConferenceStatus));
-			                     }
-		                     }};
+		return {[this, Line](const FString& Msg)
+		        {
+			        if (ConferenceStatus != conference_status::leaving)
+			        {
+				        UE_LOG(LogDolbyIO, Error, TEXT("%s (conference status: %s)"),
+				               *(Msg + " {" + FString::FromInt(Line) + "}"), *ToString(ConferenceStatus));
+			        }
+		        }};
 	}
 }
