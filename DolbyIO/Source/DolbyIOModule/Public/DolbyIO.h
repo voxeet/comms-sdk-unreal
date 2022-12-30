@@ -30,17 +30,27 @@ public:
 	 *
 	 */
 
-	/** Initializes or refreshes the client access token. Initializes the plugin unless already initialized. Triggers
-	 * OnInitialized if initialization was successful.
-	 * @param Token - Client access token.
+	/** Initializes or refreshes the client access token. The function takes the token as a parameter and initializes the plugin unless already initialized. Successful initialization triggers the [On Initialized](#on-initialized) event.
+	 *
+	 * For quick testing, you can manually obtain a token from the [Dolby.io dashboard](https://dashboard.dolby.io/) and paste it directly into the node.
+	 *
+	 * You may use the [Set Token Using Key and Secret](#set-token-using-key-and-secret) function instead for convenience during onboarding.
+	 *
+	 * Example:
+	 * ![example](./../../../../Images/on_token_needed.PNG)
+	 * @param Token - The client access token.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void SetToken(const FString& Token);
 
-	/** DO NOT USE IN PRODUCTION. Automatically obtains a client access token using an app key and secret and calls
-	 * SetToken.
-	 * @param AppKey - App key.
-	 * @param AppSecret - App secret.
+	/** Initializes or refreshes the client access token. The function is similar to [Set Token](#set-token), except it takes an app key and secret as parameters and automatically generates the token.
+	 *
+	 * For convenience during early development and prototyping, this function is provided to acquire the client access token directly from within the application. However, please note **we do not recommend** using this mechanism in the production software for [security best practices](https://docs.dolby.io/communications-apis/docs/guides-client-authentication). App secret needs to be protected and not included in the application.
+	 *
+	 * Example:
+	 * ![example](./../../../../Images/set_token_using_key_and_secret.PNG)
+	 * @param AppKey - The app key.
+	 * @param AppSecret - The app secret.
 	 * @param TokenExpirationTimeInSeconds - The token's expiration time (in seconds).
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
@@ -67,33 +77,52 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void ConnectToDemoConference();
 
-	/** Disconnects from the current conference. Triggers OnDisconnected when complete. */
+	/** Disconnects from the current conference. Triggers [On Disconnected](#on-disconnected) when complete.
+	 *
+	 * Example:
+	 * ![example](./../../../../Images/disconnect.PNG)
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void Disconnect();
 
-	/** Mutes audio input. Has no effect unless connected. */
+	/** Mutes audio input. The method has no effect unless the client is connected to the conference.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void MuteInput();
 
-	/** Unmutes audio input. Has no effect unless connected. */
+	/** Unmutes audio input. The method has no effect unless the client is connected to the conference.
+	 *
+	 * Example:
+	 * ![example](./../../../../Images/mute_input.PNG)
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void UnmuteInput();
 
-	/** Mutes audio output. Has no effect unless connected. */
+	/** Mutes audio output. The method has no effect unless the client is connected to the conference.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void MuteOutput();
 
-	/** Unmutes audio output. Has no effect unless connected. */
+	/** Unmutes audio output. The method has no effect unless the client is connected to the conference.
+	 *
+	 * Example:
+	 * ![example](./../../../../Images/mute_output.PNG)
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void UnmuteOutput();
 
-	/** Gets audio levels for all speaking participants. Triggers OnAudioLevelsChanged if successful. */
+	/** Gets audio levels for all speaking participants. Triggers [On Audio Levels Changed](#on-audio-levels-changed) if successful.
+	 *
+	 * Example:
+	 * ![example](./../../../../Images/get_audio_levels.PNG)
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby")
 	void GetAudioLevels();
 
-	/** Updates the position and rotation of the listener for spatial audio purposes. Calling this function even once
-	 * disables the default behavior, which is to automatically use the location and rotation of the first player
-	 * controller.
+	/** Updates the position and rotation of the listener for spatial audio purposes. Calling this function even once disables the default behavior, which is to automatically use the location and rotation of the first player controller.
+	 *
+	 * Example:
+	 * ![example](./../../../../Images/update_view_point.PNG)
 	 * @param Position - The location of the listener.
 	 * @param Rotation - The rotation of the listener.
 	 */
@@ -106,31 +135,46 @@ public:
 	 *
 	 */
 
-	/** An initial or refreshed client access token is needed. Triggered when the game starts or when a refresh token is
-	 * requested.
+	/** Triggered when an initial or refreshed [client access token](https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) is needed, which happens when the game starts or when a refresh token is requested.
+	 * After receiving this event, obtain a token for your Dolby.io application and call the [Set Token](#set-token) function.
+	 *
+	 * Example:
+	 * ![example](./../../../../Images/on_token_needed.PNG)
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnTokenNeeded();
 
-	/** The plugin is successfully initialized. Triggered by the SetToken function. */
+	/** Triggered when the plugin is successfully initialized after calling the [Set Token](#set-token) function.
+	 * After receiving this event, the plugin is ready for use. You can now, for example, call this Blueprint's [Connect](#connect) function. Once connected, the [On Connected](#on-connected) event will trigger.
+	 *
+	 * Example:
+	 * ![example](./../../../../Images/on_initialized.PNG)
+	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnInitialized();
 
-	/** Successfully connected to conference. Triggered by the Connect function.
-	 * @param LocalParticipant - The unique ID for the participant opening the session.
+	/** Triggered when the client is successfully connected to the conference after calling the [Connect](#connect) function.
+	 *
+	 * Example:
+	 * ![example](./../../../../Images/on_connected.PNG)
+	 * @param LocalParticipant - A string holding the ID of the local participant.
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnConnected(const FString& LocalParticipantID);
 
-	/** Disconnected from conference. Triggered when disconnected by any means (in particular by the Disconnect
-	 * function).
+	/** Triggered when the client is disconnected from the conference by any means; in particular, by the [Disconnect](#disconnect) function.
+	 *
+	 * Example:
+	 * ![example](./../../../../Images/on_disconnected.PNG)
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnDisconnected();
 
-	/** Triggered when a remote participant is added to the conference.
-	 * @param ParticipantInfo - Contains the current status of a conference participant and information whether the
-	 * participant's audio is enabled.
+	/** Triggered when remote participants are added to or removed from the conference.
+	 *
+	 * Example:
+	 * ![example](./../../../../Images/on_remote_participants_changed.PNG)
+	 * @param RemoteParticipants - A set of strings holding the IDs of remote participants.
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnParticipantAdded(const FDolbyIOParticipantInfo& ParticipantInfo);
@@ -143,14 +187,19 @@ public:
 	void OnParticipantLeft(const FDolbyIOParticipantInfo& ParticipantInfo);
 
 	/** Triggered when participants start or stop speaking.
+	 *
+	 * Example:
+	 * ![example](./../../../../Images/on_active_speakers_changed.PNG)
 	 * @param ActiveSpeakers - IDs of the current active speakers.
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnActiveSpeakersChanged(const TArray<FString>& ActiveSpeakers);
 
-	/** There are new audio levels available. Triggered by the GetAudioLevels function.
-	 * @param AudioLevels - String-to-float mapping of participant IDs to their audio levels (0.0 is silent, 1.0 is
-	 * loudest).
+	/** Triggered when there are new audio levels available after calling the [Get Audio Levels](#get-audio-levels) function.
+	 *
+	 * Example:
+	 * ![example](./../../../../Images/on_audio_levels_changed.PNG)
+	 * @param AudioLevels - A string-to-float mapping of participant IDs to their audio levels. A value of 0.0 represents silence and a value of 1.0 represents the maximum volume.
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
 	void OnAudioLevelsChanged(const TMap<FString, float>& AudioLevels);
