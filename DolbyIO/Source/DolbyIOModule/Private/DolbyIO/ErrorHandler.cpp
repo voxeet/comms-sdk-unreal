@@ -6,10 +6,7 @@ namespace DolbyIO
 {
 	using namespace dolbyio::comms;
 
-	FErrorHandler::FErrorHandler(FStatusUpdater UpdateStatus, FDisconnector Disconnect)
-	    : UpdateStatus(UpdateStatus), Disconnect(Disconnect)
-	{
-	}
+	FErrorHandler::FErrorHandler(FStatusUpdater UpdateStatus) : UpdateStatus(UpdateStatus) {}
 
 	void FErrorHandler::operator()(std::exception_ptr&& ExcPtr)
 	{
@@ -28,17 +25,11 @@ namespace DolbyIO
 	}
 	catch (const conference_state_exception& Ex)
 	{
-		constexpr auto NotJoined = "3";
 		UpdateStatus(FString{"Caught dolbyio::comms::conference_state_exception: "} + Ex.what());
-		if (Ex.current_state() != NotJoined)
-		{
-			Disconnect();
-		}
 	}
 	catch (const invalid_token_exception& Ex)
 	{
 		UpdateStatus(FString{"Caught dolbyio::comms::invalid_token_exception: "} + Ex.what());
-		Disconnect();
 	}
 	catch (const dvc_error_exception& Ex)
 	{

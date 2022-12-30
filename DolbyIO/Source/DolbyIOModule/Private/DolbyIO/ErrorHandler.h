@@ -9,10 +9,9 @@ namespace DolbyIO
 	class FErrorHandler final
 	{
 		using FStatusUpdater = TFunction<void(const FString&)>;
-		using FDisconnector = TFunction<void()>;
 
 	public:
-		FErrorHandler(FStatusUpdater, FDisconnector);
+		FErrorHandler(FStatusUpdater);
 
 		void operator()(class std::exception_ptr&&);
 		void RethrowAndUpdateStatus();
@@ -21,6 +20,5 @@ namespace DolbyIO
 		void NotifyIfThrows(TFunction<void()>);
 
 		FStatusUpdater UpdateStatus;
-		FDisconnector Disconnect;
 	};
 }

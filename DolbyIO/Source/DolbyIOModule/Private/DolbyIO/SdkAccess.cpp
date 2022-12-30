@@ -405,13 +405,6 @@ namespace DolbyIO
 				                     UE_LOG(LogDolbyIO, Error, TEXT("%s (conference status: %s)"),
 				                            *(Msg + " {" + FString::FromInt(Line) + "}"), *ToString(ConferenceStatus));
 			                     }
-		                     },
-		                     [this]
-		                     {
-			                     if (IsConnected())
-			                     {
-				                     Disconnect();
-			                     }
 		                     }};
 	}
 }
