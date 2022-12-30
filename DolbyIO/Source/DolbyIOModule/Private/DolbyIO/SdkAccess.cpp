@@ -55,7 +55,6 @@ namespace DolbyIO
 		}
 	}
 
-#define DLB_HANDLE_ERROR MakeErrorHandler(__LINE__)
 	void FSdkAccess::SetToken(const FToken& Token)
 	try
 	{
@@ -71,7 +70,7 @@ namespace DolbyIO
 	}
 	catch (...)
 	{
-		DLB_HANDLE_ERROR.RethrowAndUpdateStatus();
+		MakeErrorHandler(__LINE__).HandleError();
 	}
 
 	namespace
@@ -145,7 +144,7 @@ namespace DolbyIO
 			            });
 		        })
 		    .then([this](auto) { Observer.OnInitializedEvent(); })
-		    .on_error(DLB_HANDLE_ERROR);
+		    .on_error(MakeErrorHandler(__LINE__));
 	}
 
 	bool FSdkAccess::IsConnected() const
@@ -260,7 +259,7 @@ namespace DolbyIO
 			        Options.connection.spatial_audio = true;
 			        return Sdk->conference().join(ConferenceInfo, Options);
 		        })
-		    .on_error(DLB_HANDLE_ERROR);
+		    .on_error(MakeErrorHandler(__LINE__));
 	}
 
 	void FSdkAccess::ConnectToDemoConference()
@@ -285,7 +284,7 @@ namespace DolbyIO
 			        }
 			        return Sdk->conference().demo();
 		        })
-		    .on_error(DLB_HANDLE_ERROR);
+		    .on_error(MakeErrorHandler(__LINE__));
 	}
 
 	void FSdkAccess::Disconnect()
@@ -295,7 +294,10 @@ namespace DolbyIO
 			return;
 		}
 
-		Sdk->conference().leave().then([this]() { return Sdk->session().close(); }).on_error(DLB_HANDLE_ERROR);
+		Sdk->conference()
+		    .leave()
+		    .then([this]() { return Sdk->session().close(); })
+		    .on_error(MakeErrorHandler(__LINE__));
 	}
 
 	void FSdkAccess::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
@@ -329,7 +331,7 @@ namespace DolbyIO
 		Update.set_spatial_position(ToStdString(LocalParticipantID),
 		                            {ScaledPosition.Y, ScaledPosition.Z, ScaledPosition.X});
 		Update.set_spatial_direction({Rotation.Pitch, Rotation.Yaw, Rotation.Roll});
-		Sdk->conference().update_spatial_audio_configuration(MoveTemp(Update)).on_error(DLB_HANDLE_ERROR);
+		Sdk->conference().update_spatial_audio_configuration(MoveTemp(Update)).on_error(MakeErrorHandler(__LINE__));
 	}
 
 	void FSdkAccess::MuteInput()
@@ -340,7 +342,7 @@ namespace DolbyIO
 			return;
 		}
 
-		Sdk->conference().mute(true).on_error(DLB_HANDLE_ERROR);
+		Sdk->conference().mute(true).on_error(MakeErrorHandler(__LINE__));
 	}
 
 	void FSdkAccess::UnmuteInput()
@@ -350,7 +352,7 @@ namespace DolbyIO
 			return;
 		}
 
-		Sdk->conference().mute(false).on_error(DLB_HANDLE_ERROR);
+		Sdk->conference().mute(false).on_error(MakeErrorHandler(__LINE__));
 	}
 
 	void FSdkAccess::MuteOutput()
@@ -361,7 +363,7 @@ namespace DolbyIO
 			return;
 		}
 
-		Sdk->conference().mute_output(true).on_error(DLB_HANDLE_ERROR);
+		Sdk->conference().mute_output(true).on_error(MakeErrorHandler(__LINE__));
 	}
 
 	void FSdkAccess::UnmuteOutput()
@@ -371,7 +373,7 @@ namespace DolbyIO
 			return;
 		}
 
-		Sdk->conference().mute_output(false).on_error(DLB_HANDLE_ERROR);
+		Sdk->conference().mute_output(false).on_error(MakeErrorHandler(__LINE__));
 	}
 
 	void FSdkAccess::GetAudioLevels()
@@ -393,7 +395,7 @@ namespace DolbyIO
 			        }
 			        Observer.OnAudioLevelsChangedEvent(AudioLevels);
 		        })
-		    .on_error(DLB_HANDLE_ERROR);
+		    .on_error(MakeErrorHandler(__LINE__));
 	}
 
 	FErrorHandler FSdkAccess::MakeErrorHandler(int Line)

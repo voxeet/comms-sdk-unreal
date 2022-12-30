@@ -8,17 +8,17 @@ namespace DolbyIO
 {
 	class FErrorHandler final
 	{
-		using FStatusUpdater = TFunction<void(const FString&)>;
+		using FErrorHandlerImpl = TFunction<void(const FString&)>;
 
 	public:
-		FErrorHandler(FStatusUpdater);
+		FErrorHandler(FErrorHandlerImpl);
 
 		void operator()(class std::exception_ptr&&);
-		void RethrowAndUpdateStatus();
+		void HandleError();
 
 	private:
-		void NotifyIfThrows(TFunction<void()>);
+		void HandleError(TFunction<void()>);
 
-		FStatusUpdater UpdateStatus;
+		FErrorHandlerImpl Impl;
 	};
 }
