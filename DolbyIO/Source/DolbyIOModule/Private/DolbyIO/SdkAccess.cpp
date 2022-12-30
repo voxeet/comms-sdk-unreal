@@ -401,11 +401,8 @@ namespace DolbyIO
 	{
 		return {[this, Line](const FString& Msg)
 		        {
-			        if (ConferenceStatus != conference_status::leaving)
-			        {
-				        UE_LOG(LogDolbyIO, Error, TEXT("%s (conference status: %s)"),
-				               *(Msg + " {" + FString::FromInt(Line) + "}"), *ToString(ConferenceStatus));
-			        }
+			        UE_LOG(LogDolbyIO, Error, TEXT("%s (conference status: %s)"),
+			               *(Msg + " {" + FString::FromInt(Line) + "}"), *ToString(ConferenceStatus));
 		        }};
 	}
 }
