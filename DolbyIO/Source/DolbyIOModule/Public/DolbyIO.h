@@ -30,11 +30,15 @@ public:
 	 *
 	 */
 
-	/** Initializes or refreshes the client access token. The function takes the token as a parameter and initializes the plugin unless already initialized. Successful initialization triggers the [On Initialized](#on-initialized) event.
+	/** Initializes or refreshes the client access token. The function takes the token as a parameter and initializes
+	 * the plugin unless already initialized. Successful initialization triggers the [On Initialized](#on-initialized)
+	 * event.
 	 *
-	 * For quick testing, you can manually obtain a token from the [Dolby.io dashboard](https://dashboard.dolby.io/) and paste it directly into the node.
+	 * For quick testing, you can manually obtain a token from the [Dolby.io dashboard](https://dashboard.dolby.io/) and
+	 * paste it directly into the node.
 	 *
-	 * You may use the [Set Token Using Key and Secret](#set-token-using-key-and-secret) function instead for convenience during onboarding.
+	 * You may use the [Set Token Using Key and Secret](#set-token-using-key-and-secret) function instead for
+	 * convenience during onboarding.
 	 *
 	 * Example:
 	 * <img src="https://files.readme.io/e44088b-on_token_needed.PNG">
@@ -43,9 +47,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void SetToken(const FString& Token);
 
-	/** Initializes or refreshes the client access token. The function is similar to [Set Token](#set-token), except it takes an app key and secret as parameters and automatically generates the token.
+	/** Initializes or refreshes the client access token. The function is similar to [Set Token](#set-token), except it
+	 * takes an app key and secret as parameters and automatically generates the token.
 	 *
-	 * For convenience during early development and prototyping, this function is provided to acquire the client access token directly from within the application. However, please note **we do not recommend** using this mechanism in the production software for [security best practices](https://docs.dolby.io/communications-apis/docs/guides-client-authentication). App secret needs to be protected and not included in the application.
+	 * For convenience during early development and prototyping, this function is provided to acquire the client access
+	 * token directly from within the application. However, please note **we do not recommend** using this mechanism in
+	 * the production software for [security best
+	 * practices](https://docs.dolby.io/communications-apis/docs/guides-client-authentication). App secret needs to be
+	 * protected and not included in the application.
 	 *
 	 * Example:
 	 * <img src="https://files.readme.io/f38e604-set_token_using_key_and_secret.PNG">
@@ -71,7 +80,8 @@ public:
 
 	/** Connects to a demo conference, which automatically brings in 3 invisible bots into the conference as a quick way
 	 * to validate the connection to the service with audio functionality. One of the bots is placed to the left of
-	 * point {0, 0, 0} in the level, one is placed to the right and one circles around that point. The method triggers [On Connected](#on-connected) if successful.
+	 * point {0, 0, 0} in the level, one is placed to the right and one circles around that point. The method triggers
+	 * [On Connected](#on-connected) if successful.
 	 *
 	 * Example:
 	 * <img src="https://files.readme.io/db8d689-connect_to_demo_conference.PNG">
@@ -113,7 +123,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void UnmuteOutput();
 
-	/** Gets audio levels for all speaking participants. Triggers [On Audio Levels Changed](#on-audio-levels-changed) if successful.
+	/** Gets audio levels for all speaking participants. Triggers [On Audio Levels Changed](#on-audio-levels-changed) if
+	 * successful.
 	 *
 	 * Example:
 	 * <img src="https://files.readme.io/0786858-get_audio_levels.PNG">
@@ -121,7 +132,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void GetAudioLevels();
 
-	/** Updates the position and rotation of the listener for spatial audio purposes. Calling this function even once disables the default behavior, which is to automatically use the location and rotation of the first player controller.
+	/** Updates the position and rotation of the listener for spatial audio purposes. Calling this function even once
+	 * disables the default behavior, which is to automatically use the location and rotation of the first player
+	 * controller.
 	 *
 	 * Example:
 	 * <img src="https://files.readme.io/1bfa225-update_view_point.PNG">
@@ -137,8 +150,10 @@ public:
 	 *
 	 */
 
-	/** Triggered when an initial or refreshed [client access token](https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) is needed, which happens when the game starts or when a refresh token is requested.
-	 * After receiving this event, obtain a token for your Dolby.io application and call the [Set Token](#set-token) function.
+	/** Triggered when an initial or refreshed [client access
+	 * token](https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) is needed,
+	 * which happens when the game starts or when a refresh token is requested. After receiving this event, obtain a
+	 * token for your Dolby.io application and call the [Set Token](#set-token) function.
 	 *
 	 * Example:
 	 * <img src="https://files.readme.io/e44088b-on_token_needed.PNG">
@@ -147,7 +162,8 @@ public:
 	void OnTokenNeeded();
 
 	/** Triggered when the plugin is successfully initialized after calling the [Set Token](#set-token) function.
-	 * After receiving this event, the plugin is ready for use. You can now, for example, call this Blueprint's [Connect](#connect) function. Once connected, the [On Connected](#on-connected) event will trigger.
+	 * After receiving this event, the plugin is ready for use. You can now, for example, call this Blueprint's
+	 * [Connect](#connect) function. Once connected, the [On Connected](#on-connected) event will trigger.
 	 *
 	 * Example:
 	 * <img src="https://files.readme.io/124a74c-on_initialized.PNG">
@@ -155,7 +171,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
 	void OnInitialized();
 
-	/** Triggered when the client is successfully connected to the conference after calling the [Connect](#connect) function.
+	/** Triggered when the client is successfully connected to the conference after calling the [Connect](#connect)
+	 * function.
 	 *
 	 * Example:
 	 * <img src="https://files.readme.io/d6744e0-on_connected.PNG">
@@ -164,7 +181,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
 	void OnConnected(const FString& LocalParticipantID);
 
-	/** Triggered when the client is disconnected from the conference by any means; in particular, by the [Disconnect](#disconnect) function.
+	/** Triggered when the client is disconnected from the conference by any means; in particular, by the
+	 * [Disconnect](#disconnect) function.
 	 *
 	 * Example:
 	 * <img src="https://files.readme.io/8322383-on_disconnected.PNG">
@@ -200,11 +218,13 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
 	void OnActiveSpeakersChanged(const TArray<FString>& ActiveSpeakers);
 
-	/** Triggered when there are new audio levels available after calling the [Get Audio Levels](#get-audio-levels) function.
+	/** Triggered when there are new audio levels available after calling the [Get Audio Levels](#get-audio-levels)
+	 * function.
 	 *
 	 * Example:
 	 * <img src="https://files.readme.io/fdb5789-on_audio_levels_changed.PNG">
-	 * @param AudioLevels - A string-to-float mapping of participant IDs to their audio levels. A value of 0.0 represents silence and a value of 1.0 represents the maximum volume.
+	 * @param AudioLevels - A string-to-float mapping of participant IDs to their audio levels. A value of 0.0
+	 * represents silence and a value of 1.0 represents the maximum volume.
 	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
 	void OnAudioLevelsChanged(const TMap<FString, float>& AudioLevels);
