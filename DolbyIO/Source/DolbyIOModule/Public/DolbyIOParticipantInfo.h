@@ -6,7 +6,7 @@
 
 /* Contains the current status of a conference participant and information whether the participant's audio is enabled.
  */
-USTRUCT(BlueprintType, Category = "Dolby.io")
+USTRUCT(BlueprintType, Category = "Dolby.io", DisplayName = "Dolby.io Participant Info")
 struct DOLBYIOMODULE_API FDolbyIOParticipantInfo
 {
 	GENERATED_BODY()

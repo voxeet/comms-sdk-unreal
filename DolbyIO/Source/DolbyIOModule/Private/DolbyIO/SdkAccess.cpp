@@ -4,12 +4,13 @@
 
 #include "DolbyIO/ErrorHandler.h"
 #include "DolbyIO/Logging.h"
-#include "DolbyIO/SdkEventObserver.h"
 #include "DolbyIOParticipantInfo.h"
+#include "DolbyIOSubsystem.h"
 
 #include <dolbyio/comms/async_result.h>
 #include <dolbyio/comms/sdk.h>
 
+#include "Async/Async.h"
 #include "HAL/PlatformProcess.h" // to be removed when fix lands in C++ SDK
 #include "Math/Rotator.h"
 
@@ -17,8 +18,8 @@ namespace DolbyIO
 {
 	using namespace dolbyio::comms;
 
-	FSdkAccess::FSdkAccess(ISdkEventObserver& Observer)
-	    : Observer(Observer), ConferenceStatus(conference_status::destroyed)
+	FSdkAccess::FSdkAccess(UDolbyIOSubsystem& DolbyIOSubsystem)
+	    : DolbyIOSubsystem(DolbyIOSubsystem), ConferenceStatus(conference_status::destroyed)
 	{
 		static std::once_flag DoOnce;
 		std::call_once(DoOnce,
@@ -34,10 +35,10 @@ namespace DolbyIO
 		               });
 	}
 
-	// to be removed when fix lands in C++ SDK
 	FSdkAccess::~FSdkAccess()
 	{
-		while (ConferenceStatus < conference_status::left)
+		bIsAlive = false;
+		while (ConferenceStatus < conference_status::left) // to be removed when fix lands in C++ SDK
 		{
 			if (IsConnected())
 			{
@@ -55,17 +56,21 @@ namespace DolbyIO
 		}
 	}
 
-	void FSdkAccess::SetToken(const FToken& Token)
+	void FSdkAccess::SetToken(const FString& Token)
 	try
 	{
-		if (!RefreshTokenCb)
+		if (!Sdk)
 		{
 			Initialize(Token);
 		}
-		else
+		else if (RefreshTokenCb)
 		{
 			(*RefreshTokenCb)(ToStdString(Token));
 			RefreshTokenCb.Reset(); // RefreshToken callback can only be called once
+		}
+		else
+		{
+			UE_LOG(LogDolbyIO, Log, TEXT("Ignoring request to set token when no token is needed"));
 		}
 	}
 	catch (...)
@@ -89,14 +94,20 @@ namespace DolbyIO
 		}
 	}
 
-	void FSdkAccess::Initialize(const FToken& Token)
+	void FSdkAccess::Initialize(const FString& Token)
 	{
 		Sdk.Reset(sdk::create(ToStdString(Token),
 		                      [this](auto&& cb)
 		                      {
+			                      if (!bIsAlive)
+			                      {
+				                      return;
+			                      }
+
 			                      UE_LOG(LogDolbyIO, Log, TEXT("Refresh token requested"));
 			                      RefreshTokenCb.Reset(cb.release());
-			                      Observer.OnTokenNeededEvent();
+			                      AsyncTask(ENamedThreads::GameThread,
+			                                [=] { DolbyIOSubsystem.OnTokenNeeded.Broadcast(); });
 		                      })
 		              .release());
 
@@ -108,8 +119,17 @@ namespace DolbyIO
 			        return Sdk->conference().add_event_handler(
 			            [this](const participant_added& Event)
 			            {
+				            if (!bIsAlive)
+				            {
+					            return;
+				            }
+
 				            RemoteParticipantIDs.Add(Event.participant.user_id.c_str());
-				            Observer.OnParticipantAddedEvent(ToUnrealParticipantInfo(Event.participant));
+				            AsyncTask(ENamedThreads::GameThread,
+				                      [=] {
+					                      DolbyIOSubsystem.OnParticipantAdded.Broadcast(
+					                          ToUnrealParticipantInfo(Event.participant));
+				                      });
 			            });
 		        })
 		    .then(
@@ -118,13 +138,22 @@ namespace DolbyIO
 			        return Sdk->conference().add_event_handler(
 			            [this](const participant_updated& Event)
 			            {
+				            if (!bIsAlive)
+				            {
+					            return;
+				            }
+
 				            const auto& ParticipantStatus = Event.participant.status;
 				            if (ParticipantStatus)
 				            {
 					            if (*ParticipantStatus == participant_status::left)
 					            {
 						            RemoteParticipantIDs.Remove(Event.participant.user_id.c_str());
-						            Observer.OnParticipantLeftEvent(ToUnrealParticipantInfo(Event.participant));
+						            AsyncTask(ENamedThreads::GameThread,
+						                      [=] {
+							                      DolbyIOSubsystem.OnParticipantLeft.Broadcast(
+							                          ToUnrealParticipantInfo(Event.participant));
+						                      });
 					            }
 				            }
 			            });
@@ -135,15 +164,30 @@ namespace DolbyIO
 			        return Sdk->conference().add_event_handler(
 			            [this](const active_speaker_change& Event)
 			            {
-				            FParticipantIDs ActiveSpeakers;
+				            if (!bIsAlive)
+				            {
+					            return;
+				            }
+
+				            TArray<FString> ActiveSpeakers;
 				            for (const auto& Speaker : Event.active_speakers)
 				            {
 					            ActiveSpeakers.Add(Speaker.c_str());
 				            }
-				            Observer.OnActiveSpeakersChangedEvent(ActiveSpeakers);
+				            AsyncTask(ENamedThreads::GameThread,
+				                      [=] { DolbyIOSubsystem.OnActiveSpeakersChanged.Broadcast(ActiveSpeakers); });
 			            });
 		        })
-		    .then([this](auto) { Observer.OnInitializedEvent(); })
+		    .then(
+		        [this](auto)
+		        {
+			        if (!bIsAlive)
+			        {
+				        return;
+			        }
+
+			        AsyncTask(ENamedThreads::GameThread, [=] { DolbyIOSubsystem.OnInitialized.Broadcast(); });
+		        })
 		    .on_error(MakeErrorHandler(__LINE__));
 	}
 
@@ -200,14 +244,20 @@ namespace DolbyIO
 		ConferenceStatus = Status;
 		UE_LOG(LogDolbyIO, Log, TEXT("Conference status: %s"), *ToString(ConferenceStatus));
 
+		if (!bIsAlive)
+		{
+			return;
+		}
+
 		switch (ConferenceStatus)
 		{
 			case conference_status::joined:
-				Observer.OnConnectedEvent(LocalParticipantID);
+				AsyncTask(ENamedThreads::GameThread,
+				          [=] { DolbyIOSubsystem.OnConnected.Broadcast(LocalParticipantID); });
 				break;
 			case conference_status::left:
 			case conference_status::error:
-				Observer.OnDisconnectedEvent();
+				AsyncTask(ENamedThreads::GameThread, [=] { DolbyIOSubsystem.OnDisconnected.Broadcast(); });
 				break;
 		}
 	}
@@ -388,12 +438,20 @@ namespace DolbyIO
 		    .then(
 		        [this](auto&& Levels)
 		        {
-			        FAudioLevels AudioLevels;
+			        if (!bIsAlive)
+			        {
+				        return;
+			        }
+
+			        TArray<FString> ActiveSpeakers;
+			        TArray<float> AudioLevels;
 			        for (const audio_level& Level : Levels)
 			        {
-				        AudioLevels.Emplace(Level.participant_id.c_str(), Level.level);
+				        ActiveSpeakers.Add(Level.participant_id.c_str());
+				        AudioLevels.Add(Level.level);
 			        }
-			        Observer.OnAudioLevelsChangedEvent(AudioLevels);
+			        AsyncTask(ENamedThreads::GameThread,
+			                  [=] { DolbyIOSubsystem.OnAudioLevelsChanged.Broadcast(ActiveSpeakers, AudioLevels); });
 		        })
 		    .on_error(MakeErrorHandler(__LINE__));
 	}

@@ -2,8 +2,8 @@
 
 #include "DolbyIO/Authenticator.h"
 
-#include "DolbyIO.h"
 #include "DolbyIO/Logging.h"
+#include "DolbyIOSubsystem.h"
 
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
@@ -13,7 +13,7 @@
 
 namespace DolbyIO
 {
-	FAuthenticator::FAuthenticator(UDolbyIO& DolbyIO) : DolbyIO(DolbyIO) {}
+	FAuthenticator::FAuthenticator(UDolbyIOSubsystem& DolbyIOSubsystem) : DolbyIOSubsystem(DolbyIOSubsystem) {}
 
 	void FAuthenticator::GetToken(const FString& AppKey, const FString& AppSecret, int TokenExpirationTimeInSeconds)
 	{
@@ -52,7 +52,7 @@ namespace DolbyIO
 		FString Token;
 		if (ResponseObj->TryGetStringField("access_token", Token))
 		{
-			DolbyIO.SetToken(Token);
+			DolbyIOSubsystem.SetToken(Token);
 		}
 		else
 		{

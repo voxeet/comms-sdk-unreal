@@ -2,14 +2,15 @@
 
 #pragma once
 
-#include "DolbyIO/SdkEventObserver.h"
-#include "DolbyIOParticipantInfo.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 
+#include "DolbyIOParticipantInfo.h"
+
+#include "Delegates/Delegate.h"
 #include "Engine/EngineTypes.h"
 #include "HAL/ThreadSafeBool.h"
 
-#include "DolbyIO.generated.h"
+#include "DolbyIOSubsystem.generated.h"
 
 namespace DolbyIO
 {
@@ -17,9 +18,22 @@ namespace DolbyIO
 	class FSdkAccess;
 }
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSubsystemOnTokenNeededDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSubsystemOnInitializedDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnConnectedDelegate, const FString&, LocalParticipantID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSubsystemOnDisconnectedDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnParticipantAddedDelegate, const FDolbyIOParticipantInfo&,
+                                            ParticipantInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnParticipantLeftDelegate, const FDolbyIOParticipantInfo&,
+                                            ParticipantInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnActiveSpeakersChangedDelegate, const TArray<FString>&,
+                                            ActiveSpeakers);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnAudioLevelsChangedDelegate, const TArray<FString>&,
+                                             ActiveSpeakers, const TArray<float>&, AudioLevels);
+
 /** The Dolby.io Virtual World plugin game instance subsystem. */
-UCLASS(Abstract, Blueprintable)
-class DOLBYIOMODULE_API UDolbyIO : public UGameInstanceSubsystem, public DolbyIO::ISdkEventObserver
+UCLASS(DisplayName = "Dolby.io Subsystem")
+class DOLBYIOMODULE_API UDolbyIOSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 
@@ -144,12 +158,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void UpdateViewPoint(const FVector& Position, const FRotator& Rotation);
 
-	/*
-	 *
-	 * Events triggered from C++, implementable in Blueprints.
-	 *
-	 */
-
 	/** Triggered when an initial or refreshed [client access
 	 * token](https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) is needed,
 	 * which happens when the game starts or when a refresh token is requested. After receiving this event, obtain a
@@ -158,8 +166,8 @@ public:
 	 * Example:
 	 * <img src="https://files.readme.io/e44088b-on_token_needed.PNG">
 	 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
-	void OnTokenNeeded();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io")
+	FSubsystemOnTokenNeededDelegate OnTokenNeeded;
 
 	/** Triggered when the plugin is successfully initialized after calling the [Set Token](#set-token) function.
 	 * After receiving this event, the plugin is ready for use. You can now, for example, call this Blueprint's
@@ -168,8 +176,8 @@ public:
 	 * Example:
 	 * <img src="https://files.readme.io/124a74c-on_initialized.PNG">
 	 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
-	void OnInitialized();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io")
+	FSubsystemOnInitializedDelegate OnInitialized;
 
 	/** Triggered when the client is successfully connected to the conference after calling the [Connect](#connect)
 	 * function.
@@ -178,8 +186,8 @@ public:
 	 * <img src="https://files.readme.io/d6744e0-on_connected.PNG">
 	 * @param LocalParticipant - A string holding the ID of the local participant.
 	 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
-	void OnConnected(const FString& LocalParticipantID);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io")
+	FSubsystemOnConnectedDelegate OnConnected;
 
 	/** Triggered when the client is disconnected from the conference by any means; in particular, by the
 	 * [Disconnect](#disconnect) function.
@@ -187,8 +195,8 @@ public:
 	 * Example:
 	 * <img src="https://files.readme.io/8322383-on_disconnected.PNG">
 	 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
-	void OnDisconnected();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io")
+	FSubsystemOnDisconnectedDelegate OnDisconnected;
 
 	/** Triggered when remote participants are added to or removed from the conference.
 	 *
@@ -196,8 +204,8 @@ public:
 	 * <img src="https://files.readme.io/9b036e5-on_participant_added.PNG">
 	 * @param RemoteParticipants - A set of strings holding the IDs of remote participants.
 	 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
-	void OnParticipantAdded(const FDolbyIOParticipantInfo& ParticipantInfo);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io")
+	FSubsystemOnParticipantAddedDelegate OnParticipantAdded;
 
 	/** Triggered when a remote participant leaves the conference.
 	 *
@@ -206,8 +214,8 @@ public:
 	 * @param ParticipantInfo - Contains the current status of a conference participant and information whether the
 	 * participant's audio is enabled.
 	 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
-	void OnParticipantLeft(const FDolbyIOParticipantInfo& ParticipantInfo);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io")
+	FSubsystemOnParticipantLeftDelegate OnParticipantLeft;
 
 	/** Triggered when participants start or stop speaking.
 	 *
@@ -215,8 +223,8 @@ public:
 	 * <img src="https://files.readme.io/45fb4dd-on_active_speakers_changed.PNG">
 	 * @param ActiveSpeakers - The IDs of the current active speakers.
 	 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
-	void OnActiveSpeakersChanged(const TArray<FString>& ActiveSpeakers);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io")
+	FSubsystemOnActiveSpeakersChangedDelegate OnActiveSpeakersChanged;
 
 	/** Triggered when there are new audio levels available after calling the [Get Audio Levels](#get-audio-levels)
 	 * function.
@@ -226,30 +234,18 @@ public:
 	 * @param AudioLevels - A string-to-float mapping of participant IDs to their audio levels. A value of 0.0
 	 * represents silence and a value of 1.0 represents the maximum volume.
 	 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
-	void OnAudioLevelsChanged(const TMap<FString, float>& AudioLevels);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io")
+	FSubsystemOnAudioLevelsChangedDelegate OnAudioLevelsChanged;
 
 private:
 	void UpdateViewPointUsingFirstPlayer();
 
 	// UGameInstanceSubsystem
 	void Initialize(FSubsystemCollectionBase&) override;
-	void Deinitialize() override;
-
-	// ISdkEventObserver
-	void OnTokenNeededEvent() override;
-	void OnInitializedEvent() override;
-	void OnConnectedEvent(const DolbyIO::FParticipantID&) override;
-	void OnDisconnectedEvent() override;
-	void OnParticipantAddedEvent(const FDolbyIOParticipantInfo&) override;
-	void OnParticipantLeftEvent(const FDolbyIOParticipantInfo&) override;
-	void OnActiveSpeakersChangedEvent(const DolbyIO::FParticipantIDs&) override;
-	void OnAudioLevelsChangedEvent(const DolbyIO::FAudioLevels&) override;
 
 	TSharedPtr<DolbyIO::FSdkAccess> CppSdk;
 	TSharedPtr<DolbyIO::FAuthenticator> Authenticator;
 
 	class UGameInstance* GameInstance;
 	FTimerHandle SpatialUpdateTimerHandle;
-	FThreadSafeBool bIsAlive = true;
 };
