@@ -103,47 +103,49 @@ namespace DolbyIO
 
 		Sdk->conference()
 		    .add_event_handler([this](const conference_status_updated& Event) { UpdateStatus(Event.status); })
-		    .on_error(MakeHandler(__LINE__));
-
-		Sdk->conference()
-		    .add_event_handler(
-		        [this](const participant_added& Event)
+		    .then(
+		        [this](auto)
 		        {
-			        RemoteParticipantIDs.Add(Event.participant.user_id.c_str());
-			        Observer.OnParticipantAddedEvent(ToUnrealParticipantInfo(Event.participant));
+			        return Sdk->conference().add_event_handler(
+			            [this](const participant_added& Event)
+			            {
+				            RemoteParticipantIDs.Add(Event.participant.user_id.c_str());
+				            Observer.OnParticipantAddedEvent(ToUnrealParticipantInfo(Event.participant));
+			            });
 		        })
-		    .on_error(MakeHandler(__LINE__));
-
-		Sdk->conference()
-		    .add_event_handler(
-		        [this](const participant_updated& Event)
+		    .then(
+		        [this](auto)
 		        {
-			        const auto& ParticipantStatus = Event.participant.status;
-			        if (ParticipantStatus)
-			        {
-				        if (*ParticipantStatus == participant_status::left)
-				        {
-					        RemoteParticipantIDs.Remove(Event.participant.user_id.c_str());
-					        Observer.OnParticipantLeftEvent(ToUnrealParticipantInfo(Event.participant));
-				        }
-			        }
+			        return Sdk->conference().add_event_handler(
+			            [this](const participant_updated& Event)
+			            {
+				            const auto& ParticipantStatus = Event.participant.status;
+				            if (ParticipantStatus)
+				            {
+					            if (*ParticipantStatus == participant_status::left)
+					            {
+						            RemoteParticipantIDs.Remove(Event.participant.user_id.c_str());
+						            Observer.OnParticipantLeftEvent(ToUnrealParticipantInfo(Event.participant));
+					            }
+				            }
+			            });
 		        })
-		    .on_error(MakeHandler(__LINE__));
-
-		Sdk->conference()
-		    .add_event_handler(
-		        [this](const active_speaker_change& Event)
+		    .then(
+		        [this](auto)
 		        {
-			        FParticipantIDs ActiveSpeakers;
-			        for (const auto& Speaker : Event.active_speakers)
-			        {
-				        ActiveSpeakers.Add(Speaker.c_str());
-			        }
-			        Observer.OnActiveSpeakersChangedEvent(ActiveSpeakers);
+			        return Sdk->conference().add_event_handler(
+			            [this](const active_speaker_change& Event)
+			            {
+				            FParticipantIDs ActiveSpeakers;
+				            for (const auto& Speaker : Event.active_speakers)
+				            {
+					            ActiveSpeakers.Add(Speaker.c_str());
+				            }
+				            Observer.OnActiveSpeakersChangedEvent(ActiveSpeakers);
+			            });
 		        })
+		    .then([this](auto) { Observer.OnInitializedEvent(); })
 		    .on_error(MakeHandler(__LINE__));
-
-		Observer.OnInitializedEvent();
 	}
 
 	bool FSdkAccess::IsConnected() const
