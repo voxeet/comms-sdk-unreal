@@ -16,34 +16,34 @@ Note: If you want to use the plugin on macOS, see our [advice](#macos-advice).
 *Alternatively, copy the plugin to {YourGameRoot}/Plugins.*
 3. Launch your game project. If you are starting out from scratch, create a game using the First Person template.
 4. If the plugin is not enabled automatically, enable it manually in the Edit->Plugins window and restart Unreal Editor.
-5. Create a new Blueprint class and choose DolbyIO as parent class.
+5. Create a new Blueprint class and choose DolbyIO as the parent class.
 6. In the Event Graph of the newly created Blueprint, hover over Functions on the left and select Override->[On Token Needed](#on-token-needed). You will also need to override [On Initialized](#on-initialized). Both events should appear in the Blueprint. There are more [events](#events), but to get started, you only need to handle these two.
 
 ## Events
 ### On Token Needed
-An initial or refreshed [client access token](https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) is needed. Triggered when the game starts or when a refresh token is requested.
+Triggered when an initial or refreshed [client access token](https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) is needed, which happens when the game starts or when a refresh token is requested.
 
-When this event is received, you should obtain a token for your Dolby.io application and call the [Set Token](#set-token) function.
+After receiving this event, obtain a token for your Dolby.io application and call the [Set Token](#set-token) function.
 
 Example:  
 ![example](Images/on_token_needed.PNG)
 
 ### On Initialized
-The plugin is successfully initialized. Triggered by the [Set Token](#set-token) function.
+Triggered when the plugin is successfully initialized after calling the [Set Token](#set-token) function.
 
-When this event is received, the plugin is ready for use. You can now, for example, call this Blueprint's [Connect](#connect) function. Once connected, the [On Connected](#on-connected) event will trigger.
+After receiving this event, the plugin is ready for use. You can now, for example, call this Blueprint's [Connect](#connect) function. Once connected, the [On Connected](#on-connected) event will trigger.
 
 Example:  
 ![example](Images/on_initialized.PNG)
 
 ### On Connected
-Successfully connected to conference. Triggered by the [Connect](#connect) function. Provides the ID of the local participant in its argument.
+Triggered when the client is successfully connected to the conference after calling the [Connect](#connect) function. The event provides the ID of the local participant in its argument.
 
 Example:  
 ![example](Images/on_connected.PNG)
 
 ### On Disconnected
-Disconnected from conference. Triggered when disconnected by any means (in particular by the [Disconnect](#disconnect) function).
+Triggered when the client is disconnected from the conference by any means; in particular, by the [Disconnect](#disconnect) function.
 
 Example:  
 ![example](Images/on_disconnected.PNG)
@@ -61,7 +61,7 @@ Example:
 ![example](Images/on_participant_left.PNG)
 
 ### On Active Speakers Changed
-Triggered when participants start or stop speaking. Provides the IDs of the current speakers in its argument.
+Triggered when participants start or stop speaking. The event provides the IDs of the current speakers in its argument.
 
 Example:  
 ![example](Images/on_active_speakers_changed.PNG)
@@ -70,14 +70,14 @@ Given helper function:
 ![example](Images/get_name_from_id.PNG)
 
 ### On Audio Levels Changed
-There are new audio levels available. Provides a string-to-float mapping of participant IDs to their audio levels (0.0 is silent, 1.0 is loudest) in its argument. Triggered by the [Get Audio Levels](#get-audio-levels) function.
+Triggered when there are new audio levels available after calling the [Get Audio Levels](#get-audio-levels) function. The event provides a string-to-float mapping of participant IDs to their audio levels in its argument. A value of 0.0 represents silence and a value of 1.0 represents the maximum volume.
 
 Example:  
 ![example](Images/on_audio_levels_changed.PNG)
 
 ## Functions
 ### Set Token
-Initializes or refreshes the client access token. Takes the token as parameter. Initializes the plugin unless already initialized. Triggers [On Initialized](#on-initialized) if initialization was successful.
+Initializes or refreshes the client access token. The function takes the token as a parameter and initializes the plugin unless already initialized. Successful initialization triggers the [On Initialized](#on-initialized) event.
 
 For quick testing, you can manually obtain a token from the [Dolby.io dashboard](https://dashboard.dolby.io/) and paste it directly into the node.
 
@@ -87,13 +87,15 @@ Example:
 ![example](Images/on_token_needed.PNG)
 
 ### Set Token Using Key and Secret
-Similar to [Set Token](#set-token) except it takes an app key and secret as parameters and automatically generates a token. **Do not use this function in production and do not allow your app key and secret to leak.**
+Initializes or refreshes the client access token. The function is similar to [Set Token](#set-token), except it takes an app key and secret as parameters and automatically generates the token.
+
+For convenience during early development and prototyping, this function is provided to acquire the client access token directly from within the application. However, please note **we do not recommend** using this mechanism in the production software for [security best practices](https://docs.dolby.io/communications-apis/docs/guides-client-authentication). App secret needs to be protected and not included in the application.
 
 Example:  
 ![example](Images/set_token_using_key_and_secret.PNG)
 
 ### Connect
-Connects to a conference. Takes a conference name and user name as parameters. Triggers [On Connected](#on-connected) if successful.
+Connects to a conference. The method takes a conference name and user name as parameters. Triggers [On Connected](#on-connected) if successful.
 
 Example:  
 ![example](Images/connect.PNG)
@@ -111,19 +113,19 @@ Example:
 ![example](Images/disconnect.PNG)
 
 ### Mute Input
-Mutes audio input. Has no effect unless connected.
+Mutes audio input. The method has no effect unless the client is connected to the conference.
 
 ### Unmute Input
-Unmutes audio input. Has no effect unless connected.
+Unmutes audio input. The method has no effect unless the client is connected to the conference.
 
 Example:  
 ![example](Images/mute_input.PNG)
 
 ### Mute Output
-Mutes audio output. Has no effect unless connected.
+Mutes audio output. The method has no effect unless the client is connected to the conference.
 
 ### Unmute Output
-Unmutes audio output. Has no effect unless connected.
+Unmutes audio output. The method has no effect unless the client is connected to the conference.
 
 Example:  
 ![example](Images/mute_output.PNG)
@@ -160,4 +162,4 @@ Please be aware that this tool is not endorsed by Dolby in any way and may be da
 <key>NSMicrophoneUsageDescription</key>
 <string>Dolby.io Communications</string>
 ```
-in your game's Info.plist or, if you want to automatically add these lines in all packaged games, in {UnrealEngineRoot}/Engine/Source/Runtime/Launch/Resources/Mac/Info.plist. The latter solution is recommended if it does not conflict with your setup, because the Info.plist file is overwritten each time the game is packaged.
+in your game's Info.plist or, if you want to automatically add these lines in all packaged games, in {UnrealEngineRoot}/Engine/Source/Runtime/Launch/Resources/Mac/Info.plist. The latter solution is recommended if it does not conflict with your setup because the Info.plist file is overwritten each time the game is packaged.
