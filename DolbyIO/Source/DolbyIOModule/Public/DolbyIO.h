@@ -40,7 +40,7 @@ public:
 	 * <img src="https://files.readme.io/e44088b-on_token_needed.PNG">
 	 * @param Token - The client access token.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void SetToken(const FString& Token);
 
 	/** Initializes or refreshes the client access token. The function is similar to [Set Token](#set-token), except it takes an app key and secret as parameters and automatically generates the token.
@@ -53,7 +53,7 @@ public:
 	 * @param AppSecret - The app secret.
 	 * @param TokenExpirationTimeInSeconds - The token's expiration time (in seconds).
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void SetTokenUsingKeyAndSecret(const FString& AppKey, const FString& AppSecret,
 	                               int TokenExpirationTimeInSeconds = 3600);
 
@@ -65,7 +65,7 @@ public:
 	 * remains the same across all sessions.
 	 * @param AvatarURL - The URL of the participant's avatar.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void Connect(const FString& ConferenceName = "unreal", const FString& UserName = "", const FString& ExternalID = "",
 	             const FString& AvatarURL = "");
 
@@ -76,7 +76,7 @@ public:
 	 * Example:
 	 * <img src="https://files.readme.io/db8d689-connect_to_demo_conference.PNG">
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void ConnectToDemoConference();
 
 	/** Disconnects from the current conference. Triggers [On Disconnected](#on-disconnected) when complete.
@@ -84,12 +84,12 @@ public:
 	 * Example:
 	 * <img src="https://files.readme.io/61921d2-disconnect.PNG">
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void Disconnect();
 
 	/** Mutes audio input. The method has no effect unless the client is connected to the conference.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void MuteInput();
 
 	/** Unmutes audio input. The method has no effect unless the client is connected to the conference.
@@ -97,12 +97,12 @@ public:
 	 * Example:
 	 * <img src=https://files.readme.io/9c112d7-mute_input.PNG">
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void UnmuteInput();
 
 	/** Mutes audio output. The method has no effect unless the client is connected to the conference.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void MuteOutput();
 
 	/** Unmutes audio output. The method has no effect unless the client is connected to the conference.
@@ -110,7 +110,7 @@ public:
 	 * Example:
 	 * <img src="https://files.readme.io/140e9f7-mute_output.PNG">
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void UnmuteOutput();
 
 	/** Gets audio levels for all speaking participants. Triggers [On Audio Levels Changed](#on-audio-levels-changed) if successful.
@@ -118,7 +118,7 @@ public:
 	 * Example:
 	 * <img src="https://files.readme.io/0786858-get_audio_levels.PNG">
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void GetAudioLevels();
 
 	/** Updates the position and rotation of the listener for spatial audio purposes. Calling this function even once disables the default behavior, which is to automatically use the location and rotation of the first player controller.
@@ -128,7 +128,7 @@ public:
 	 * @param Position - The location of the listener.
 	 * @param Rotation - The rotation of the listener.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void UpdateViewPoint(const FVector& Position, const FRotator& Rotation);
 
 	/*
@@ -143,7 +143,7 @@ public:
 	 * Example:
 	 * <img src="https://files.readme.io/e44088b-on_token_needed.PNG">
 	 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
 	void OnTokenNeeded();
 
 	/** Triggered when the plugin is successfully initialized after calling the [Set Token](#set-token) function.
@@ -152,7 +152,7 @@ public:
 	 * Example:
 	 * <img src="https://files.readme.io/124a74c-on_initialized.PNG">
 	 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
 	void OnInitialized();
 
 	/** Triggered when the client is successfully connected to the conference after calling the [Connect](#connect) function.
@@ -161,7 +161,7 @@ public:
 	 * <img src="https://files.readme.io/d6744e0-on_connected.PNG">
 	 * @param LocalParticipant - A string holding the ID of the local participant.
 	 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
 	void OnConnected(const FString& LocalParticipantID);
 
 	/** Triggered when the client is disconnected from the conference by any means; in particular, by the [Disconnect](#disconnect) function.
@@ -169,7 +169,7 @@ public:
 	 * Example:
 	 * <img src="https://files.readme.io/8322383-on_disconnected.PNG">
 	 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
 	void OnDisconnected();
 
 	/** Triggered when remote participants are added to or removed from the conference.
@@ -178,7 +178,7 @@ public:
 	 * <img src="https://files.readme.io/9b036e5-on_participant_added.PNG">
 	 * @param RemoteParticipants - A set of strings holding the IDs of remote participants.
 	 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
 	void OnParticipantAdded(const FDolbyIOParticipantInfo& ParticipantInfo);
 
 	/** Triggered when a remote participant leaves the conference.
@@ -188,7 +188,7 @@ public:
 	 * @param ParticipantInfo - Contains the current status of a conference participant and information whether the
 	 * participant's audio is enabled.
 	 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
 	void OnParticipantLeft(const FDolbyIOParticipantInfo& ParticipantInfo);
 
 	/** Triggered when participants start or stop speaking.
@@ -197,7 +197,7 @@ public:
 	 * <img src="https://files.readme.io/45fb4dd-on_active_speakers_changed.PNG">
 	 * @param ActiveSpeakers - The IDs of the current active speakers.
 	 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
 	void OnActiveSpeakersChanged(const TArray<FString>& ActiveSpeakers);
 
 	/** Triggered when there are new audio levels available after calling the [Get Audio Levels](#get-audio-levels) function.
@@ -206,7 +206,7 @@ public:
 	 * <img src="https://files.readme.io/fdb5789-on_audio_levels_changed.PNG">
 	 * @param AudioLevels - A string-to-float mapping of participant IDs to their audio levels. A value of 0.0 represents silence and a value of 1.0 represents the maximum volume.
 	 */
-	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Dolby.io")
 	void OnAudioLevelsChanged(const TMap<FString, float>& AudioLevels);
 
 private:
