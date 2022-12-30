@@ -35,6 +35,7 @@ namespace DolbyIO
 		sdk::set_log_settings(LogSettings);
 	}
 
+	// to be removed when fix lands in C++ SDK
 	FSdkAccess::~FSdkAccess()
 	{
 		while (ConferenceStatus < EConferenceStatus::left)
