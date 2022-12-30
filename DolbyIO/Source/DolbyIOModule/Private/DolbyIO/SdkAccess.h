@@ -20,8 +20,6 @@ namespace DolbyIO
 		using FToken = FString;
 
 	public:
-		using EConferenceStatus = dolbyio::comms::conference_status;
-
 		FSdkAccess(ISdkEventObserver&);
 		~FSdkAccess();
 
@@ -45,13 +43,15 @@ namespace DolbyIO
 		void Initialize(const FToken&);
 		bool IsConnected() const;
 		bool CanConnect() const;
-		void UpdateStatus(EConferenceStatus);
+		void UpdateStatus(dolbyio::comms::conference_status);
 		class FErrorHandler MakeHandler(int Line);
 
-		ISdkEventObserver& Observer;
 		TUniquePtr<dolbyio::comms::sdk> Sdk;
 		TUniquePtr<dolbyio::comms::refresh_token> RefreshTokenCb;
-		EConferenceStatus ConferenceStatus;
+
+		ISdkEventObserver& Observer;
+
+		dolbyio::comms::conference_status ConferenceStatus;
 		FParticipantID LocalParticipantID;
 		FParticipantIDs RemoteParticipantIDs;
 		bool bIsDemo;

@@ -18,7 +18,7 @@ namespace DolbyIO
 	using namespace dolbyio::comms;
 
 	FSdkAccess::FSdkAccess(ISdkEventObserver& Observer)
-	    : Observer(Observer), ConferenceStatus(EConferenceStatus::destroyed)
+	    : Observer(Observer), ConferenceStatus(conference_status::destroyed)
 	{
 #if PLATFORM_WINDOWS
 		static auto AlignedNew =
@@ -38,7 +38,7 @@ namespace DolbyIO
 	// to be removed when fix lands in C++ SDK
 	FSdkAccess::~FSdkAccess()
 	{
-		while (ConferenceStatus < EConferenceStatus::left)
+		while (ConferenceStatus < conference_status::left)
 		{
 			if (IsConnected())
 			{
@@ -66,7 +66,7 @@ namespace DolbyIO
 		else
 		{
 			(*RefreshTokenCb)(ToStdString(Token));
-			RefreshTokenCb.Reset(); // RefreshToken callback can be called only once
+			RefreshTokenCb.Reset(); // RefreshToken callback can only be called once
 		}
 	}
 	catch (...)
@@ -148,7 +148,7 @@ namespace DolbyIO
 
 	bool FSdkAccess::IsConnected() const
 	{
-		return ConferenceStatus == EConferenceStatus::joined;
+		return ConferenceStatus == conference_status::joined;
 	}
 
 	bool FSdkAccess::CanConnect() const
@@ -168,27 +168,25 @@ namespace DolbyIO
 
 	namespace
 	{
-		using EConferenceStatus = FSdkAccess::EConferenceStatus;
-
-		FString ToString(EConferenceStatus Status)
+		FString ToString(conference_status Status)
 		{
 			switch (Status)
 			{
-				case EConferenceStatus::creating:
+				case conference_status::creating:
 					return "creating";
-				case EConferenceStatus::created:
+				case conference_status::created:
 					return "created";
-				case EConferenceStatus::joining:
+				case conference_status::joining:
 					return "joining";
-				case EConferenceStatus::joined:
+				case conference_status::joined:
 					return "joined";
-				case EConferenceStatus::leaving:
+				case conference_status::leaving:
 					return "leaving";
-				case EConferenceStatus::left:
+				case conference_status::left:
 					return "left";
-				case EConferenceStatus::destroyed:
+				case conference_status::destroyed:
 					return "destroyed";
-				case EConferenceStatus::error:
+				case conference_status::error:
 					return "error";
 				default:
 					return "unknown";
@@ -196,18 +194,18 @@ namespace DolbyIO
 		}
 	}
 
-	void FSdkAccess::UpdateStatus(EConferenceStatus Status)
+	void FSdkAccess::UpdateStatus(conference_status Status)
 	{
 		ConferenceStatus = Status;
 		UE_LOG(LogDolbyIO, Log, TEXT("Conference status: %s"), *ToString(ConferenceStatus));
 
 		switch (ConferenceStatus)
 		{
-			case EConferenceStatus::joined:
+			case conference_status::joined:
 				Observer.OnConnectedEvent(LocalParticipantID);
 				break;
-			case EConferenceStatus::left:
-			case EConferenceStatus::error:
+			case conference_status::left:
+			case conference_status::error:
 				Observer.OnDisconnectedEvent();
 				break;
 		}
@@ -235,7 +233,7 @@ namespace DolbyIO
 		UserInfo.externalId = ToStdString(ExternalID);
 		UserInfo.avatarUrl = ToStdString(AvatarURL);
 
-		ConferenceStatus = EConferenceStatus::creating;
+		ConferenceStatus = conference_status::creating; // to be removed when fix lands in C++ SDK
 		Sdk->session()
 		    .open(MoveTemp(UserInfo))
 		    .then(
@@ -273,7 +271,7 @@ namespace DolbyIO
 		RemoteParticipantIDs.Empty();
 		bIsDemo = true;
 
-		ConferenceStatus = EConferenceStatus::creating;
+		ConferenceStatus = conference_status::creating; // to be removed when fix lands in C++ SDK
 		Sdk->session()
 		    .open({})
 		    .then(
@@ -400,7 +398,7 @@ namespace DolbyIO
 	{
 		return FErrorHandler{[this, Line](const FString& Msg)
 		                     {
-			                     if (ConferenceStatus != EConferenceStatus::leaving)
+			                     if (ConferenceStatus != conference_status::leaving)
 			                     {
 				                     UE_LOG(LogDolbyIO, Error, TEXT("%s (conference status: %s)"),
 				                            *(Msg + " {" + FString::FromInt(Line) + "}"), *ToString(ConferenceStatus));
