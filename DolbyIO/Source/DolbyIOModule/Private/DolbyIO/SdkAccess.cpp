@@ -20,19 +20,18 @@ namespace DolbyIO
 	FSdkAccess::FSdkAccess(ISdkEventObserver& Observer)
 	    : Observer(Observer), ConferenceStatus(conference_status::destroyed)
 	{
+		static std::once_flag DoOnce;
+		std::call_once(DoOnce,
+		               []
+		               {
 #if PLATFORM_WINDOWS
-		static auto AlignedNew =
-		    +[](std::size_t Count, std::size_t Al) { return operator new(Count, static_cast<std::align_val_t>(Al)); };
-		static auto AlignedDelete =
-		    +[](void* Ptr, std::size_t Al) { operator delete(Ptr, static_cast<std::align_val_t>(Al)); };
-		sdk::set_app_allocator({operator new, AlignedNew, operator delete, AlignedDelete});
+			               static auto AlignedNew = +[](std::size_t Count, std::size_t Al)
+			               { return operator new(Count, static_cast<std::align_val_t>(Al)); };
+			               static auto AlignedDelete = +[](void* Ptr, std::size_t Al)
+			               { operator delete(Ptr, static_cast<std::align_val_t>(Al)); };
+			               sdk::set_app_allocator({operator new, AlignedNew, operator delete, AlignedDelete});
 #endif
-
-		sdk::log_settings LogSettings;
-		LogSettings.sdk_log_level = log_level::INFO;
-		LogSettings.media_log_level = log_level::OFF;
-		LogSettings.log_directory = "";
-		sdk::set_log_settings(LogSettings);
+		               });
 	}
 
 	// to be removed when fix lands in C++ SDK
