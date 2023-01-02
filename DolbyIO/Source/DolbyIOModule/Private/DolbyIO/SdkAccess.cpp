@@ -11,7 +11,6 @@
 #include <dolbyio/comms/sdk.h>
 
 #include "Async/Async.h"
-#include "HAL/PlatformProcess.h" // to be removed when fix lands in C++ SDK
 #include "Math/Rotator.h"
 
 namespace DolbyIO
@@ -38,14 +37,6 @@ namespace DolbyIO
 	FSdkAccess::~FSdkAccess()
 	{
 		bIsAlive = false;
-		while (ConferenceStatus < conference_status::left) // to be removed when fix lands in C++ SDK
-		{
-			if (IsConnected())
-			{
-				Disconnect();
-			}
-			FPlatformProcess::Sleep(0.1);
-		}
 	}
 
 	namespace
@@ -70,7 +61,7 @@ namespace DolbyIO
 		}
 		else
 		{
-			UE_LOG(LogDolbyIO, Log, TEXT("Ignoring request to set token when no token is needed"));
+			UE_LOG(LogDolbyIO, Warning, TEXT("Ignoring request to set token when no token is needed"));
 		}
 	}
 	catch (...)
@@ -97,7 +88,7 @@ namespace DolbyIO
 	void FSdkAccess::Initialize(const FString& Token)
 	{
 		Sdk.Reset(sdk::create(ToStdString(Token),
-		                      [this](auto&& cb)
+		                      [this](auto&& RefreshCb)
 		                      {
 			                      if (!bIsAlive)
 			                      {
@@ -105,7 +96,7 @@ namespace DolbyIO
 			                      }
 
 			                      UE_LOG(LogDolbyIO, Log, TEXT("Refresh token requested"));
-			                      RefreshTokenCb.Reset(cb.release());
+			                      RefreshTokenCb.Reset(RefreshCb.release());
 			                      AsyncTask(ENamedThreads::GameThread,
 			                                [=] { DolbyIOSubsystem.OnTokenNeeded.Broadcast(); });
 		                      })
@@ -284,7 +275,6 @@ namespace DolbyIO
 		UserInfo.externalId = ToStdString(ExternalID);
 		UserInfo.avatarUrl = ToStdString(AvatarURL);
 
-		ConferenceStatus = conference_status::creating; // to be removed when fix lands in C++ SDK
 		Sdk->session()
 		    .open(MoveTemp(UserInfo))
 		    .then(
@@ -322,7 +312,6 @@ namespace DolbyIO
 		RemoteParticipantIDs.Empty();
 		bIsDemo = true;
 
-		ConferenceStatus = conference_status::creating; // to be removed when fix lands in C++ SDK
 		Sdk->session()
 		    .open({})
 		    .then(
