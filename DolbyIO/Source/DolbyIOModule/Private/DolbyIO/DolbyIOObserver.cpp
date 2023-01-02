@@ -32,6 +32,8 @@ void UDolbyIOObserver::InitializeComponent()
 				DolbyIOSubsystem->OnActiveSpeakersChanged.AddDynamic(this,
 				                                                     &UDolbyIOObserver::FwdOnActiveSpeakersChanged);
 				DolbyIOSubsystem->OnAudioLevelsChanged.AddDynamic(this, &UDolbyIOObserver::FwdOnAudioLevelsChanged);
+
+				FwdOnTokenNeeded();
 			}
 		}
 	}
