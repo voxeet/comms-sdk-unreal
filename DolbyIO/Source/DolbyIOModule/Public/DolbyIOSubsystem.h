@@ -231,8 +231,10 @@ public:
 	 *
 	 * Example:
 	 * <img src="https://files.readme.io/fdb5789-on_audio_levels_changed.PNG">
-	 * @param AudioLevels - A string-to-float mapping of participant IDs to their audio levels. A value of 0.0
-	 * represents silence and a value of 1.0 represents the maximum volume.
+	 * @param ActiveSpeakers - The IDs of the current active speakers.
+	 * @param AudioLevels - A floating point number representing each participant's audio level. The order of levels
+	 * corresponds to the order of ActiveSpeakers. A value of 0.0 represents silence and a value of 1.0 represents the
+	 * maximum volume.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io")
 	FSubsystemOnAudioLevelsChangedDelegate OnAudioLevelsChanged;
