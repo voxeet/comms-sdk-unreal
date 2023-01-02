@@ -1,7 +1,5 @@
 // Copyright 2022 Dolby Laboratories
 
-#pragma once
-
 #include "DolbyIOObserver.h"
 
 #include "DolbyIOSubsystem.h"
