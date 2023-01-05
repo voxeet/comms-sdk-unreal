@@ -111,6 +111,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void Disconnect();
 
+	/** Sets the spatial environment scale. The larger the scale, the longer the distance at which the spatial audio
+	 * attenuates. To get the best experience, the scale should be set separately for each level. The default value of
+	 * "1.0" means that audio will fall completely silent at a distance of 10000 units (10000 cm/100 m).
+	 * @param SpatialEnvironmentScale - The scale as a floating point number.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
+	void SetSpatialEnvironmentScale(float SpatialEnvironmentScale = 1.0f);
+
 	/** Mutes audio input. The method has no effect unless the client is connected to the conference.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io")

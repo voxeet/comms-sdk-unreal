@@ -11,7 +11,6 @@
 #include <dolbyio/comms/sdk.h>
 
 #include "Async/Async.h"
-#include "Math/Rotator.h"
 
 namespace DolbyIO
 {
@@ -299,6 +298,7 @@ namespace DolbyIO
 			        Options.connection.spatial_audio = true;
 			        return Sdk->conference().join(ConferenceInfo, Options);
 		        })
+		    .then([this](auto&&) { SetSpatialEnvironment(); })
 		    .on_error(MakeErrorHandler(__LINE__));
 	}
 
@@ -323,7 +323,20 @@ namespace DolbyIO
 			        }
 			        return Sdk->conference().demo();
 		        })
+		    .then([this](auto&&) { SetSpatialEnvironment(); })
 		    .on_error(MakeErrorHandler(__LINE__));
+	}
+
+	void FSdkAccess::SetSpatialEnvironment()
+	{
+		// The SDK spatial settings expect meters as the default unit of length.
+		// Unreal uses centimeters for scale, so the plugin's scale of "1" is a scale of "100" for the SDK.
+		const auto SdkScale = SpatialEnvironmentScale * 100;
+		const spatial_scale Scale{SdkScale, SdkScale, SdkScale};
+		const spatial_position Forward{1, 0, 0};
+		const spatial_position Up{0, 0, 1};
+		const spatial_position Right{0, 1, 0};
+		Sdk->conference().set_spatial_environment(Scale, Forward, Up, Right).on_error(MakeErrorHandler(__LINE__));
 	}
 
 	void FSdkAccess::Disconnect()
@@ -339,38 +352,13 @@ namespace DolbyIO
 		    .on_error(MakeErrorHandler(__LINE__));
 	}
 
-	void FSdkAccess::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
+	void FSdkAccess::SetSpatialEnvironmentScale(float Scale)
 	{
-		if (!IsConnected())
+		SpatialEnvironmentScale = Scale;
+		if (IsConnected())
 		{
-			return;
+			SetSpatialEnvironment();
 		}
-
-		spatial_audio_batch_update Update;
-
-		if (bIsDemo)
-		{
-			static float Angle = 0;
-			Angle += 0.01f;
-			for (const auto& Participant : RemoteParticipantIDs)
-			{
-				Update.set_spatial_position(ToStdString(Participant),
-				                            Participant[0] == '1'
-				                                ? spatial_position{FMath::Cos(Angle), 0, FMath::Sin(Angle)}
-				                            : Participant[0] == '2' ? spatial_position{-1, 0, 0}
-				                                                    : spatial_position{1, 0, 0});
-			}
-		}
-
-		// The default SDK spatial settings expect meters as unit of length,
-		// Unreal uses centimeters for scale, so we divide every length by 100.
-		// The default SDK coordinate system expects position arguments to mean (in order) right, up and
-		// forward. In Unreal, right axis is +Y, up is +Z and forward is +X.
-		const auto ScaledPosition = Position / 100;
-		Update.set_spatial_position(ToStdString(LocalParticipantID),
-		                            {ScaledPosition.Y, ScaledPosition.Z, ScaledPosition.X});
-		Update.set_spatial_direction({Rotation.Pitch, Rotation.Yaw, Rotation.Roll});
-		Sdk->conference().update_spatial_audio_configuration(MoveTemp(Update)).on_error(MakeErrorHandler(__LINE__));
 	}
 
 	void FSdkAccess::MuteInput()
@@ -443,6 +431,36 @@ namespace DolbyIO
 			                  [=] { DolbyIOSubsystem.OnAudioLevelsChanged.Broadcast(ActiveSpeakers, AudioLevels); });
 		        })
 		    .on_error(MakeErrorHandler(__LINE__));
+	}
+
+	void FSdkAccess::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
+	{
+		if (!IsConnected())
+		{
+			return;
+		}
+
+		spatial_audio_batch_update Update;
+
+		if (bIsDemo)
+		{
+			static float Angle = 0;
+			Angle += 0.01f;
+			for (const auto& Participant : RemoteParticipantIDs)
+			{
+				Update.set_spatial_position(ToStdString(Participant),
+				                            Participant[0] == '1'
+				                                ? spatial_position{FMath::Sin(Angle) * 100, FMath::Cos(Angle) * 100, 0}
+				                            : Participant[0] == '2' ? spatial_position{0, -100, 0}
+				                                                    : spatial_position{0, 100, 0});
+			}
+		}
+
+		Update.set_spatial_position(ToStdString(LocalParticipantID), {Position.X, Position.Y, Position.Z});
+		// The SDK expects the direction values to mean rotations around the {x,y,z} axes as specified by the
+		// environment. In Unreal, rotation around x is roll (because x is forward), y is pitch and z is yaw.
+		Update.set_spatial_direction({Rotation.Roll, Rotation.Pitch, Rotation.Yaw});
+		Sdk->conference().update_spatial_audio_configuration(MoveTemp(Update)).on_error(MakeErrorHandler(__LINE__));
 	}
 
 	FErrorHandler FSdkAccess::MakeErrorHandler(int Line)

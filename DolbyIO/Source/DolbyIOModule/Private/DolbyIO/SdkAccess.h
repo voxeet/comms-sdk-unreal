@@ -30,7 +30,7 @@ namespace DolbyIO
 		void ConnectToDemoConference();
 		void Disconnect();
 
-		void UpdateViewPoint(const FVector&, const FRotator&);
+		void SetSpatialEnvironmentScale(float);
 
 		void MuteInput();
 		void UnmuteInput();
@@ -39,11 +39,14 @@ namespace DolbyIO
 
 		void GetAudioLevels();
 
+		void UpdateViewPoint(const FVector&, const FRotator&);
+
 	private:
 		void Initialize(const FString& Token);
 		bool IsConnected() const;
 		bool CanConnect() const;
 		void UpdateStatus(dolbyio::comms::conference_status);
+		void SetSpatialEnvironment();
 		class FErrorHandler MakeErrorHandler(int Line);
 
 		UDolbyIOSubsystem& DolbyIOSubsystem;
@@ -54,6 +57,8 @@ namespace DolbyIO
 
 		TUniquePtr<dolbyio::comms::sdk> Sdk;
 		TUniquePtr<dolbyio::comms::refresh_token> RefreshTokenCb;
+
+		float SpatialEnvironmentScale = 1.0f;
 
 		bool bIsAlive = true;
 		bool bIsDemo;

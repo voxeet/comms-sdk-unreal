@@ -48,15 +48,6 @@ void UDolbyIOSubsystem::Disconnect()
 {
 	CppSdk->Disconnect();
 }
-void UDolbyIOSubsystem::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
-{
-	if (SpatialUpdateTimerHandle.IsValid())
-	{
-		GameInstance->GetTimerManager().ClearTimer(SpatialUpdateTimerHandle);
-	}
-
-	CppSdk->UpdateViewPoint(Position, Rotation);
-}
 void UDolbyIOSubsystem::MuteInput()
 {
 	CppSdk->MuteInput();
@@ -77,7 +68,20 @@ void UDolbyIOSubsystem::GetAudioLevels()
 {
 	CppSdk->GetAudioLevels();
 }
+void UDolbyIOSubsystem::SetSpatialEnvironmentScale(float SpatialEnvironmentScale)
+{
+	CppSdk->SetSpatialEnvironmentScale(SpatialEnvironmentScale);
+}
 
+void UDolbyIOSubsystem::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
+{
+	if (SpatialUpdateTimerHandle.IsValid())
+	{
+		GameInstance->GetTimerManager().ClearTimer(SpatialUpdateTimerHandle);
+	}
+
+	CppSdk->UpdateViewPoint(Position, Rotation);
+}
 void UDolbyIOSubsystem::UpdateViewPointUsingFirstPlayer()
 {
 	if (GameInstance)
