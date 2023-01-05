@@ -7,7 +7,6 @@
 #include "DolbyIOParticipantInfo.h"
 #include "DolbyIOSubsystem.h"
 
-#include <dolbyio/comms/async_result.h>
 #include <dolbyio/comms/sdk.h>
 
 #include "Async/Async.h"
@@ -70,6 +69,11 @@ namespace DolbyIO
 
 	namespace
 	{
+		template <class Delegate, class... Args> void BroadcastEvent(Delegate& Event, Args&&... args)
+		{
+			AsyncTask(ENamedThreads::GameThread, [=] { Event.Broadcast(args...); });
+		}
+
 		auto ToUnrealParticipantInfo(const participant_info& Info)
 		{
 			FDolbyIOParticipantInfo Ret;
@@ -96,8 +100,7 @@ namespace DolbyIO
 
 			                      UE_LOG(LogDolbyIO, Log, TEXT("Refresh token requested"));
 			                      RefreshTokenCb.Reset(RefreshCb.release());
-			                      AsyncTask(ENamedThreads::GameThread,
-			                                [=] { DolbyIOSubsystem.OnTokenNeeded.Broadcast(); });
+			                      BroadcastEvent(DolbyIOSubsystem.OnTokenNeeded);
 		                      })
 		              .release());
 
@@ -115,11 +118,8 @@ namespace DolbyIO
 				            }
 
 				            RemoteParticipantIDs.Add(Event.participant.user_id.c_str());
-				            AsyncTask(ENamedThreads::GameThread,
-				                      [=] {
-					                      DolbyIOSubsystem.OnParticipantAdded.Broadcast(
-					                          ToUnrealParticipantInfo(Event.participant));
-				                      });
+				            BroadcastEvent(DolbyIOSubsystem.OnParticipantAdded,
+				                           ToUnrealParticipantInfo(Event.participant));
 			            });
 		        })
 		    .then(
@@ -139,11 +139,8 @@ namespace DolbyIO
 					            if (*ParticipantStatus == participant_status::left)
 					            {
 						            RemoteParticipantIDs.Remove(Event.participant.user_id.c_str());
-						            AsyncTask(ENamedThreads::GameThread,
-						                      [=] {
-							                      DolbyIOSubsystem.OnParticipantLeft.Broadcast(
-							                          ToUnrealParticipantInfo(Event.participant));
-						                      });
+						            BroadcastEvent(DolbyIOSubsystem.OnParticipantLeft,
+						                           ToUnrealParticipantInfo(Event.participant));
 					            }
 				            }
 			            });
@@ -164,8 +161,7 @@ namespace DolbyIO
 				            {
 					            ActiveSpeakers.Add(Speaker.c_str());
 				            }
-				            AsyncTask(ENamedThreads::GameThread,
-				                      [=] { DolbyIOSubsystem.OnActiveSpeakersChanged.Broadcast(ActiveSpeakers); });
+				            BroadcastEvent(DolbyIOSubsystem.OnActiveSpeakersChanged, ActiveSpeakers);
 			            });
 		        })
 		    .then(
@@ -176,7 +172,7 @@ namespace DolbyIO
 				        return;
 			        }
 
-			        AsyncTask(ENamedThreads::GameThread, [=] { DolbyIOSubsystem.OnInitialized.Broadcast(); });
+			        BroadcastEvent(DolbyIOSubsystem.OnInitialized);
 		        })
 		    .on_error(MakeErrorHandler(__LINE__));
 	}
@@ -242,12 +238,11 @@ namespace DolbyIO
 		switch (ConferenceStatus)
 		{
 			case conference_status::joined:
-				AsyncTask(ENamedThreads::GameThread,
-				          [=] { DolbyIOSubsystem.OnConnected.Broadcast(LocalParticipantID); });
+				BroadcastEvent(DolbyIOSubsystem.OnConnected, LocalParticipantID);
 				break;
 			case conference_status::left:
 			case conference_status::error:
-				AsyncTask(ENamedThreads::GameThread, [=] { DolbyIOSubsystem.OnDisconnected.Broadcast(); });
+				BroadcastEvent(DolbyIOSubsystem.OnDisconnected);
 				break;
 		}
 	}
@@ -427,8 +422,7 @@ namespace DolbyIO
 				        ActiveSpeakers.Add(Level.participant_id.c_str());
 				        AudioLevels.Add(Level.level);
 			        }
-			        AsyncTask(ENamedThreads::GameThread,
-			                  [=] { DolbyIOSubsystem.OnAudioLevelsChanged.Broadcast(ActiveSpeakers, AudioLevels); });
+			        BroadcastEvent(DolbyIOSubsystem.OnAudioLevelsChanged, ActiveSpeakers, AudioLevels);
 		        })
 		    .on_error(MakeErrorHandler(__LINE__));
 	}
