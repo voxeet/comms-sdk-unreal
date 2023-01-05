@@ -51,6 +51,8 @@ namespace DolbyIO
 		void ToggleOutputMute();
 		class FErrorHandler MakeErrorHandler(int Line);
 
+		template <class TDelegate, class... TArgs> void BroadcastEvent(TDelegate&, TArgs&&...);
+
 		UDolbyIOSubsystem& DolbyIOSubsystem;
 
 		dolbyio::comms::conference_status ConferenceStatus;

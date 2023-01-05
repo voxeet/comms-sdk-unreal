@@ -69,10 +69,6 @@ namespace DolbyIO
 
 	namespace
 	{
-		template <class Delegate, class... Args> void BroadcastEvent(Delegate& Event, Args&&... args)
-		{
-			AsyncTask(ENamedThreads::GameThread, [=] { Event.Broadcast(args...); });
-		}
 
 		auto ToUnrealParticipantInfo(const participant_info& Info)
 		{
@@ -93,11 +89,6 @@ namespace DolbyIO
 		Sdk.Reset(sdk::create(ToStdString(Token),
 		                      [this](auto&& RefreshCb)
 		                      {
-			                      if (!bIsAlive)
-			                      {
-				                      return;
-			                      }
-
 			                      UE_LOG(LogDolbyIO, Log, TEXT("Refresh token requested"));
 			                      RefreshTokenCb.Reset(RefreshCb.release());
 			                      BroadcastEvent(DolbyIOSubsystem.OnTokenNeeded);
@@ -112,11 +103,6 @@ namespace DolbyIO
 			        return Sdk->conference().add_event_handler(
 			            [this](const participant_added& Event)
 			            {
-				            if (!bIsAlive)
-				            {
-					            return;
-				            }
-
 				            RemoteParticipantIDs.Add(Event.participant.user_id.c_str());
 				            BroadcastEvent(DolbyIOSubsystem.OnParticipantAdded,
 				                           ToUnrealParticipantInfo(Event.participant));
@@ -128,11 +114,6 @@ namespace DolbyIO
 			        return Sdk->conference().add_event_handler(
 			            [this](const participant_updated& Event)
 			            {
-				            if (!bIsAlive)
-				            {
-					            return;
-				            }
-
 				            const auto& ParticipantStatus = Event.participant.status;
 				            if (ParticipantStatus)
 				            {
@@ -151,11 +132,6 @@ namespace DolbyIO
 			        return Sdk->conference().add_event_handler(
 			            [this](const active_speaker_change& Event)
 			            {
-				            if (!bIsAlive)
-				            {
-					            return;
-				            }
-
 				            TArray<FString> ActiveSpeakers;
 				            for (const auto& Speaker : Event.active_speakers)
 				            {
@@ -164,16 +140,7 @@ namespace DolbyIO
 				            BroadcastEvent(DolbyIOSubsystem.OnActiveSpeakersChanged, ActiveSpeakers);
 			            });
 		        })
-		    .then(
-		        [this](auto)
-		        {
-			        if (!bIsAlive)
-			        {
-				        return;
-			        }
-
-			        BroadcastEvent(DolbyIOSubsystem.OnInitialized);
-		        })
+		    .then([this](auto) { BroadcastEvent(DolbyIOSubsystem.OnInitialized); })
 		    .on_error(MakeErrorHandler(__LINE__));
 	}
 
@@ -229,11 +196,6 @@ namespace DolbyIO
 	{
 		ConferenceStatus = Status;
 		UE_LOG(LogDolbyIO, Log, TEXT("Conference status: %s"), *ToString(ConferenceStatus));
-
-		if (!bIsAlive)
-		{
-			return;
-		}
 
 		switch (ConferenceStatus)
 		{
@@ -420,11 +382,6 @@ namespace DolbyIO
 		    .then(
 		        [this](auto&& Levels)
 		        {
-			        if (!bIsAlive)
-			        {
-				        return;
-			        }
-
 			        TArray<FString> ActiveSpeakers;
 			        TArray<float> AudioLevels;
 			        for (const audio_level& Level : Levels)
@@ -474,5 +431,13 @@ namespace DolbyIO
 			        UE_LOG(LogDolbyIO, Error, TEXT("%s (conference status: %s)"),
 			               *(Msg + " {" + FString::FromInt(Line) + "}"), *ToString(ConferenceStatus));
 		        }};
+	}
+
+	template <class TDelegate, class... TArgs> void FSdkAccess::BroadcastEvent(TDelegate& Event, TArgs&&... Args)
+	{
+		if (bIsAlive)
+		{
+			AsyncTask(ENamedThreads::GameThread, [=] { Event.Broadcast(Args...); });
+		}
 	}
 }
