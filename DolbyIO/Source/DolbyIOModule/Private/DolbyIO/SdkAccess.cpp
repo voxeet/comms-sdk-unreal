@@ -293,7 +293,13 @@ namespace DolbyIO
 			        Options.connection.spatial_audio = true;
 			        return Sdk->conference().join(ConferenceInfo, Options);
 		        })
-		    .then([this](auto&&) { SetSpatialEnvironment(); })
+		    .then(
+		        [this](auto&&)
+		        {
+			        SetSpatialEnvironment();
+			        ToggleInputMute();
+			        ToggleOutputMute();
+		        })
 		    .on_error(MakeErrorHandler(__LINE__));
 	}
 
@@ -318,7 +324,13 @@ namespace DolbyIO
 			        }
 			        return Sdk->conference().demo();
 		        })
-		    .then([this](auto&&) { SetSpatialEnvironment(); })
+		    .then(
+		        [this](auto&&)
+		        {
+			        SetSpatialEnvironment();
+			        ToggleInputMute();
+			        ToggleOutputMute();
+		        })
 		    .on_error(MakeErrorHandler(__LINE__));
 	}
 
@@ -356,46 +368,44 @@ namespace DolbyIO
 		}
 	}
 
+	void FSdkAccess::ToggleInputMute()
+	{
+		if (IsConnected())
+		{
+			Sdk->conference().mute(bIsInputMuted).on_error(MakeErrorHandler(__LINE__));
+		}
+	}
+
+	void FSdkAccess::ToggleOutputMute()
+	{
+		if (IsConnected())
+		{
+			Sdk->conference().mute_output(bIsOutputMuted).on_error(MakeErrorHandler(__LINE__));
+		}
+	}
+
 	void FSdkAccess::MuteInput()
 	{
-		if (!IsConnected())
-		{
-			UE_LOG(LogDolbyIO, Warning, TEXT("Must be connected to mute input"));
-			return;
-		}
-
-		Sdk->conference().mute(true).on_error(MakeErrorHandler(__LINE__));
+		bIsInputMuted = true;
+		ToggleInputMute();
 	}
 
 	void FSdkAccess::UnmuteInput()
 	{
-		if (!IsConnected())
-		{
-			return;
-		}
-
-		Sdk->conference().mute(false).on_error(MakeErrorHandler(__LINE__));
+		bIsInputMuted = false;
+		ToggleInputMute();
 	}
 
 	void FSdkAccess::MuteOutput()
 	{
-		if (!IsConnected())
-		{
-			UE_LOG(LogDolbyIO, Warning, TEXT("Must be connected to mute output"));
-			return;
-		}
-
-		Sdk->conference().mute_output(true).on_error(MakeErrorHandler(__LINE__));
+		bIsOutputMuted = true;
+		ToggleOutputMute();
 	}
 
 	void FSdkAccess::UnmuteOutput()
 	{
-		if (!IsConnected())
-		{
-			return;
-		}
-
-		Sdk->conference().mute_output(false).on_error(MakeErrorHandler(__LINE__));
+		bIsOutputMuted = false;
+		ToggleOutputMute();
 	}
 
 	void FSdkAccess::GetAudioLevels()

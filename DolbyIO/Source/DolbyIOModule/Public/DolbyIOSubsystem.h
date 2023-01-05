@@ -119,12 +119,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void SetSpatialEnvironmentScale(float SpatialEnvironmentScale = 1.0f);
 
-	/** Mutes audio input. The method has no effect unless the client is connected to the conference.
+	/** Mutes audio input.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void MuteInput();
 
-	/** Unmutes audio input. The method has no effect unless the client is connected to the conference.
+	/** Unmutes audio input.
 	 *
 	 * Example:
 	 * <img src=https://files.readme.io/9c112d7-mute_input.PNG">
@@ -132,12 +132,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void UnmuteInput();
 
-	/** Mutes audio output. The method has no effect unless the client is connected to the conference.
+	/** Mutes audio output.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void MuteOutput();
 
-	/** Unmutes audio output. The method has no effect unless the client is connected to the conference.
+	/** Unmutes audio output.
 	 *
 	 * Example:
 	 * <img src="https://files.readme.io/140e9f7-mute_output.PNG">

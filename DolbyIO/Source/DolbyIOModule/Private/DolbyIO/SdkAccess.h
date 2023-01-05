@@ -47,6 +47,8 @@ namespace DolbyIO
 		bool CanConnect() const;
 		void UpdateStatus(dolbyio::comms::conference_status);
 		void SetSpatialEnvironment();
+		void ToggleInputMute();
+		void ToggleOutputMute();
 		class FErrorHandler MakeErrorHandler(int Line);
 
 		UDolbyIOSubsystem& DolbyIOSubsystem;
@@ -61,6 +63,8 @@ namespace DolbyIO
 		float SpatialEnvironmentScale = 1.0f;
 
 		bool bIsAlive = true;
+		bool bIsInputMuted;
+		bool bIsOutputMuted;
 		bool bIsDemo;
 	};
 }

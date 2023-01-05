@@ -117,20 +117,26 @@ Disconnects from the current conference. Triggers [On Disconnected](#on-disconne
 Example:  
 ![example](Images/disconnect.PNG)
 
+### Set Spatial Environment Scale
+Sets the spatial environment scale. The larger the scale, the longer the distance at which the spatial audio attenuates. To get the best experience, the scale should be set separately for each level. The default value of "1.0" means that audio will fall completely silent at a distance of 10000 units (10000 cm/100 m).
+
+Example:  
+![example](Images/set_spatial_environment_scale.PNG)
+
 ### Mute Input
-Mutes audio input. The method has no effect unless the client is connected to the conference.
+Mutes audio input.
 
 ### Unmute Input
-Unmutes audio input. The method has no effect unless the client is connected to the conference.
+Unmutes audio input.
 
 Example:  
 ![example](Images/mute_input.PNG)
 
 ### Mute Output
-Mutes audio output. The method has no effect unless the client is connected to the conference.
+Mutes audio output.
 
 ### Unmute Output
-Unmutes audio output. The method has no effect unless the client is connected to the conference.
+Unmutes audio output.
 
 Example:  
 ![example](Images/mute_output.PNG)
