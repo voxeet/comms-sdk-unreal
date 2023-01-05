@@ -39,33 +39,38 @@ void UDolbyIOObserver::InitializeComponent()
 
 void UDolbyIOObserver::FwdOnTokenNeeded()
 {
-	AsyncTask(ENamedThreads::GameThread, [=] { OnTokenNeeded.Broadcast(); });
+	BroadcastEvent(OnTokenNeeded);
 }
 void UDolbyIOObserver::FwdOnInitialized()
 {
-	AsyncTask(ENamedThreads::GameThread, [=] { OnInitialized.Broadcast(); });
+	BroadcastEvent(OnInitialized);
 }
 void UDolbyIOObserver::FwdOnConnected(const FString& LocalParticipantID)
 {
-	AsyncTask(ENamedThreads::GameThread, [=] { OnConnected.Broadcast(LocalParticipantID); });
+	BroadcastEvent(OnConnected, LocalParticipantID);
 }
 void UDolbyIOObserver::FwdOnDisconnected()
 {
-	AsyncTask(ENamedThreads::GameThread, [=] { OnDisconnected.Broadcast(); });
+	BroadcastEvent(OnDisconnected);
 }
 void UDolbyIOObserver::FwdOnParticipantAdded(const FDolbyIOParticipantInfo& ParticipantInfo)
 {
-	AsyncTask(ENamedThreads::GameThread, [=] { OnParticipantAdded.Broadcast(ParticipantInfo); });
+	BroadcastEvent(OnParticipantAdded, ParticipantInfo);
 }
 void UDolbyIOObserver::FwdOnParticipantLeft(const FDolbyIOParticipantInfo& ParticipantInfo)
 {
-	AsyncTask(ENamedThreads::GameThread, [=] { OnParticipantLeft.Broadcast(ParticipantInfo); });
+	BroadcastEvent(OnParticipantLeft, ParticipantInfo);
 }
 void UDolbyIOObserver::FwdOnActiveSpeakersChanged(const TArray<FString>& ActiveSpeakers)
 {
-	AsyncTask(ENamedThreads::GameThread, [=] { OnActiveSpeakersChanged.Broadcast(ActiveSpeakers); });
+	BroadcastEvent(OnActiveSpeakersChanged, ActiveSpeakers);
 }
 void UDolbyIOObserver::FwdOnAudioLevelsChanged(const TArray<FString>& ActiveSpeakers, const TArray<float>& AudioLevels)
 {
-	AsyncTask(ENamedThreads::GameThread, [=] { OnAudioLevelsChanged.Broadcast(ActiveSpeakers, AudioLevels); });
+	BroadcastEvent(OnAudioLevelsChanged, ActiveSpeakers, AudioLevels);
+}
+
+template <class TDelegate, class... TArgs> void UDolbyIOObserver::BroadcastEvent(TDelegate& Event, TArgs&&... Args)
+{
+	AsyncTask(ENamedThreads::GameThread, [=] { Event.Broadcast(Args...); });
 }

@@ -138,4 +138,6 @@ private:
 
 	UFUNCTION()
 	void FwdOnAudioLevelsChanged(const TArray<FString>& ActiveSpeakers, const TArray<float>& AudioLevels);
+
+	template <class TDelegate, class... TArgs> void BroadcastEvent(TDelegate&, TArgs&&...);
 };
