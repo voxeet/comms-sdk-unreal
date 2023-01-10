@@ -14,7 +14,6 @@
 
 namespace DolbyIO
 {
-	class FAuthenticator;
 	class FSdkAccess;
 }
 
@@ -32,7 +31,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnAudioLevelsChangedDeleg
                                              ActiveSpeakers, const TArray<float>&, AudioLevels);
 
 /** The Dolby.io Virtual World plugin game instance subsystem. */
-UCLASS(DisplayName = "Dolby.io Subsystem")
+UCLASS(DisplayName = "Dolby.io Subsystem", Category = "Dolby.io")
 class DOLBYIOMODULE_API UDolbyIOSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
@@ -60,25 +59,6 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
 	void SetToken(const FString& Token);
-
-	/** Initializes or refreshes the client access token. The function is similar to [Set Token](#set-token), except it
-	 * takes an app key and secret as parameters and automatically generates the token.
-	 *
-	 * For convenience during early development and prototyping, this function is provided to acquire the client access
-	 * token directly from within the application. However, please note **we do not recommend** using this mechanism in
-	 * the production software for [security best
-	 * practices](https://docs.dolby.io/communications-apis/docs/guides-client-authentication). App secret needs to be
-	 * protected and not included in the application.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/f38e604-set_token_using_key_and_secret.PNG">
-	 * @param AppKey - The app key.
-	 * @param AppSecret - The app secret.
-	 * @param TokenExpirationTimeInSeconds - The token's expiration time (in seconds).
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
-	void SetTokenUsingKeyAndSecret(const FString& AppKey, const FString& AppSecret,
-	                               int TokenExpirationTimeInSeconds = 3600);
 
 	/** Connects to a conference. The method triggers [On Connected](#on-connected) if successful.
 	 * @param ConferenceName - The conference name. Must not be empty.
@@ -254,7 +234,6 @@ private:
 	void Initialize(FSubsystemCollectionBase&) override;
 
 	TSharedPtr<DolbyIO::FSdkAccess> CppSdk;
-	TSharedPtr<DolbyIO::FAuthenticator> Authenticator;
 
 	class UGameInstance* GameInstance;
 	FTimerHandle SpatialUpdateTimerHandle;
