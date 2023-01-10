@@ -1,6 +1,6 @@
 // Copyright 2022 Dolby Laboratories
 
-#include "DolbyIO/Logging.h"
+#include "DolbyIOLogging.h"
 
 #include "HAL/PlatformProcess.h"
 #include "Interfaces/IPluginManager.h"
@@ -49,5 +49,5 @@ namespace DolbyIO
 	};
 }
 
-IMPLEMENT_MODULE(DolbyIO::FDolbyIOModule, DolbyIOModule)
+IMPLEMENT_MODULE(DolbyIO::FDolbyIOModule, DolbyIO)
 DEFINE_LOG_CATEGORY(LogDolbyIO);

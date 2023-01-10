@@ -2,7 +2,7 @@
 
 #include "DolbyIOSubsystem.h"
 
-#include "DolbyIO/SdkAccess.h"
+#include "DolbyIOSdkAccess.h"
 
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"

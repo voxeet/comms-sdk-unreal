@@ -12,7 +12,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGetDolbyIOTokenOutputPin, FString, Token);
 
 UCLASS(ClassGroup = "Dolby.io Comms")
-class DOLBYIOMODULE_API UGetDolbyIOToken : public UBlueprintAsyncActionBase
+class DOLBYIO_API UGetDolbyIOToken : public UBlueprintAsyncActionBase
 {
 	GENERATED_BODY()
 

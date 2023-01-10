@@ -32,7 +32,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnAudioLevelsChangedDeleg
 
 /** The Dolby.io Virtual World plugin game instance subsystem. */
 UCLASS(DisplayName = "Dolby.io Subsystem", ClassGroup = "Dolby.io Comms")
-class DOLBYIOMODULE_API UDolbyIOSubsystem : public UGameInstanceSubsystem
+class DOLBYIO_API UDolbyIOSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 

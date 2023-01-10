@@ -1,4 +1,4 @@
-#include "DolbyIO/ErrorHandler.h"
+#include "DolbyIOErrorHandler.h"
 
 #include <dolbyio/comms/sdk_exceptions.h>
 

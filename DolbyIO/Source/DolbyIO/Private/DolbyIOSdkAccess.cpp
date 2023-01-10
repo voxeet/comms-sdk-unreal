@@ -1,9 +1,9 @@
 // Copyright 2022 Dolby Laboratories
 
-#include "DolbyIO/SdkAccess.h"
+#include "DolbyIOSdkAccess.h"
 
-#include "DolbyIO/ErrorHandler.h"
-#include "DolbyIO/Logging.h"
+#include "DolbyIOErrorHandler.h"
+#include "DolbyIOLogging.h"
 #include "DolbyIOParticipantInfo.h"
 #include "DolbyIOSubsystem.h"
 

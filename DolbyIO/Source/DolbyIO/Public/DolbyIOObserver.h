@@ -24,7 +24,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnAudioLevelsChangedDelega
                                              ActiveSpeakers, const TArray<float>&, AudioLevels);
 
 UCLASS(ClassGroup = "Dolby.io Comms", DisplayName = "Dolby.io Observer", Meta = (BlueprintSpawnableComponent))
-class DOLBYIOMODULE_API UDolbyIOObserver : public UActorComponent
+class DOLBYIO_API UDolbyIOObserver : public UActorComponent
 {
 	GENERATED_BODY()
 
