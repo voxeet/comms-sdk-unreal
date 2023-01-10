@@ -8,7 +8,6 @@
 
 #include "Delegates/Delegate.h"
 #include "Engine/EngineTypes.h"
-#include "HAL/ThreadSafeBool.h"
 
 #include "DolbyIOSubsystem.generated.h"
 
