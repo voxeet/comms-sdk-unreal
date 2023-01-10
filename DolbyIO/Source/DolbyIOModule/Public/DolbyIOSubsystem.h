@@ -101,7 +101,7 @@ public:
 	 * <img src="https://files.readme.io/db8d689-connect_to_demo_conference.PNG">
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
-	void ConnectToDemoConference();
+	void DemoConference();
 
 	/** Disconnects from the current conference. Triggers [On Disconnected](#on-disconnected) when complete.
 	 *

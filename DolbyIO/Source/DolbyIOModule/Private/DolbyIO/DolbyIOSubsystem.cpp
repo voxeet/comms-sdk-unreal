@@ -40,9 +40,9 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 {
 	CppSdk->Connect(ConferenceName, UserName, ExternalID, AvatarURL);
 }
-void UDolbyIOSubsystem::ConnectToDemoConference()
+void UDolbyIOSubsystem::DemoConference()
 {
-	CppSdk->ConnectToDemoConference();
+	CppSdk->DemoConference();
 }
 void UDolbyIOSubsystem::Disconnect()
 {
