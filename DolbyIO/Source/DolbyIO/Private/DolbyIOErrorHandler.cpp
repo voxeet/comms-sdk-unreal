@@ -1,3 +1,5 @@
+// Copyright 2023 Dolby Laboratories
+
 #include "DolbyIOErrorHandler.h"
 
 #include <dolbyio/comms/sdk_exceptions.h>

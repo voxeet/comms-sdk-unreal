@@ -1,4 +1,4 @@
-// Copyright 2022 Dolby Laboratories
+// Copyright 2023 Dolby Laboratories
 
 using System.IO;
 using UnrealBuildTool;
