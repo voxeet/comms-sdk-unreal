@@ -11,7 +11,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGetDolbyIOTokenOutputPin, FString, Token);
 
-UCLASS(Category = "Dolby.io")
+UCLASS(ClassGroup = "Dolby.io Comms")
 class DOLBYIOMODULE_API UGetDolbyIOToken : public UBlueprintAsyncActionBase
 {
 	GENERATED_BODY()
@@ -32,7 +32,7 @@ public:
 	UFUNCTION(BlueprintCallable,
 	          meta = (BlueprintInternalUseOnly = "true", DisplayName = "Get Dolby.io Token",
 	                  WorldContext = "WorldContextObject"),
-	          Category = "Dolby.io")
+	          Category = "Dolby.io Comms")
 	static UGetDolbyIOToken* GetDolbyIOToken(UObject* WorldContextObject, const FString& AppKey,
 	                                         const FString& AppSecret, int TokenExpirationTimeInSeconds = 3600);
 

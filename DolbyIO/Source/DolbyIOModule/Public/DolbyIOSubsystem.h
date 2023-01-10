@@ -31,7 +31,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnAudioLevelsChangedDeleg
                                              ActiveSpeakers, const TArray<float>&, AudioLevels);
 
 /** The Dolby.io Virtual World plugin game instance subsystem. */
-UCLASS(DisplayName = "Dolby.io Subsystem", Category = "Dolby.io")
+UCLASS(DisplayName = "Dolby.io Subsystem", ClassGroup = "Dolby.io Comms")
 class DOLBYIOMODULE_API UDolbyIOSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
@@ -57,7 +57,7 @@ public:
 	 * <img src="https://files.readme.io/e44088b-on_token_needed.PNG">
 	 * @param Token - The client access token.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetToken(const FString& Token);
 
 	/** Connects to a conference. The method triggers [On Connected](#on-connected) if successful.
@@ -68,7 +68,7 @@ public:
 	 * remains the same across all sessions.
 	 * @param AvatarURL - The URL of the participant's avatar.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void Connect(const FString& ConferenceName = "unreal", const FString& UserName = "", const FString& ExternalID = "",
 	             const FString& AvatarURL = "");
 
@@ -80,7 +80,7 @@ public:
 	 * Example:
 	 * <img src="https://files.readme.io/db8d689-connect_to_demo_conference.PNG">
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void ConnectToDemoConference();
 
 	/** Disconnects from the current conference. Triggers [On Disconnected](#on-disconnected) when complete.
@@ -88,7 +88,7 @@ public:
 	 * Example:
 	 * <img src="https://files.readme.io/61921d2-disconnect.PNG">
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void Disconnect();
 
 	/** Sets the spatial environment scale. The larger the scale, the longer the distance at which the spatial audio
@@ -96,12 +96,12 @@ public:
 	 * "1.0" means that audio will fall completely silent at a distance of 10000 units (10000 cm/100 m).
 	 * @param SpatialEnvironmentScale - The scale as a floating point number.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetSpatialEnvironmentScale(float SpatialEnvironmentScale = 1.0f);
 
 	/** Mutes audio input.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void MuteInput();
 
 	/** Unmutes audio input.
@@ -109,12 +109,12 @@ public:
 	 * Example:
 	 * <img src=https://files.readme.io/9c112d7-mute_input.PNG">
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteInput();
 
 	/** Mutes audio output.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void MuteOutput();
 
 	/** Unmutes audio output.
@@ -122,7 +122,7 @@ public:
 	 * Example:
 	 * <img src="https://files.readme.io/140e9f7-mute_output.PNG">
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteOutput();
 
 	/** Gets audio levels for all speaking participants. Triggers [On Audio Levels Changed](#on-audio-levels-changed) if
@@ -131,7 +131,7 @@ public:
 	 * Example:
 	 * <img src="https://files.readme.io/0786858-get_audio_levels.PNG">
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetAudioLevels();
 
 	/** Updates the position and rotation of the listener for spatial audio purposes. Calling this function even once
@@ -143,7 +143,7 @@ public:
 	 * @param Position - The location of the listener.
 	 * @param Rotation - The rotation of the listener.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io")
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UpdateViewPoint(const FVector& Position, const FRotator& Rotation);
 
 	/** Triggered when an initial or refreshed [client access
@@ -154,7 +154,7 @@ public:
 	 * Example:
 	 * <img src="https://files.readme.io/e44088b-on_token_needed.PNG">
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io")
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnTokenNeededDelegate OnTokenNeeded;
 
 	/** Triggered when the plugin is successfully initialized after calling the [Set Token](#set-token) function.
@@ -164,7 +164,7 @@ public:
 	 * Example:
 	 * <img src="https://files.readme.io/124a74c-on_initialized.PNG">
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io")
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnInitializedDelegate OnInitialized;
 
 	/** Triggered when the client is successfully connected to the conference after calling the [Connect](#connect)
@@ -174,7 +174,7 @@ public:
 	 * <img src="https://files.readme.io/d6744e0-on_connected.PNG">
 	 * @param LocalParticipant - A string holding the ID of the local participant.
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io")
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnConnectedDelegate OnConnected;
 
 	/** Triggered when the client is disconnected from the conference by any means; in particular, by the
@@ -183,7 +183,7 @@ public:
 	 * Example:
 	 * <img src="https://files.readme.io/8322383-on_disconnected.PNG">
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io")
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnDisconnectedDelegate OnDisconnected;
 
 	/** Triggered when remote participants are added to or removed from the conference.
@@ -192,7 +192,7 @@ public:
 	 * <img src="https://files.readme.io/9b036e5-on_participant_added.PNG">
 	 * @param RemoteParticipants - A set of strings holding the IDs of remote participants.
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io")
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnParticipantAddedDelegate OnParticipantAdded;
 
 	/** Triggered when a remote participant leaves the conference.
@@ -202,7 +202,7 @@ public:
 	 * @param ParticipantInfo - Contains the current status of a conference participant and information whether the
 	 * participant's audio is enabled.
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io")
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnParticipantLeftDelegate OnParticipantLeft;
 
 	/** Triggered when participants start or stop speaking.
@@ -211,7 +211,7 @@ public:
 	 * <img src="https://files.readme.io/45fb4dd-on_active_speakers_changed.PNG">
 	 * @param ActiveSpeakers - The IDs of the current active speakers.
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io")
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnActiveSpeakersChangedDelegate OnActiveSpeakersChanged;
 
 	/** Triggered when there are new audio levels available after calling the [Get Audio Levels](#get-audio-levels)
@@ -224,14 +224,13 @@ public:
 	 * corresponds to the order of ActiveSpeakers. A value of 0.0 represents silence and a value of 1.0 represents the
 	 * maximum volume.
 	 */
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io")
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnAudioLevelsChangedDelegate OnAudioLevelsChanged;
 
 private:
-	void UpdateViewPointUsingFirstPlayer();
-
-	// UGameInstanceSubsystem
 	void Initialize(FSubsystemCollectionBase&) override;
+
+	void UpdateViewPointUsingFirstPlayer();
 
 	TSharedPtr<DolbyIO::FSdkAccess> CppSdk;
 
