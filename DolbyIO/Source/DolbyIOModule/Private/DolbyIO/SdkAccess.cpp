@@ -101,9 +101,7 @@ namespace DolbyIO
 		        [this](auto)
 		        {
 			        return Sdk->conference().add_event_handler(
-			            [this](const participant_added& Event)
-			            {
-				            RemoteParticipantIDs.Add(Event.participant.user_id.c_str());
+			            [this](const participant_added& Event) {
 				            BroadcastEvent(DolbyIOSubsystem.OnParticipantAdded,
 				                           ToUnrealParticipantInfo(Event.participant));
 			            });
@@ -114,15 +112,10 @@ namespace DolbyIO
 			        return Sdk->conference().add_event_handler(
 			            [this](const participant_updated& Event)
 			            {
-				            const auto& ParticipantStatus = Event.participant.status;
-				            if (ParticipantStatus)
+				            if (Event.participant.status && *Event.participant.status == participant_status::left)
 				            {
-					            if (*ParticipantStatus == participant_status::left)
-					            {
-						            RemoteParticipantIDs.Remove(Event.participant.user_id.c_str());
-						            BroadcastEvent(DolbyIOSubsystem.OnParticipantLeft,
-						                           ToUnrealParticipantInfo(Event.participant));
-					            }
+					            BroadcastEvent(DolbyIOSubsystem.OnParticipantLeft,
+					                           ToUnrealParticipantInfo(Event.participant));
 				            }
 			            });
 		        })
@@ -200,7 +193,7 @@ namespace DolbyIO
 		switch (ConferenceStatus)
 		{
 			case conference_status::joined:
-				BroadcastEvent(DolbyIOSubsystem.OnConnected, LocalParticipantID);
+				BroadcastEvent(DolbyIOSubsystem.OnConnected, LocalParticipantID.c_str());
 				break;
 			case conference_status::left:
 			case conference_status::error:
@@ -222,9 +215,6 @@ namespace DolbyIO
 			return;
 		}
 
-		RemoteParticipantIDs.Empty();
-		bIsDemo = false;
-
 		using namespace dolbyio::comms::services;
 		services::session::user_info UserInfo{};
 		UserInfo.name = ToStdString(UserName);
@@ -234,17 +224,13 @@ namespace DolbyIO
 		Sdk->session()
 		    .open(MoveTemp(UserInfo))
 		    .then(
-		        [this, ConferenceName](auto&& User)
+		        [this, ConferenceName = ToStdString(ConferenceName)](auto&& User)
 		        {
-			        if (User.participant_id)
-			        {
-				        LocalParticipantID = User.participant_id->c_str();
-			        }
+			        LocalParticipantID = User.participant_id.value_or("");
 
 			        conference::conference_options Options{};
-			        Options.alias = ToStdString(ConferenceName);
+			        Options.alias = ConferenceName;
 			        Options.params.spatial_audio_style = spatial_audio_style::shared;
-
 			        return Sdk->conference().create(Options);
 		        })
 		    .then(
@@ -265,26 +251,20 @@ namespace DolbyIO
 		    .on_error(MakeErrorHandler(__LINE__));
 	}
 
-	void FSdkAccess::ConnectToDemoConference()
+	void FSdkAccess::DemoConference()
 	{
 		if (!CanConnect())
 		{
 			return;
 		}
 
-		RemoteParticipantIDs.Empty();
-		bIsDemo = true;
-
 		Sdk->session()
 		    .open({})
 		    .then(
 		        [this](auto&& User)
 		        {
-			        if (User.participant_id)
-			        {
-				        LocalParticipantID = User.participant_id->c_str();
-			        }
-			        return Sdk->conference().demo();
+			        LocalParticipantID = User.participant_id.value_or("");
+			        return Sdk->conference().demo(spatial_audio_style::shared);
 		        })
 		    .then(
 		        [this](auto&&)
@@ -402,22 +382,7 @@ namespace DolbyIO
 		}
 
 		spatial_audio_batch_update Update;
-
-		if (bIsDemo)
-		{
-			static float Angle = 0;
-			Angle += 0.01f;
-			for (const auto& Participant : RemoteParticipantIDs)
-			{
-				Update.set_spatial_position(ToStdString(Participant),
-				                            Participant[0] == '1'
-				                                ? spatial_position{FMath::Sin(Angle) * 100, FMath::Cos(Angle) * 100, 0}
-				                            : Participant[0] == '2' ? spatial_position{0, -100, 0}
-				                                                    : spatial_position{0, 100, 0});
-			}
-		}
-
-		Update.set_spatial_position(ToStdString(LocalParticipantID), {Position.X, Position.Y, Position.Z});
+		Update.set_spatial_position(LocalParticipantID, {Position.X, Position.Y, Position.Z});
 		// The SDK expects the direction values to mean rotations around the {x,y,z} axes as specified by the
 		// environment. In Unreal, rotation around x is roll (because x is forward), y is pitch and z is yaw.
 		Update.set_spatial_direction({Rotation.Roll, Rotation.Pitch, Rotation.Yaw});
