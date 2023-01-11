@@ -10,11 +10,10 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 
-UGetDolbyIOToken* UGetDolbyIOToken::GetDolbyIOToken(UObject* WorldContextObject, const FString& AppKey,
-                                                    const FString& AppSecret, int TokenExpirationTimeInSeconds)
+UGetDolbyIOToken* UGetDolbyIOToken::GetDolbyIOToken(const FString& AppKey, const FString& AppSecret,
+                                                    int TokenExpirationTimeInSeconds)
 {
 	UGetDolbyIOToken* Self = NewObject<UGetDolbyIOToken>();
-	Self->WorldContextObject = WorldContextObject;
 	Self->AppKey = AppKey;
 	Self->AppSecret = AppSecret;
 	Self->TokenExpirationTimeInSeconds = TokenExpirationTimeInSeconds;

@@ -23,7 +23,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnActiveSpeakersChangedDele
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnAudioLevelsChangedDelegate, const TArray<FString>&,
                                              ActiveSpeakers, const TArray<float>&, AudioLevels);
 
-UCLASS(ClassGroup = "Dolby.io Comms", DisplayName = "Dolby.io Observer", Meta = (BlueprintSpawnableComponent))
+UCLASS(ClassGroup = "Dolby.io Comms",
+       Meta = (BlueprintSpawnableComponent, DisplayName = "Dolby.io Observer",
+               ToolTip = "Component to use for easy handling of Dolby.io subsystem events."))
 class DOLBYIO_API UDolbyIOObserver : public UActorComponent
 {
 	GENERATED_BODY()
@@ -31,84 +33,43 @@ class DOLBYIO_API UDolbyIOObserver : public UActorComponent
 public:
 	UDolbyIOObserver();
 
-	/** Triggered when an initial or refreshed [client access
-	 * token](https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) is needed,
-	 * which happens when the game starts or when a refresh token is requested. After receiving this event, obtain a
-	 * token for your Dolby.io application and call the [Set Token](#set-token) function.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/e44088b-on_token_needed.PNG">
+	/** Triggered when an initial or refreshed client access token
+	 * (https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) is needed, which
+	 * happens when the game starts or when a refresh token is requested. After receiving this event, obtain a token for
+	 * your Dolby.io application and call the Dolby.io Subsystem's Set Token function.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnTokenNeededDelegate OnTokenNeeded;
 
-	/** Triggered when the plugin is successfully initialized after calling the [Set Token](#set-token) function.
-	 * After receiving this event, the plugin is ready for use. You can now, for example, call this Blueprint's
-	 * [Connect](#connect) function. Once connected, the [On Connected](#on-connected) event will trigger.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/124a74c-on_initialized.PNG">
+	/** Triggered when the plugin is successfully initialized after calling the Set Token function. After receiving this
+	 * event, the plugin is ready for use. You can now, for example, call the Dolby.io Subsystem's Connect function.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnInitializedDelegate OnInitialized;
 
-	/** Triggered when the client is successfully connected to the conference after calling the [Connect](#connect)
-	 * function.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/d6744e0-on_connected.PNG">
-	 * @param LocalParticipant - A string holding the ID of the local participant.
-	 */
+	/** Triggered when the client is successfully connected to the conference after calling the Connect function. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnConnectedDelegate OnConnected;
 
-	/** Triggered when the client is disconnected from the conference by any means; in particular, by the
-	 * [Disconnect](#disconnect) function.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/8322383-on_disconnected.PNG">
+	/** Triggered when the client is disconnected from the conference by any means; in particular, by the Disconnect
+	 * function.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnDisconnectedDelegate OnDisconnected;
 
-	/** Triggered when remote participants are added to or removed from the conference.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/9b036e5-on_participant_added.PNG">
-	 * @param RemoteParticipants - A set of strings holding the IDs of remote participants.
-	 */
+	/** Triggered when a remote participant is added to the conference. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnParticipantAddedDelegate OnParticipantAdded;
 
-	/** Triggered when a remote participant leaves the conference.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/f4af244-on_participant_left.PNG">
-	 * @param ParticipantInfo - Contains the current status of a conference participant and information whether the
-	 * participant's audio is enabled.
-	 */
+	/** Triggered when a remote participant leaves the conference. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnParticipantLeftDelegate OnParticipantLeft;
 
-	/** Triggered when participants start or stop speaking.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/45fb4dd-on_active_speakers_changed.PNG">
-	 * @param ActiveSpeakers - The IDs of the current active speakers.
-	 */
+	/** Triggered when participants start or stop speaking. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnActiveSpeakersChangedDelegate OnActiveSpeakersChanged;
 
-	/** Triggered when there are new audio levels available after calling the [Get Audio Levels](#get-audio-levels)
-	 * function.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/fdb5789-on_audio_levels_changed.PNG">
-	 * @param ActiveSpeakers - The IDs of the current active speakers.
-	 * @param AudioLevels - A floating point number representing each participant's audio level. The order of levels
-	 * corresponds to the order of ActiveSpeakers. A value of 0.0 represents silence and a value of 1.0 represents the
-	 * maximum volume.
-	 */
+	/** Triggered when there are new audio levels available after calling the Get Audio Levels function. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnAudioLevelsChangedDelegate OnAudioLevelsChanged;
 

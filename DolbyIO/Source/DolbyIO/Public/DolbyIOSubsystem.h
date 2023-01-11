@@ -29,37 +29,28 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnActiveSpeakersChangedDel
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnAudioLevelsChangedDelegate, const TArray<FString>&,
                                              ActiveSpeakers, const TArray<float>&, AudioLevels);
 
-/** The Dolby.io Virtual World plugin game instance subsystem. */
-UCLASS(DisplayName = "Dolby.io Subsystem", ClassGroup = "Dolby.io Comms")
+UCLASS(DisplayName = "Dolby.io Subsystem")
 class DOLBYIO_API UDolbyIOSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 
 public:
-	/*
+	/** Initializes or refreshes the client access token. Initializes the plugin unless already initialized.
 	 *
-	 * Functions for controlling the plugin's behavior, callable from Blueprints.
+	 * Successful initialization triggers the On Initialized event.
 	 *
-	 */
-
-	/** Initializes or refreshes the client access token. The function takes the token as a parameter and initializes
-	 * the plugin unless already initialized. Successful initialization triggers the [On Initialized](#on-initialized)
-	 * event.
+	 * For quick testing, you can manually obtain a token from the Dolby.io dashboard (https://dashboard.dolby.io) and
+	 * paste it directly into the node or use the Get Dolby.io Token function.
 	 *
-	 * For quick testing, you can manually obtain a token from the [Dolby.io dashboard](https://dashboard.dolby.io/) and
-	 * paste it directly into the node.
-	 *
-	 * You may use the [Set Token Using Key and Secret](#set-token-using-key-and-secret) function instead for
-	 * convenience during onboarding.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/e44088b-on_token_needed.PNG">
 	 * @param Token - The client access token.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetToken(const FString& Token);
 
-	/** Connects to a conference. The method triggers [On Connected](#on-connected) if successful.
+	/** Connects to a conference.
+	 *
+	 * Triggers On Connected if successful.
+	 *
 	 * @param ConferenceName - The conference name. Must not be empty.
 	 * @param UserName - The name of the participant.
 	 * @param ExternalID - The external unique identifier that the customer's application can add to the participant
@@ -71,158 +62,83 @@ public:
 	void Connect(const FString& ConferenceName = "unreal", const FString& UserName = "", const FString& ExternalID = "",
 	             const FString& AvatarURL = "");
 
-	/** Connects to a demo conference, which automatically brings in 3 invisible bots into the conference as a quick way
-	 * to validate the connection to the service with audio functionality. One of the bots is placed to the left of
-	 * point {0, 0, 0} in the level, one is placed to the right and one circles around that point. The method triggers
-	 * [On Connected](#on-connected) if successful.
+	/** Connects to a demo conference.
 	 *
-	 * Example:
-	 * <img src="https://files.readme.io/db8d689-connect_to_demo_conference.PNG">
+	 * The demo automatically brings in 3 invisible bots into the conference as a quick way
+	 * to validate the connection to the service with audio functionality. The bots are placed at the following in-game
+	 * coordinates: {250, -500, 0}, {0, 0, 0} and {250, 500, 0}.
+	 *
+	 * Triggers On Connected if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void DemoConference();
 
-	/** Disconnects from the current conference. Triggers [On Disconnected](#on-disconnected) when complete.
+	/** Disconnects from the current conference.
 	 *
-	 * Example:
-	 * <img src="https://files.readme.io/61921d2-disconnect.PNG">
+	 * Triggers On Disconnected when complete.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void Disconnect();
 
-	/** Sets the spatial environment scale. The larger the scale, the longer the distance at which the spatial audio
+	/** Sets the spatial environment scale.
+	 *
+	 * The larger the scale, the longer the distance at which the spatial audio
 	 * attenuates. To get the best experience, the scale should be set separately for each level. The default value of
 	 * "1.0" means that audio will fall completely silent at a distance of 10000 units (10000 cm/100 m).
+	 *
 	 * @param SpatialEnvironmentScale - The scale as a floating point number.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetSpatialEnvironmentScale(float SpatialEnvironmentScale = 1.0f);
 
-	/** Mutes audio input.
-	 */
+	/** Mutes audio input. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void MuteInput();
 
-	/** Unmutes audio input.
-	 *
-	 * Example:
-	 * <img src=https://files.readme.io/9c112d7-mute_input.PNG">
-	 */
+	/** Unmutes audio input. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteInput();
 
-	/** Mutes audio output.
-	 */
+	/** Mutes audio output. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void MuteOutput();
 
-	/** Unmutes audio output.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/140e9f7-mute_output.PNG">
-	 */
+	/** Unmutes audio output. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteOutput();
 
-	/** Gets audio levels for all speaking participants. Triggers [On Audio Levels Changed](#on-audio-levels-changed) if
-	 * successful.
+	/** Gets audio levels for all speaking participants.
 	 *
-	 * Example:
-	 * <img src="https://files.readme.io/0786858-get_audio_levels.PNG">
+	 * Triggers On Audio Levels Changed if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetAudioLevels();
 
-	/** Updates the position and rotation of the listener for spatial audio purposes. Calling this function even once
-	 * disables the default behavior, which is to automatically use the location and rotation of the first player
-	 * controller.
+	/** Updates the position and rotation of the listener for spatial audio purposes.
 	 *
-	 * Example:
-	 * <img src="https://files.readme.io/1bfa225-update_view_point.PNG">
+	 * Calling this function even once disables the default behavior, which is to automatically use the location and
+	 * rotation of the first player controller.
+	 *
 	 * @param Position - The location of the listener.
 	 * @param Rotation - The rotation of the listener.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UpdateViewPoint(const FVector& Position, const FRotator& Rotation);
 
-	/** Triggered when an initial or refreshed [client access
-	 * token](https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) is needed,
-	 * which happens when the game starts or when a refresh token is requested. After receiving this event, obtain a
-	 * token for your Dolby.io application and call the [Set Token](#set-token) function.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/e44088b-on_token_needed.PNG">
-	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnTokenNeededDelegate OnTokenNeeded;
-
-	/** Triggered when the plugin is successfully initialized after calling the [Set Token](#set-token) function.
-	 * After receiving this event, the plugin is ready for use. You can now, for example, call this Blueprint's
-	 * [Connect](#connect) function. Once connected, the [On Connected](#on-connected) event will trigger.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/124a74c-on_initialized.PNG">
-	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnInitializedDelegate OnInitialized;
-
-	/** Triggered when the client is successfully connected to the conference after calling the [Connect](#connect)
-	 * function.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/d6744e0-on_connected.PNG">
-	 * @param LocalParticipant - A string holding the ID of the local participant.
-	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnConnectedDelegate OnConnected;
-
-	/** Triggered when the client is disconnected from the conference by any means; in particular, by the
-	 * [Disconnect](#disconnect) function.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/8322383-on_disconnected.PNG">
-	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnDisconnectedDelegate OnDisconnected;
-
-	/** Triggered when remote participants are added to or removed from the conference.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/9b036e5-on_participant_added.PNG">
-	 * @param RemoteParticipants - A set of strings holding the IDs of remote participants.
-	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnParticipantAddedDelegate OnParticipantAdded;
-
-	/** Triggered when a remote participant leaves the conference.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/f4af244-on_participant_left.PNG">
-	 * @param ParticipantInfo - Contains the current status of a conference participant and information whether the
-	 * participant's audio is enabled.
-	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnParticipantLeftDelegate OnParticipantLeft;
-
-	/** Triggered when participants start or stop speaking.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/45fb4dd-on_active_speakers_changed.PNG">
-	 * @param ActiveSpeakers - The IDs of the current active speakers.
-	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnActiveSpeakersChangedDelegate OnActiveSpeakersChanged;
-
-	/** Triggered when there are new audio levels available after calling the [Get Audio Levels](#get-audio-levels)
-	 * function.
-	 *
-	 * Example:
-	 * <img src="https://files.readme.io/fdb5789-on_audio_levels_changed.PNG">
-	 * @param ActiveSpeakers - The IDs of the current active speakers.
-	 * @param AudioLevels - A floating point number representing each participant's audio level. The order of levels
-	 * corresponds to the order of ActiveSpeakers. A value of 0.0 represents silence and a value of 1.0 represents the
-	 * maximum volume.
-	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnAudioLevelsChangedDelegate OnAudioLevelsChanged;
 
