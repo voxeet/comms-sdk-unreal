@@ -40,7 +40,8 @@ namespace DolbyIO
 
 		void GetAudioLevels();
 
-		void UpdateViewPoint(const FVector&, const FRotator&);
+		void SetLocalPlayerLocation(const FVector&);
+		void SetLocalPlayerRotation(const FRotator&);
 
 	private:
 		void Initialize(const FString& Token);

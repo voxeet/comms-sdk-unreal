@@ -114,16 +114,25 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetAudioLevels();
 
-	/** Updates the position and rotation of the listener for spatial audio purposes.
+	/** Updates the location of the listener for spatial audio purposes.
 	 *
-	 * Calling this function even once disables the default behavior, which is to automatically use the location and
-	 * rotation of the first player controller.
+	 * Calling this function even once disables the default behavior, which is to automatically use the location of the
+	 * first player controller.
 	 *
-	 * @param Position - The location of the listener.
+	 * @param Location - The location of the listener.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void SetLocalPlayerLocation(const FVector& Location);
+
+	/** Updates the rotation of the listener for spatial audio purposes.
+	 *
+	 * Calling this function even once disables the default behavior, which is to automatically use the rotation of the
+	 * first player controller.
+	 *
 	 * @param Rotation - The rotation of the listener.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void UpdateViewPoint(const FVector& Position, const FRotator& Rotation);
+	void SetLocalPlayerRotation(const FRotator& Rotation);
 
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnTokenNeededDelegate OnTokenNeeded;
@@ -145,10 +154,11 @@ public:
 private:
 	void Initialize(FSubsystemCollectionBase&) override;
 
-	void UpdateViewPointUsingFirstPlayer();
+	void SetLocationUsingFirstPlayer();
+	void SetRotationUsingFirstPlayer();
 
 	TSharedPtr<DolbyIO::FSdkAccess> CppSdk;
 
-	class UGameInstance* GameInstance;
-	FTimerHandle SpatialUpdateTimerHandle;
+	FTimerHandle LocationTimerHandle;
+	FTimerHandle RotationTimerHandle;
 };

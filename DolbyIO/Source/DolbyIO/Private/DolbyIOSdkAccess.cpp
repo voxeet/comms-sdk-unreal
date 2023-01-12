@@ -69,7 +69,6 @@ namespace DolbyIO
 
 	namespace
 	{
-
 		auto ToUnrealParticipantInfo(const participant_info& Info)
 		{
 			FDolbyIOParticipantInfo Ret;
@@ -374,19 +373,30 @@ namespace DolbyIO
 		    .on_error(MakeErrorHandler(__LINE__));
 	}
 
-	void FSdkAccess::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
+	void FSdkAccess::SetLocalPlayerLocation(const FVector& Location)
 	{
 		if (!IsConnected())
 		{
 			return;
 		}
 
-		spatial_audio_batch_update Update;
-		Update.set_spatial_position(LocalParticipantID, {Position.X, Position.Y, Position.Z});
+		Sdk->conference()
+		    .set_spatial_position(LocalParticipantID, {Location.X, Location.Y, Location.Z})
+		    .on_error(MakeErrorHandler(__LINE__));
+	}
+
+	void FSdkAccess::SetLocalPlayerRotation(const FRotator& Rotation)
+	{
+		if (!IsConnected())
+		{
+			return;
+		}
+
 		// The SDK expects the direction values to mean rotations around the {x,y,z} axes as specified by the
 		// environment. In Unreal, rotation around x is roll (because x is forward), y is pitch and z is yaw.
-		Update.set_spatial_direction({Rotation.Roll, Rotation.Pitch, Rotation.Yaw});
-		Sdk->conference().update_spatial_audio_configuration(MoveTemp(Update)).on_error(MakeErrorHandler(__LINE__));
+		Sdk->conference()
+		    .set_spatial_direction({Rotation.Roll, Rotation.Pitch, Rotation.Yaw})
+		    .on_error(MakeErrorHandler(__LINE__));
 	}
 
 	FErrorHandler FSdkAccess::MakeErrorHandler(int Line)

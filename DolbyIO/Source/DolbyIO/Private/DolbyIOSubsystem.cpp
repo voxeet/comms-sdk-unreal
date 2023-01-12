@@ -13,13 +13,10 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 	CppSdk = MakeShared<DolbyIO::FSdkAccess>(*this);
-	GameInstance = GetGameInstance();
 
-	if (GameInstance)
-	{
-		GameInstance->GetTimerManager().SetTimer(SpatialUpdateTimerHandle, this,
-		                                         &UDolbyIOSubsystem::UpdateViewPointUsingFirstPlayer, 0.03, true);
-	}
+	auto& TimerManager = GetGameInstance()->GetTimerManager();
+	TimerManager.SetTimer(LocationTimerHandle, this, &UDolbyIOSubsystem::SetLocationUsingFirstPlayer, 0.1, true);
+	TimerManager.SetTimer(RotationTimerHandle, this, &UDolbyIOSubsystem::SetRotationUsingFirstPlayer, 0.01, true);
 
 	OnTokenNeeded.Broadcast();
 }
@@ -41,6 +38,10 @@ void UDolbyIOSubsystem::Disconnect()
 {
 	CppSdk->Disconnect();
 }
+void UDolbyIOSubsystem::SetSpatialEnvironmentScale(float SpatialEnvironmentScale)
+{
+	CppSdk->SetSpatialEnvironmentScale(SpatialEnvironmentScale);
+}
 void UDolbyIOSubsystem::MuteInput()
 {
 	CppSdk->MuteInput();
@@ -61,33 +62,39 @@ void UDolbyIOSubsystem::GetAudioLevels()
 {
 	CppSdk->GetAudioLevels();
 }
-void UDolbyIOSubsystem::SetSpatialEnvironmentScale(float SpatialEnvironmentScale)
+void UDolbyIOSubsystem::SetLocalPlayerLocation(const FVector& Location)
 {
-	CppSdk->SetSpatialEnvironmentScale(SpatialEnvironmentScale);
-}
-
-void UDolbyIOSubsystem::UpdateViewPoint(const FVector& Position, const FRotator& Rotation)
-{
-	if (SpatialUpdateTimerHandle.IsValid())
+	if (LocationTimerHandle.IsValid())
 	{
-		GameInstance->GetTimerManager().ClearTimer(SpatialUpdateTimerHandle);
+		GetGameInstance()->GetTimerManager().ClearTimer(LocationTimerHandle);
 	}
-
-	CppSdk->UpdateViewPoint(Position, Rotation);
+	CppSdk->SetLocalPlayerLocation(Location);
 }
-void UDolbyIOSubsystem::UpdateViewPointUsingFirstPlayer()
+void UDolbyIOSubsystem::SetLocalPlayerRotation(const FRotator& Rotation)
 {
-	if (GameInstance)
+	if (RotationTimerHandle.IsValid())
 	{
-		if (const auto World = GameInstance->GetWorld())
+		GetGameInstance()->GetTimerManager().ClearTimer(RotationTimerHandle);
+	}
+	CppSdk->SetLocalPlayerRotation(Rotation);
+}
+void UDolbyIOSubsystem::SetLocationUsingFirstPlayer()
+{
+	if (const auto World = GetGameInstance()->GetWorld())
+	{
+		if (const auto FirstPlayerController = World->GetFirstPlayerController())
 		{
-			if (const auto FirstPlayerController = World->GetFirstPlayerController())
-			{
-				FVector Position;
-				FRotator Rotation;
-				FirstPlayerController->GetActorEyesViewPoint(Position, Rotation);
-				CppSdk->UpdateViewPoint(Position, Rotation);
-			}
+			CppSdk->SetLocalPlayerLocation(FirstPlayerController->GetPawn()->GetActorLocation());
+		}
+	}
+}
+void UDolbyIOSubsystem::SetRotationUsingFirstPlayer()
+{
+	if (const auto World = GetGameInstance()->GetWorld())
+	{
+		if (const auto FirstPlayerController = World->GetFirstPlayerController())
+		{
+			CppSdk->SetLocalPlayerRotation(FirstPlayerController->GetPawn()->GetActorRotation());
 		}
 	}
 }
