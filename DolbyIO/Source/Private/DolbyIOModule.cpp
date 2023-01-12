@@ -14,8 +14,8 @@ class FDolbyIOModule final : public IModuleInterface
 public:
 	void StartupModule() override
 	{
-		const FString BaseDir = FPaths::Combine(*IPluginManager::Get().FindPlugin("DolbyIO")->GetBaseDir(),
-		                                        TEXT("Source/ThirdParty/sdk-release"));
+		const FString BaseDir =
+		    FPaths::Combine(*IPluginManager::Get().FindPlugin("DolbyIO")->GetBaseDir(), TEXT("sdk-release"));
 #if PLATFORM_WINDOWS
 		LoadDll(BaseDir, "bin/avutil-56.dll");
 		LoadDll(BaseDir, "bin/dvclient.dll");

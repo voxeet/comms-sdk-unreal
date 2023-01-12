@@ -4,7 +4,7 @@ on: push
 
 env:
   CPP_SDK_TAG: "2.3.0-alpha.5"
-  CPP_SDK_DESTINATION: "DolbyIO/Source/ThirdParty"
+  CPP_SDK_DESTINATION: "DolbyIO"
   CPP_SDK_URL: "https://github.com/DolbyIO/comms-sdk-cpp/releases/download"
   UNREAL_PLUGIN_OUTPUT: "Build/DolbyIO"
   RETENTION: 8

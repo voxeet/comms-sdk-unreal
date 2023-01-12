@@ -15,7 +15,7 @@ public class DolbyIO : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 		    new string[] { "Core", "CoreUObject", "Engine", "HTTP", "Json", "Projects" });
 
-		string SdkDir = Path.Combine("$(PluginDir)", "Source", "ThirdParty", "sdk-release");
+		string SdkDir = Path.Combine("$(PluginDir)", "sdk-release");
 		PublicIncludePaths.Add(Path.Combine(SdkDir, "include"));
 		string LibDir = Path.Combine(SdkDir, "lib");
 
