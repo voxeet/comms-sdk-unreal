@@ -7,18 +7,7 @@
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Misc/Base64.h"
-#include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
-
-UGetDolbyIOToken* UGetDolbyIOToken::GetDolbyIOToken(const FString& AppKey, const FString& AppSecret,
-                                                    int TokenExpirationTimeInSeconds)
-{
-	UGetDolbyIOToken* Self = NewObject<UGetDolbyIOToken>();
-	Self->AppKey = AppKey;
-	Self->AppSecret = AppSecret;
-	Self->TokenExpirationTimeInSeconds = TokenExpirationTimeInSeconds;
-	return Self;
-}
 
 void UGetDolbyIOToken::Activate()
 {
@@ -63,4 +52,14 @@ void UGetDolbyIOToken::OnTokenObtained(FHttpRequestPtr, FHttpResponsePtr Respons
 	{
 		UE_LOG(LogDolbyIO, Error, TEXT("Could not get access token - verify app key and secret and validity"));
 	}
+}
+
+UGetDolbyIOToken* UGetDolbyIOToken::GetDolbyIOToken(const FString& AppKey, const FString& AppSecret,
+                                                    int TokenExpirationTimeInSeconds)
+{
+	UGetDolbyIOToken* Self = NewObject<UGetDolbyIOToken>();
+	Self->AppKey = AppKey;
+	Self->AppSecret = AppSecret;
+	Self->TokenExpirationTimeInSeconds = TokenExpirationTimeInSeconds;
+	return Self;
 }

@@ -5,7 +5,6 @@
 #include "DolbyIOSubsystem.h"
 
 #include "Async/Async.h"
-#include "Engine/GameInstance.h"
 #include "Engine/World.h"
 
 UDolbyIOObserver::UDolbyIOObserver()
@@ -15,25 +14,18 @@ UDolbyIOObserver::UDolbyIOObserver()
 
 void UDolbyIOObserver::InitializeComponent()
 {
-	if (const auto World = GetWorld())
+	if (UGameInstance* GameInstance = GetWorld()->GetGameInstance())
 	{
-		if (const auto GameInstance = World->GetGameInstance())
-		{
-			if (const auto DolbyIOSubsystem = GameInstance->GetSubsystem<UDolbyIOSubsystem>())
-			{
-				DolbyIOSubsystem->OnTokenNeeded.AddDynamic(this, &UDolbyIOObserver::FwdOnTokenNeeded);
-				DolbyIOSubsystem->OnInitialized.AddDynamic(this, &UDolbyIOObserver::FwdOnInitialized);
-				DolbyIOSubsystem->OnConnected.AddDynamic(this, &UDolbyIOObserver::FwdOnConnected);
-				DolbyIOSubsystem->OnDisconnected.AddDynamic(this, &UDolbyIOObserver::FwdOnDisconnected);
-				DolbyIOSubsystem->OnParticipantAdded.AddDynamic(this, &UDolbyIOObserver::FwdOnParticipantAdded);
-				DolbyIOSubsystem->OnParticipantLeft.AddDynamic(this, &UDolbyIOObserver::FwdOnParticipantLeft);
-				DolbyIOSubsystem->OnActiveSpeakersChanged.AddDynamic(this,
-				                                                     &UDolbyIOObserver::FwdOnActiveSpeakersChanged);
-				DolbyIOSubsystem->OnAudioLevelsChanged.AddDynamic(this, &UDolbyIOObserver::FwdOnAudioLevelsChanged);
-
-				FwdOnTokenNeeded();
-			}
-		}
+		UDolbyIOSubsystem* DolbyIOSubsystem = GameInstance->GetSubsystem<UDolbyIOSubsystem>();
+		DolbyIOSubsystem->OnTokenNeeded.AddDynamic(this, &UDolbyIOObserver::FwdOnTokenNeeded);
+		DolbyIOSubsystem->OnInitialized.AddDynamic(this, &UDolbyIOObserver::FwdOnInitialized);
+		DolbyIOSubsystem->OnConnected.AddDynamic(this, &UDolbyIOObserver::FwdOnConnected);
+		DolbyIOSubsystem->OnDisconnected.AddDynamic(this, &UDolbyIOObserver::FwdOnDisconnected);
+		DolbyIOSubsystem->OnParticipantAdded.AddDynamic(this, &UDolbyIOObserver::FwdOnParticipantAdded);
+		DolbyIOSubsystem->OnParticipantLeft.AddDynamic(this, &UDolbyIOObserver::FwdOnParticipantLeft);
+		DolbyIOSubsystem->OnActiveSpeakersChanged.AddDynamic(this, &UDolbyIOObserver::FwdOnActiveSpeakersChanged);
+		DolbyIOSubsystem->OnAudioLevelsChanged.AddDynamic(this, &UDolbyIOObserver::FwdOnAudioLevelsChanged);
+		FwdOnTokenNeeded();
 	}
 }
 

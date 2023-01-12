@@ -6,15 +6,9 @@
 
 #include "DolbyIOParticipantInfo.h"
 
-#include "Delegates/Delegate.h"
 #include "Engine/EngineTypes.h"
 
 #include "DolbyIOSubsystem.generated.h"
-
-namespace DolbyIO
-{
-	class FSdkAccess;
-}
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSubsystemOnTokenNeededDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSubsystemOnInitializedDelegate);
@@ -28,6 +22,13 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnActiveSpeakersChangedDel
                                             ActiveSpeakers);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnAudioLevelsChangedDelegate, const TArray<FString>&,
                                              ActiveSpeakers, const TArray<float>&, AudioLevels);
+
+namespace dolbyio::comms
+{
+	enum class conference_status;
+	class refresh_token;
+	class sdk;
+}
 
 UCLASS(DisplayName = "Dolby.io Subsystem")
 class DOLBYIO_API UDolbyIOSubsystem : public UGameInstanceSubsystem
@@ -153,11 +154,37 @@ public:
 
 private:
 	void Initialize(FSubsystemCollectionBase&) override;
+	void Deinitialize() override;
+
+	bool CanConnect() const;
+	bool IsConnected() const;
+
+	void Initialize(const FString& Token);
+	void UpdateStatus(dolbyio::comms::conference_status);
+
+	void SetSpatialEnvironment();
+
+	void ToggleInputMute();
+	void ToggleOutputMute();
 
 	void SetLocationUsingFirstPlayer();
+	void SetLocalPlayerLocationImpl(const FVector& Location);
 	void SetRotationUsingFirstPlayer();
+	void SetLocalPlayerRotationImpl(const FRotator& Rotation);
 
-	TSharedPtr<DolbyIO::FSdkAccess> CppSdk;
+	template <class TDelegate, class... TArgs> void BroadcastEvent(TDelegate&, TArgs&&...);
+
+	dolbyio::comms::conference_status ConferenceStatus;
+	FString LocalParticipantID;
+
+	TSharedPtr<dolbyio::comms::sdk> Sdk;
+	TSharedPtr<dolbyio::comms::refresh_token> RefreshTokenCb;
+
+	float SpatialEnvironmentScale = 1.0f;
+
+	FThreadSafeBool bIsAlive = true;
+	bool bIsInputMuted = false;
+	bool bIsOutputMuted = false;
 
 	FTimerHandle LocationTimerHandle;
 	FTimerHandle RotationTimerHandle;

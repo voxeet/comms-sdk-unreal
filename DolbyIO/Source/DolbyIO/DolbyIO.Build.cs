@@ -37,8 +37,6 @@ public class DolbyIO : ModuleRules
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
-			PublicDefinitions.Add("DOLBYIO_COMMS_SUPPRESS_APPLE_NO_RTTI_WARNING");
-
 			string[] Libs = new string[] {
 				Path.Combine(LibDir, "libdolbyio_comms_media.dylib"),
 				Path.Combine(LibDir, "libdolbyio_comms_sdk.dylib"),

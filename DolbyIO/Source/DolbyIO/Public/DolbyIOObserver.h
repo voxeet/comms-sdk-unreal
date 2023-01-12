@@ -6,8 +6,6 @@
 
 #include "DolbyIOParticipantInfo.h"
 
-#include "Delegates/Delegate.h"
-
 #include "DolbyIOObserver.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FObserverOnTokenNeededDelegate);

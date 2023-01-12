@@ -7,51 +7,50 @@
 #include "Misc/Paths.h"
 #include "Modules/ModuleManager.h"
 
-namespace DolbyIO
+class FDolbyIOModule final : public IModuleInterface
 {
-	class FDolbyIOModule final : public IModuleInterface
+	using FDllHandle = void*;
+
+public:
+	void StartupModule() override
 	{
-	public:
-		void StartupModule() override
-		{
+		const FString BaseDir = FPaths::Combine(*IPluginManager::Get().FindPlugin("DolbyIO")->GetBaseDir(),
+		                                        TEXT("Source/ThirdParty/sdk-release"));
 #if PLATFORM_WINDOWS
-			LoadDll("bin/avutil-56.dll");
-			LoadDll("bin/dvclient.dll");
-			LoadDll("bin/dolbyio_comms_media.dll");
-			LoadDll("bin/dolbyio_comms_sdk.dll");
+		LoadDll(BaseDir, "bin/avutil-56.dll");
+		LoadDll(BaseDir, "bin/dvclient.dll");
+		LoadDll(BaseDir, "bin/dolbyio_comms_media.dll");
+		LoadDll(BaseDir, "bin/dolbyio_comms_sdk.dll");
 #elif PLATFORM_MAC
-			LoadDll("lib/libdolbyio_comms_media.dylib");
-			LoadDll("lib/libdolbyio_comms_sdk.dylib");
-			LoadDll("lib/libdvclient.dylib");
+		LoadDll(BaseDir, "lib/libdolbyio_comms_media.dylib");
+		LoadDll(BaseDir, "lib/libdolbyio_comms_sdk.dylib");
+		LoadDll(BaseDir, "lib/libdvclient.dylib");
 #endif
-		}
+	}
 
-		void ShutdownModule() override
+	void ShutdownModule() override
+	{
+		for (FDllHandle Handle : DllHandles)
 		{
-			for (auto Handle : DllHandles)
-			{
-				FPlatformProcess::FreeDllHandle(Handle);
-			}
+			FPlatformProcess::FreeDllHandle(Handle);
 		}
+	}
 
-	private:
-		void LoadDll(const FString& Dll)
+private:
+	void LoadDll(const FString& BaseDir, const FString& Dll)
+	{
+		if (FDllHandle Handle = FPlatformProcess::GetDllHandle(*FPaths::Combine(*BaseDir, *Dll)))
 		{
-			const static auto BaseDir = FPaths::Combine(*IPluginManager::Get().FindPlugin("DolbyIO")->GetBaseDir(),
-			                                            TEXT("Source/ThirdParty/sdk-release"));
-			if (const auto Handle = FPlatformProcess::GetDllHandle(*FPaths::Combine(*BaseDir, *Dll)))
-			{
-				DllHandles.Add(Handle);
-			}
-			else
-			{
-				UE_LOG(LogDolbyIO, Fatal, TEXT("Failed to load %s"), *Dll);
-			}
+			DllHandles.Add(Handle);
 		}
+		else
+		{
+			UE_LOG(LogDolbyIO, Fatal, TEXT("Failed to load %s/%s"), *BaseDir, *Dll);
+		}
+	}
 
-		TArray<void*> DllHandles;
-	};
-}
+	TArray<FDllHandle> DllHandles;
+};
 
-IMPLEMENT_MODULE(DolbyIO::FDolbyIOModule, DolbyIO)
+IMPLEMENT_MODULE(FDolbyIOModule, DolbyIO)
 DEFINE_LOG_CATEGORY(LogDolbyIO);
