@@ -34,7 +34,7 @@ namespace DolbyIO
 		void LoadDll(const FString& Dll)
 		{
 			const static auto BaseDir =
-			    FPaths::Combine(*IPluginManager::Get().FindPlugin("DolbyIO")->GetBaseDir(), TEXT("Binaries/Win64"));
+			    FPaths::Combine(*IPluginManager::Get().FindPlugin("DolbyIO")->GetBaseDir(), TEXT("Source/ThirdParty/sdk-release/bin"));
 			if (const auto Handle = FPlatformProcess::GetDllHandle(*FPaths::Combine(*BaseDir, *Dll)))
 			{
 				DllHandles.Add(Handle);
