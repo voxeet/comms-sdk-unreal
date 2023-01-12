@@ -1,4 +1,5 @@
 *.DS_Store*
 Binaries/
+Config/
 Intermediate/
 *sdk-release
