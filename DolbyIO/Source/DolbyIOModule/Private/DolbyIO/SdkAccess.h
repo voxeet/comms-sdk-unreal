@@ -65,8 +65,8 @@ namespace DolbyIO
 		float SpatialEnvironmentScale = 1.0f;
 
 		bool bIsAlive = true;
-		bool bIsInputMuted;
-		bool bIsOutputMuted;
+		bool bIsInputMuted = false;
+		bool bIsOutputMuted = false;
 		bool bIsDemo;
 	};
 }
