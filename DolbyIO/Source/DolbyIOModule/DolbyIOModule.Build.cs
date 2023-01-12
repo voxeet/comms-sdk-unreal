@@ -26,12 +26,13 @@ public class DolbyIOModule : ModuleRules
 				Path.Combine(LibDir, "dolbyio_comms_sdk.lib"),
 			});
 
-			foreach (string Dll in new string[] { "avutil-56.dll", "dvclient.dll", "dolbyio_comms_media.dll",
-				                                  "dolbyio_comms_sdk.dll" })
+			string[] Dlls =
+			    new string[] { "avutil-56.dll", "dvclient.dll", "dolbyio_comms_media.dll", "dolbyio_comms_sdk.dll" };
+			PublicDelayLoadDLLs.AddRange(Dlls);
+
+			foreach (string Dll in Dlls)
 			{
-				PublicDelayLoadDLLs.Add(Dll);
-				RuntimeDependencies.Add(Path.Combine("$(PluginDir)/Binaries/Win64", Dll),
-				                        Path.Combine(SdkDir, "bin", Dll));
+				RuntimeDependencies.Add(Path.Combine(SdkDir, "bin", Dll));
 			}
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
@@ -44,6 +45,7 @@ public class DolbyIOModule : ModuleRules
 				Path.Combine(LibDir, "libdvclient.dylib"),
 			};
 			PublicAdditionalLibraries.AddRange(Libs);
+			PublicDelayLoadDLLs.AddRange(Libs);
 
 			foreach (string Lib in Libs)
 			{
