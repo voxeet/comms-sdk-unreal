@@ -45,7 +45,7 @@ private:
 		}
 		else
 		{
-			UE_LOG(LogDolbyIO, Fatal, TEXT("Failed to load %s/%s"), *BaseDir, *Dll);
+			DLB_UE_LOG(Fatal, "Failed to load %s/%s", *BaseDir, *Dll);
 		}
 	}
 

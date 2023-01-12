@@ -143,8 +143,8 @@ namespace
 
 		void LogException(const FString& Type, const FString& What)
 		{
-			UE_LOG(LogDolbyIO, Error, TEXT("Caught %s: %s (conference status: %s, line: %d)"), *Type, *What,
-			       *ToString(ConferenceStatus), Line);
+			DLB_UE_LOG(Error, "Caught %s: %s (conference status: %s, line: %d)", *Type, *What,
+			           *ToString(ConferenceStatus), Line);
 		}
 
 		dolbyio::comms::conference_status ConferenceStatus;
@@ -164,10 +164,6 @@ try
 		(*RefreshTokenCb)(ToStdString(Token));
 		RefreshTokenCb.Reset(); // RefreshToken callback can only be called once
 	}
-	else
-	{
-		UE_LOG(LogDolbyIO, Warning, TEXT("Ignoring request to set token when no token is needed"));
-	}
 }
 catch (...)
 {
@@ -180,7 +176,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	    dolbyio::comms::sdk::create(ToStdString(Token),
 	                                [this](std::unique_ptr<dolbyio::comms::refresh_token>&& RefreshCb)
 	                                {
-		                                UE_LOG(LogDolbyIO, Log, TEXT("Refresh token requested"));
+		                                DLB_UE_LOG(Log, "Refresh token requested");
 		                                RefreshTokenCb = TSharedPtr<dolbyio::comms::refresh_token>(RefreshCb.release());
 		                                BroadcastEvent(OnTokenNeeded);
 	                                })
@@ -230,7 +226,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 void UDolbyIOSubsystem::UpdateStatus(dolbyio::comms::conference_status Status)
 {
 	ConferenceStatus = Status;
-	UE_LOG(LogDolbyIO, Log, TEXT("Conference status: %s"), *ToString(ConferenceStatus));
+	DLB_UE_LOG(Log, "Conference status: %s", *ToString(ConferenceStatus));
 
 	switch (ConferenceStatus)
 	{
@@ -253,7 +249,7 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 	}
 	if (ConferenceName.IsEmpty())
 	{
-		UE_LOG(LogDolbyIO, Warning, TEXT("Cannot connect - conference name cannot be empty"));
+		DLB_UE_LOG(Warning, "Cannot connect - conference name cannot be empty");
 		return;
 	}
 
@@ -296,12 +292,12 @@ bool UDolbyIOSubsystem::CanConnect() const
 {
 	if (!Sdk)
 	{
-		UE_LOG(LogDolbyIO, Warning, TEXT("Cannot connect - not initialized"));
+		DLB_UE_LOG(Warning, "Cannot connect - not initialized");
 		return false;
 	}
 	if (IsConnected())
 	{
-		UE_LOG(LogDolbyIO, Warning, TEXT("Cannot connect - already connected, please disconnect first"));
+		DLB_UE_LOG(Warning, "Cannot connect - already connected, please disconnect first");
 		return false;
 	}
 	return true;
