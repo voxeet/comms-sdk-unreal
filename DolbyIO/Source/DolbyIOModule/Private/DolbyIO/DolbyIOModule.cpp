@@ -15,10 +15,14 @@ namespace DolbyIO
 		void StartupModule() override
 		{
 #if PLATFORM_WINDOWS
-			LoadDll("avutil-56.dll");
-			LoadDll("dvclient.dll");
-			LoadDll("dolbyio_comms_media.dll");
-			LoadDll("dolbyio_comms_sdk.dll");
+			LoadDll("bin/avutil-56.dll");
+			LoadDll("bin/dvclient.dll");
+			LoadDll("bin/dolbyio_comms_media.dll");
+			LoadDll("bin/dolbyio_comms_sdk.dll");
+#elif PLATFORM_MAC
+			LoadDll("lib/libdolbyio_comms_media.dylib");
+			LoadDll("lib/libdolbyio_comms_sdk.dylib");
+			LoadDll("lib/libdvclient.dylib");
 #endif
 		}
 
@@ -33,8 +37,8 @@ namespace DolbyIO
 	private:
 		void LoadDll(const FString& Dll)
 		{
-			const static auto BaseDir =
-			    FPaths::Combine(*IPluginManager::Get().FindPlugin("DolbyIO")->GetBaseDir(), TEXT("Source/ThirdParty/sdk-release/bin"));
+			const static auto BaseDir = FPaths::Combine(*IPluginManager::Get().FindPlugin("DolbyIO")->GetBaseDir(),
+			                                            TEXT("Source/ThirdParty/sdk-release"));
 			if (const auto Handle = FPlatformProcess::GetDllHandle(*FPaths::Combine(*BaseDir, *Dll)))
 			{
 				DllHandles.Add(Handle);
