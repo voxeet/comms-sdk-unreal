@@ -17,7 +17,7 @@ public:
 		const FString BaseDir =
 		    FPaths::Combine(*IPluginManager::Get().FindPlugin("DolbyIO")->GetBaseDir(), TEXT("sdk-release"));
 #if PLATFORM_WINDOWS
-		LoadDll(BaseDir, "bin/avutil-56.dll");
+		LoadDll(BaseDir, "bin/avutil-57.dll");
 		LoadDll(BaseDir, "bin/dvclient.dll");
 		LoadDll(BaseDir, "bin/dolbyio_comms_media.dll");
 		LoadDll(BaseDir, "bin/dolbyio_comms_sdk.dll");

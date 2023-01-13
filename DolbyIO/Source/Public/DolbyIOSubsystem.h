@@ -108,13 +108,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteOutput();
 
-	/** Gets audio levels for all speaking participants.
-	 *
-	 * Triggers On Audio Levels Changed if successful.
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void GetAudioLevels();
-
 	/** Updates the location of the listener for spatial audio purposes.
 	 *
 	 * Calling this function even once disables the default behavior, which is to automatically use the location of the

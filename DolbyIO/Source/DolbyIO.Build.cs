@@ -27,7 +27,7 @@ public class DolbyIO : ModuleRules
 			});
 
 			string[] Dlls =
-			    new string[] { "avutil-56.dll", "dvclient.dll", "dolbyio_comms_media.dll", "dolbyio_comms_sdk.dll" };
+			    new string[] { "avutil-57.dll", "dvclient.dll", "dolbyio_comms_media.dll", "dolbyio_comms_sdk.dll" };
 			PublicDelayLoadDLLs.AddRange(Dlls);
 
 			foreach (string Dll in Dlls)

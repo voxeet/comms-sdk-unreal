@@ -229,6 +229,23 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            BroadcastEvent(OnActiveSpeakersChanged, ActiveSpeakers);
 		            });
 	        })
+	    // C++ SDK bug
+	    //.then(
+	    //    [this](dolbyio::comms::event_handler_id)
+	    //    {
+	    //     return Sdk->conference().add_event_handler(
+	    //         [this](const dolbyio::comms::audio_levels& Event)
+	    //         {
+	    //          TArray<FString> ActiveSpeakers;
+	    //          TArray<float> AudioLevels;
+	    //          for (const dolbyio::comms::audio_level& Level : Event.levels)
+	    //          {
+	    //           ActiveSpeakers.Add(Level.participant_id.c_str());
+	    //           AudioLevels.Add(Level.level);
+	    //          }
+	    //          BroadcastEvent(OnAudioLevelsChanged, ActiveSpeakers, AudioLevels);
+	    //         });
+	    //    })
 	    .then(
 	        [this](dolbyio::comms::event_handler_id)
 	        {
@@ -425,30 +442,6 @@ void UDolbyIOSubsystem::UnmuteOutput()
 {
 	bIsOutputMuted = false;
 	ToggleOutputMute();
-}
-
-void UDolbyIOSubsystem::GetAudioLevels()
-{
-	if (!IsConnected())
-	{
-		return;
-	}
-
-	Sdk->conference()
-	    .get_all_audio_levels()
-	    .then(
-	        [this](std::vector<dolbyio::comms::audio_level>&& Levels)
-	        {
-		        TArray<FString> ActiveSpeakers;
-		        TArray<float> AudioLevels;
-		        for (const dolbyio::comms::audio_level& Level : Levels)
-		        {
-			        ActiveSpeakers.Add(Level.participant_id.c_str());
-			        AudioLevels.Add(Level.level);
-		        }
-		        BroadcastEvent(OnAudioLevelsChanged, ActiveSpeakers, AudioLevels);
-	        })
-	    .on_error(DLB_ERROR_HANDLER);
 }
 
 void UDolbyIOSubsystem::SetLocalPlayerLocation(const FVector& Location)
