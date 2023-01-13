@@ -15,7 +15,12 @@ public class DolbyIO : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 		    new string[] { "Core", "CoreUObject", "Engine", "HTTP", "Json", "Projects" });
 
-		string SdkDir = Path.Combine("$(PluginDir)", "sdk-release");
+		string ReleaseDir = "sdk-release";
+		if (Target.Platform == UnrealTargetPlatform.Mac)
+		{
+			ReleaseDir += "-x86";
+		}
+		string SdkDir = Path.Combine("$(PluginDir)", ReleaseDir);
 		PublicIncludePaths.Add(Path.Combine(SdkDir, "include"));
 		string LibDir = Path.Combine(SdkDir, "lib");
 

@@ -29,12 +29,13 @@ jobs:
           asset_name: "cppsdk-${{ env.CPP_SDK_TAG }}-${{ env.BUILD_PLATFORM }}.zip"
       - name: Remove symlinks from cpp sdk libs
         env:
-          LIB_PATH: "${{ github.workspace }}/${{ env.CPP_SDK_DESTINATION }}/sdk-release/lib"
+          LIB_PATH_ARM: "${{ github.workspace }}/${{ env.CPP_SDK_DESTINATION }}/sdk-release-arm/lib"
+          LIB_PATH_X86: "${{ github.workspace }}/${{ env.CPP_SDK_DESTINATION }}/sdk-release-x86/lib"
         run: |
-          ls -la ${LIB_PATH}/
-          echo "Removing symlinks from ${LIB_PATH}"
-          rm ${LIB_PATH}/libav*.dylib
-          ls -la ${LIB_PATH}/
+          echo "Removing symlinks from ${LIB_PATH_ARM}"
+          rm ${LIB_PATH_ARM}/libav*.dylib
+          echo "Removing symlinks from ${LIB_PATH_X86}"
+          rm ${LIB_PATH_X86}/libav*.dylib
       - name: Run Build
         run: |
           /Users/Shared/Epic\ Games/UE_${{ matrix.version }}/Engine/Build/BatchFiles/RunUAT.sh BuildPlugin \
