@@ -444,6 +444,18 @@ void UDolbyIOSubsystem::UnmuteOutput()
 	ToggleOutputMute();
 }
 
+void UDolbyIOSubsystem::EnableVideo()
+{
+	DLB_UE_LOG(Log, "Enabling video");
+	Sdk->video().local().start().on_error(DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::DisableVideo()
+{
+	DLB_UE_LOG(Log, "Disabling video");
+	Sdk->video().local().stop().on_error(DLB_ERROR_HANDLER);
+}
+
 void UDolbyIOSubsystem::SetLocalPlayerLocation(const FVector& Location)
 {
 	if (LocationTimerHandle.IsValid())

@@ -108,6 +108,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteOutput();
 
+	/** Enables video streaming from the primary webcam. */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void EnableVideo();
+
+	/** Disables video streaming from the primary webcam. */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void DisableVideo();
+
 	/** Updates the location of the listener for spatial audio purposes.
 	 *
 	 * Calling this function even once disables the default behavior, which is to automatically use the location of the
