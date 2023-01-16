@@ -28,6 +28,7 @@ namespace dolbyio::comms
 	enum class conference_status;
 	class refresh_token;
 	class sdk;
+	class video_sink;
 }
 
 UCLASS(DisplayName = "Dolby.io Subsystem")
@@ -116,6 +117,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void DisableVideo();
 
+	/** Sets which texture to use to render video from a given participant.
+	 *
+	 * @param ParticipantID - The participant's ID.
+	 * @param Texture - The texture to use.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void SetParticipantTexture(const FString& ParticipantID, UTexture2D* Texture);
+
 	/** Updates the location of the listener for spatial audio purposes.
 	 *
 	 * Calling this function even once disables the default behavior, which is to automatically use the location of the
@@ -180,12 +189,17 @@ private:
 
 	TSharedPtr<dolbyio::comms::sdk> Sdk;
 	TSharedPtr<dolbyio::comms::refresh_token> RefreshTokenCb;
+	friend class FVideoSink;
+	TSharedPtr<FVideoSink> VideoSink;
 
 	float SpatialEnvironmentScale = 1.0f;
 
 	FThreadSafeBool bIsAlive = true;
 	bool bIsInputMuted = false;
 	bool bIsOutputMuted = false;
+
+	TMap<FString, FString> StreamToParticipantMapping;
+	TMap<FString, UTexture2D*> ParticipantToTextureMapping;
 
 	FTimerHandle LocationTimerHandle;
 	FTimerHandle RotationTimerHandle;

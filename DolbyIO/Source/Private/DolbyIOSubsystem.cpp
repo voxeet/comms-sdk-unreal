@@ -152,6 +152,25 @@ namespace
 	};
 }
 
+class FVideoSink : public dolbyio::comms::video_sink
+{
+public:
+	FVideoSink(UDolbyIOSubsystem& DolbyIOSubsystem) : DolbyIOSubsystem(DolbyIOSubsystem) {}
+
+private:
+	void handle_frame(const std::string& stream_id, const std::string& track_id,
+	                  std::unique_ptr<dolbyio::comms::video_frame> frame) override
+	{
+		const FString StreamID = stream_id.c_str();
+		const FString& ParticipantID = DolbyIOSubsystem.StreamToParticipantMapping[StreamID];
+		UTexture2D* Texture = DolbyIOSubsystem.ParticipantToTextureMapping[ParticipantID];
+		DLB_UE_LOG(Log, "Setting texture for StreamID=%s (ParticipantID=%s, Texture=%s)", *StreamID, *ParticipantID,
+		           *Texture->GetDesc());
+	}
+
+	UDolbyIOSubsystem& DolbyIOSubsystem;
+};
+
 void UDolbyIOSubsystem::SetToken(const FString& Token)
 try
 {
@@ -245,6 +264,47 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            BroadcastEvent(OnAudioLevelsChanged, ActiveSpeakers, AudioLevels);
 		            });
 	        })
+	    .then(
+	        [this](dolbyio::comms::event_handler_id)
+	        {
+		        return Sdk->conference().add_event_handler(
+		            [this](const dolbyio::comms::video_track_added& Event)
+		            {
+			            if (!Event.remote)
+			            {
+				            return;
+			            }
+
+			            const FString StreamID = Event.stream_id.c_str();
+			            const FString ParticipantID = Event.peer_id.c_str();
+			            DLB_UE_LOG(Log, "Video track added: ParticipantID=%s StreamID=%s", *ParticipantID, *StreamID);
+			            StreamToParticipantMapping.FindOrAdd(StreamID) = ParticipantID;
+		            });
+	        })
+	    .then(
+	        [this](dolbyio::comms::event_handler_id)
+	        {
+		        return Sdk->conference().add_event_handler(
+		            [this](const dolbyio::comms::video_track_removed& Event)
+		            {
+			            if (!Event.remote)
+			            {
+				            return;
+			            }
+
+			            const FString StreamID = Event.stream_id.c_str();
+			            DLB_UE_LOG(Log, "Video track removed: StreamID=%s", *StreamID);
+			            StreamToParticipantMapping.Remove(StreamID);
+		            });
+	        })
+	    .then(
+	        [this](dolbyio::comms::event_handler_id)
+	        {
+		        VideoSink = MakeShared<FVideoSink>(*this);
+		        return Sdk->video().remote().set_video_sink(VideoSink.Get());
+	        })
+	    .then(
+	        [this]
 	        {
 		        DLB_UE_LOG(Log, "Initialized");
 		        BroadcastEvent(OnInitialized);
@@ -451,6 +511,12 @@ void UDolbyIOSubsystem::DisableVideo()
 {
 	DLB_UE_LOG(Log, "Disabling video");
 	Sdk->video().local().stop().on_error(DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::SetParticipantTexture(const FString& ParticipantID, UTexture2D* Texture)
+{
+	DLB_UE_LOG(Log, "Setting texture for ParticipantID=%s (%s)", *ParticipantID, *Texture->GetDesc());
+	ParticipantToTextureMapping.FindOrAdd(ParticipantID) = Texture;
 }
 
 void UDolbyIOSubsystem::SetLocalPlayerLocation(const FVector& Location)
