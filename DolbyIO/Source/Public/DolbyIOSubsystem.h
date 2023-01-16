@@ -28,8 +28,9 @@ namespace dolbyio::comms
 	enum class conference_status;
 	class refresh_token;
 	class sdk;
-	class video_sink;
 }
+
+class FVideoSink;
 
 UCLASS(DisplayName = "Dolby.io Subsystem")
 class DOLBYIO_API UDolbyIOSubsystem : public UGameInstanceSubsystem

@@ -10,6 +10,7 @@
 #include <dolbyio/comms/sdk.h>
 
 #include "Async/Async.h"
+#include "Engine/Texture2D.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "TimerManager.h"
