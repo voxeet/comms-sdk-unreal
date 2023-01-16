@@ -229,25 +229,22 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            BroadcastEvent(OnActiveSpeakersChanged, ActiveSpeakers);
 		            });
 	        })
-	    // C++ SDK bug
-	    //.then(
-	    //    [this](dolbyio::comms::event_handler_id)
-	    //    {
-	    //     return Sdk->conference().add_event_handler(
-	    //         [this](const dolbyio::comms::audio_levels& Event)
-	    //         {
-	    //          TArray<FString> ActiveSpeakers;
-	    //          TArray<float> AudioLevels;
-	    //          for (const dolbyio::comms::audio_level& Level : Event.levels)
-	    //          {
-	    //           ActiveSpeakers.Add(Level.participant_id.c_str());
-	    //           AudioLevels.Add(Level.level);
-	    //          }
-	    //          BroadcastEvent(OnAudioLevelsChanged, ActiveSpeakers, AudioLevels);
-	    //         });
-	    //    })
 	    .then(
 	        [this](dolbyio::comms::event_handler_id)
+	        {
+		        return Sdk->conference().add_event_handler(
+		            [this](const dolbyio::comms::audio_levels& Event)
+		            {
+			            TArray<FString> ActiveSpeakers;
+			            TArray<float> AudioLevels;
+			            for (const dolbyio::comms::audio_level& Level : Event.levels)
+			            {
+				            ActiveSpeakers.Add(Level.participant_id.c_str());
+				            AudioLevels.Add(Level.level);
+			            }
+			            BroadcastEvent(OnAudioLevelsChanged, ActiveSpeakers, AudioLevels);
+		            });
+	        })
 	        {
 		        DLB_UE_LOG(Log, "Initialized");
 		        BroadcastEvent(OnInitialized);

@@ -146,7 +146,7 @@ Example:
 ![example](Images/update_view_point.PNG)
 
 ## Building from source
-1. Download and unzip [this](https://github.com/DolbyIO/comms-sdk-cpp/releases/tag/2.3.0-beta.1) Dolby.io Communications C++ SDK release.
+1. Download and unzip [this](https://github.com/DolbyIO/comms-sdk-cpp/releases/tag/2.3.0-beta.2) Dolby.io Communications C++ SDK release.
 2. Copy or link the unzipped sdk-release folder into the DolbyIO folder.
 3. Launch your game project. If you are starting out from scratch, create a game using the First Person C++ template.
 4. Create a folder named "Plugins" in your game's root folder if it does not exist.
