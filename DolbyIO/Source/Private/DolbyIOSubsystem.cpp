@@ -163,10 +163,14 @@ private:
 	                  std::unique_ptr<dolbyio::comms::video_frame> frame) override
 	{
 		const FString StreamID = stream_id.c_str();
-		const FString& ParticipantID = DolbyIOSubsystem.StreamToParticipantMapping[StreamID];
-		UTexture2D* Texture = DolbyIOSubsystem.ParticipantToTextureMapping[ParticipantID];
-		DLB_UE_LOG(Log, "Setting texture for StreamID=%s (ParticipantID=%s, Texture=%s)", *StreamID, *ParticipantID,
-		           *Texture->GetDesc());
+		if (const FString* ParticipantID = DolbyIOSubsystem.StreamToParticipantMapping.Find(StreamID))
+		{
+			if (UTexture2D** Texture = DolbyIOSubsystem.ParticipantToTextureMapping.Find(*ParticipantID))
+			{
+				DLB_UE_LOG(Log, "Setting texture for StreamID=%s (ParticipantID=%s, Texture=%s)", *StreamID,
+				           **ParticipantID, *((*Texture)->GetDesc()));
+			}
+		}
 	}
 
 	UDolbyIOSubsystem& DolbyIOSubsystem;

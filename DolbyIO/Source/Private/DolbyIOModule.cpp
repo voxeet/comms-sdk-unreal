@@ -14,7 +14,7 @@ class FDolbyIOModule final : public IModuleInterface
 public:
 	void StartupModule() override
 	{
-		const FString BaseDir =
+		FString BaseDir =
 		    FPaths::Combine(*IPluginManager::Get().FindPlugin("DolbyIO")->GetBaseDir(), TEXT("sdk-release"));
 #if PLATFORM_WINDOWS
 		LoadDll(BaseDir, "bin/avutil-57.dll");
@@ -22,6 +22,7 @@ public:
 		LoadDll(BaseDir, "bin/dolbyio_comms_media.dll");
 		LoadDll(BaseDir, "bin/dolbyio_comms_sdk.dll");
 #elif PLATFORM_MAC
+		BaseDir += "-x86";
 		LoadDll(BaseDir, "lib/libdolbyio_comms_media.dylib");
 		LoadDll(BaseDir, "lib/libdolbyio_comms_sdk.dylib");
 		LoadDll(BaseDir, "lib/libdvclient.dylib");
