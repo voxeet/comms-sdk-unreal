@@ -13,6 +13,7 @@
 #include "Engine/Texture2D.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
+#include "Misc/Base64.h"
 #include "TimerManager.h"
 
 void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -43,9 +44,11 @@ namespace
 		return TCHAR_TO_UTF8(*String);
 	}
 
+	constexpr int ScaleCenti = 100;
+
 	FDolbyIOParticipantInfo ToUnrealParticipantInfo(const dolbyio::comms::participant_info& Info)
 	{
-		FDolbyIOParticipantInfo Ret;
+		FDolbyIOParticipantInfo Ret{};
 		Ret.UserID = Info.user_id.c_str();
 		Ret.Name = Info.info.name.value_or("").c_str();
 		Ret.ExternalID = Info.info.external_id.value_or("").c_str();
@@ -53,6 +56,35 @@ namespace
 		Ret.bIsListener = Info.type && *Info.type == dolbyio::comms::participant_type::listener;
 		Ret.bIsSendingAudio = Info.is_sending_audio.value_or(false);
 		Ret.bIsAudibleLocally = Info.audible_locally.value_or(false);
+
+		FString DecodedExternalID;
+		FBase64::Decode(Ret.ExternalID, DecodedExternalID);
+		if (DecodedExternalID.StartsWith("{\"init-pos\": {\"x\": "))
+		{
+			Ret.bIsInjectedBot = true;
+
+			FString Left;
+			FString Right;
+
+			DecodedExternalID.Split("\"x\": ", &Left, &Right);
+			Right.Split(",", &Left, &Right);
+			Ret.Location.Y = FCString::Atof(*Left) * ScaleCenti;
+
+			Right.Split("\"y\": ", &Left, &Right);
+			Right.Split(",", &Left, &Right);
+			Ret.Location.Z = FCString::Atof(*Left) * ScaleCenti;
+
+			Right.Split("\"z\": ", &Left, &Right);
+			Right.Split(",", &Left, &Right);
+			Ret.Location.X = -FCString::Atof(*Left) * ScaleCenti;
+
+			Right.Split("\"r\": ", &Left, &Right);
+			Right.Split(",", &Left, &Right);
+			Ret.Rotation.Yaw = FCString::Atof(*Left);
+
+			Ret.Rotation.Roll = 0;
+			Ret.Rotation.Pitch = 0;
+		}
 		return Ret;
 	}
 
@@ -366,7 +398,7 @@ void UDolbyIOSubsystem::SetSpatialEnvironment()
 {
 	// The SDK spatial settings expect meters as the default unit of length.
 	// Unreal uses centimeters for scale, so the plugin's scale of "1" is a scale of "100" for the SDK.
-	const float SdkScale = SpatialEnvironmentScale * 100;
+	const float SdkScale = SpatialEnvironmentScale * ScaleCenti;
 	const dolbyio::comms::spatial_scale Scale{SdkScale, SdkScale, SdkScale};
 	const dolbyio::comms::spatial_position Forward{1, 0, 0};
 	const dolbyio::comms::spatial_position Up{0, 0, 1};
@@ -426,12 +458,12 @@ void UDolbyIOSubsystem::Disconnect()
 	}
 
 	DLB_UE_LOG(Log, "Disconnecting");
-
 	Sdk->conference().leave().then([this]() { return Sdk->session().close(); }).on_error(DLB_ERROR_HANDLER);
 }
 
 void UDolbyIOSubsystem::SetSpatialEnvironmentScale(float Scale)
 {
+	DLB_UE_LOG(Log, "Setting spatial environment scale: %f", Scale);
 	SpatialEnvironmentScale = Scale;
 	if (IsConnected())
 	{
@@ -441,24 +473,28 @@ void UDolbyIOSubsystem::SetSpatialEnvironmentScale(float Scale)
 
 void UDolbyIOSubsystem::MuteInput()
 {
+	DLB_UE_LOG(Log, "Muting input");
 	bIsInputMuted = true;
 	ToggleInputMute();
 }
 
 void UDolbyIOSubsystem::UnmuteInput()
 {
+	DLB_UE_LOG(Log, "Unmuting input");
 	bIsInputMuted = false;
 	ToggleInputMute();
 }
 
 void UDolbyIOSubsystem::MuteOutput()
 {
+	DLB_UE_LOG(Log, "Muting output");
 	bIsOutputMuted = true;
 	ToggleOutputMute();
 }
 
 void UDolbyIOSubsystem::UnmuteOutput()
 {
+	DLB_UE_LOG(Log, "Unmuting output");
 	bIsOutputMuted = false;
 	ToggleOutputMute();
 }
@@ -472,7 +508,6 @@ void UDolbyIOSubsystem::EnableVideo()
 	}
 
 	DLB_UE_LOG(Log, "Enabling video");
-
 	Sdk->video().local().start().on_error(DLB_ERROR_HANDLER);
 }
 
@@ -484,7 +519,6 @@ void UDolbyIOSubsystem::DisableVideo()
 	}
 
 	DLB_UE_LOG(Log, "Disabling video");
-
 	Sdk->video().local().stop().on_error(DLB_ERROR_HANDLER);
 }
 
@@ -492,6 +526,7 @@ void UDolbyIOSubsystem::SetLocalPlayerLocation(const FVector& Location)
 {
 	if (LocationTimerHandle.IsValid())
 	{
+		DLB_UE_LOG(Log, "Disabling automatic location setting");
 		GetGameInstance()->GetTimerManager().ClearTimer(LocationTimerHandle);
 	}
 	SetLocalPlayerLocationImpl(Location);
@@ -513,6 +548,7 @@ void UDolbyIOSubsystem::SetLocalPlayerRotation(const FRotator& Rotation)
 {
 	if (RotationTimerHandle.IsValid())
 	{
+		DLB_UE_LOG(Log, "Disabling automatic rotation setting");
 		GetGameInstance()->GetTimerManager().ClearTimer(RotationTimerHandle);
 	}
 	SetLocalPlayerRotationImpl(Rotation);

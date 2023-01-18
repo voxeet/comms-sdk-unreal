@@ -43,4 +43,16 @@ struct DOLBYIO_API FDolbyIOParticipantInfo
 	 */
 	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
 	bool bIsAudibleLocally;
+
+	/** A boolean that informs whether the participant is an injected bot. */
+	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
+	bool bIsInjectedBot;
+
+	/** The initial location of the participant. Meaningless unless the participant is an injected bot. */
+	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
+	FVector Location;
+
+	/** The initial rotation of the participant. Meaningless unless the participant is an injected bot. */
+	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
+	FRotator Rotation;
 };
