@@ -2,7 +2,9 @@
 
 #pragma once
 
-#include "DolbyIOBase64Functions.generated.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
+
+#include "DolbyIOBase64.generated.h"
 
 UCLASS()
 class UBase64Functions : public UBlueprintFunctionLibrary

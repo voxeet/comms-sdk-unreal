@@ -1,6 +1,6 @@
 // Copyright 2023 Dolby Laboratories
 
-#include "DolbyIOBase64Functions.h"
+#include "DolbyIOBase64.h"
 
 #include "Misc/Base64.h"
 
