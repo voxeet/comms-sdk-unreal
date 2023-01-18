@@ -439,20 +439,27 @@ void UDolbyIOSubsystem::UnmuteOutput()
 
 void UDolbyIOSubsystem::EnableVideo()
 {
+	if (!Sdk)
+	{
+		DLB_UE_LOG(Warning, "Cannot enable video - not initialized");
+		return;
+	}
+
 	DLB_UE_LOG(Log, "Enabling video");
+
 	Sdk->video().local().start().on_error(DLB_ERROR_HANDLER);
 }
 
 void UDolbyIOSubsystem::DisableVideo()
 {
-	DLB_UE_LOG(Log, "Disabling video");
-	Sdk->video().local().stop().on_error(DLB_ERROR_HANDLER);
-}
+	if (!Sdk)
+	{
+		return;
+	}
 
-void UDolbyIOSubsystem::SetParticipantTexture(const FString& ParticipantID, UTexture2D* Texture)
-{
-	DLB_UE_LOG(Log, "Setting texture for ParticipantID=%s (%s)", *ParticipantID, *Texture->GetDesc());
-	ParticipantToTextureMapping.FindOrAdd(ParticipantID) = Texture;
+	DLB_UE_LOG(Log, "Disabling video");
+
+	Sdk->video().local().stop().on_error(DLB_ERROR_HANDLER);
 }
 
 void UDolbyIOSubsystem::SetLocalPlayerLocation(const FVector& Location)
