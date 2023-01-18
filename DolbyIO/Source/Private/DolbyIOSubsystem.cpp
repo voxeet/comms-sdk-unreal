@@ -596,12 +596,8 @@ void UDolbyIOSubsystem::SetRotationUsingFirstPlayer()
 
 template <class TDelegate, class... TArgs> void UDolbyIOSubsystem::BroadcastEvent(TDelegate& Event, TArgs&&... Args)
 {
-	AsyncTask(ENamedThreads::GameThread,
-	          [=]
-	          {
-		          if (IsValid(this))
-		          {
-			          Event.Broadcast(Args...);
-		          }
-	          });
+	if (IsValid(this))
+	{
+		AsyncTask(ENamedThreads::GameThread, [=] { Event.Broadcast(Args...); });
+	}
 }
