@@ -81,6 +81,31 @@ namespace
 		};
 	}
 
+	FString ToString(dolbyio::comms::participant_status Status)
+	{
+		switch (Status)
+		{
+			case dolbyio::comms::participant_status::reserved:
+				return "reserved";
+			case dolbyio::comms::participant_status::connecting:
+				return "connecting";
+			case dolbyio::comms::participant_status::on_air:
+				return "on_air";
+			case dolbyio::comms::participant_status::decline:
+				return "decline";
+			case dolbyio::comms::participant_status::inactive:
+				return "inactive";
+			case dolbyio::comms::participant_status::left:
+				return "left";
+			case dolbyio::comms::participant_status::warning:
+				return "warning";
+			case dolbyio::comms::participant_status::error:
+				return "error";
+			default:
+				return "unknown";
+		};
+	}
+
 	class FErrorHandler final
 	{
 	public:
@@ -185,27 +210,28 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	        [this](dolbyio::comms::event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
-		            [this](const dolbyio::comms::participant_added& Event)
-		            {
-			            const FDolbyIOParticipantInfo Info = ToUnrealParticipantInfo(Event.participant);
-			            DLB_UE_LOG(Log, "Participant added: UserID=%s Name=%s ExternalID=%s", *Info.UserID, *Info.Name,
-			                       *Info.ExternalID);
-			            BroadcastEvent(OnParticipantAdded, Info);
-		            });
-	        })
-	    .then(
-	        [this](dolbyio::comms::event_handler_id)
-	        {
-		        return Sdk->conference().add_event_handler(
 		            [this](const dolbyio::comms::participant_updated& Event)
 		            {
-			            if (Event.participant.status &&
-			                *Event.participant.status == dolbyio::comms::participant_status::left)
+			            if (!Event.participant.status)
 			            {
-				            const FDolbyIOParticipantInfo Info = ToUnrealParticipantInfo(Event.participant);
-				            DLB_UE_LOG(Log, "Participant left: UserID=%s Name=%s ExternalID=%s", *Info.UserID,
-				                       *Info.Name, *Info.ExternalID);
-				            BroadcastEvent(OnParticipantLeft, Info);
+				            return;
+			            }
+
+			            const FDolbyIOParticipantInfo Info = ToUnrealParticipantInfo(Event.participant);
+			            DLB_UE_LOG(Log, "Participant status updated: UserID=%s Name=%s ExternalID=%s Status=%s",
+			                       *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
+
+			            if (Info.UserID == LocalParticipantID)
+			            {
+				            return;
+			            }
+
+			            switch (*Event.participant.status)
+			            {
+				            case dolbyio::comms::participant_status::on_air:
+					            return BroadcastEvent(OnParticipantAdded, Info);
+				            case dolbyio::comms::participant_status::left:
+					            return BroadcastEvent(OnParticipantLeft, Info);
 			            }
 		            });
 	        })
