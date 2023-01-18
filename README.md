@@ -104,7 +104,7 @@ Example:
 ![example](Images/on_initialized.PNG)
 
 ### Demo Conference
-Connects to a demo conference, which automatically brings in 3 invisible bots into the conference as a quick way to validate the connection to the service with audio functionality. The bots are placed at the following in-game coordinates: {250, -500, 0}, {0, 0, 0} and {250, 500, 0}. Triggers [On Connected](#on-connected) if successful.
+Connects to a demo conference, which automatically brings in 3 invisible bots into the conference as a quick way to validate the connection to the service with audio functionality. The bots are placed at point {0, 0, 0}. Triggers [On Connected](#on-connected) if successful.
 
 Example:  
 ![example](Images/demo_conference.PNG)
@@ -139,15 +139,33 @@ Unmutes audio output.
 Example:  
 ![example](Images/mute_output.PNG)
 
-### Update View Point
-Updates the position and rotation of the listener for spatial audio purposes. Calling this function even once disables the default behavior, which is to automatically use the location and rotation of the first player controller.
+### Enable Video
+Enables video streaming from the primary webcam.
 
 Example:  
-![example](Images/update_view_point.PNG)
+![example](Images/enable_video.PNG)
+
+### Disable Video
+Disables video streaming from the primary webcam.
+
+Example:  
+![example](Images/disable_video.PNG)
+
+### Set Local Player Location
+Updates the location of the listener for spatial audio purposes. Calling this function even once disables the default behavior, which is to automatically use the location of the first player controller.
+
+Example:  
+![example](Images/set_local_player_location.PNG)
+
+### Set Local Player Rotation
+Updates the rotation of the listener for spatial audio purposes. Calling this function even once disables the default behavior, which is to automatically use the rotation of the first player controller.
+
+Example:  
+![example](Images/set_local_player_rotation.PNG)
 
 ## Building from source
 1. Download and unzip [this](https://github.com/DolbyIO/comms-sdk-cpp/releases/tag/2.3.0-beta.2) Dolby.io Communications C++ SDK release.
-2. Copy or link the unzipped sdk-release folder into the DolbyIO folder.
+2. Copy or link the unzipped sdk-release (sdk-release-x86 for macOS) folder into the DolbyIO folder.
 3. Launch your game project. If you are starting out from scratch, create a game using the First Person C++ template.
 4. Create a folder named "Plugins" in your game's root folder if it does not exist.
 5. Copy or link the DolbyIO folder into the Plugins folder.
@@ -163,8 +181,8 @@ Using the plugin in Unreal Editor requires the Editor to obtain microphone and c
 Please be aware that this tool is not endorsed by Dolby in any way and may be dangerous as it needs root permissions to access sensitive system files and requires you to grant full disk access to the terminal. If you do not wish to use it, you will need to find another way to provide the required permissions to the Unreal Editor, otherwise, you will need to package the game to use the plugin and you will be unable to test it in the Editor. In order to package games using the plugin with the data required to request the necessary permissions, you will also need to add these lines:
 ```
 <key>NSMicrophoneUsageDescription</key>
-<string>Dolby.io Communications</string>
+<string>Dolby.io Virtual World</string>
 <key>NSCameraUsageDescription</key>
-<string>Dolby.io Communications</string>
+<string>Dolby.io Virtual World</string>
 ```
 in your game's Info.plist or, if you want to automatically add these lines in all packaged games, in {UnrealEngineRoot}/Engine/Source/Runtime/Launch/Resources/Mac/Info.plist. The latter solution is recommended if it does not conflict with your setup because the Info.plist file is overwritten each time the game is packaged.
