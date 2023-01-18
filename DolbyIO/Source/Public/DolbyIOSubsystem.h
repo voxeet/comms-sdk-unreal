@@ -165,7 +165,6 @@ public:
 
 private:
 	void Initialize(FSubsystemCollectionBase&) override;
-	void Deinitialize() override;
 
 	bool CanConnect() const;
 	bool IsConnected() const;
@@ -195,7 +194,6 @@ private:
 
 	float SpatialEnvironmentScale = 1.0f;
 
-	FThreadSafeBool bIsAlive = true;
 	bool bIsInputMuted = false;
 	bool bIsOutputMuted = false;
 

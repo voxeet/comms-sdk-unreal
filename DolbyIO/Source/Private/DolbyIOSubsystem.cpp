@@ -36,13 +36,6 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	OnTokenNeeded.Broadcast();
 }
 
-void UDolbyIOSubsystem::Deinitialize()
-{
-	bIsAlive = false;
-
-	Super::Deinitialize();
-}
-
 namespace
 {
 	std::string ToStdString(const FString& String)
@@ -596,8 +589,12 @@ void UDolbyIOSubsystem::SetRotationUsingFirstPlayer()
 
 template <class TDelegate, class... TArgs> void UDolbyIOSubsystem::BroadcastEvent(TDelegate& Event, TArgs&&... Args)
 {
-	if (bIsAlive)
-	{
-		AsyncTask(ENamedThreads::GameThread, [=] { Event.Broadcast(Args...); });
-	}
+	AsyncTask(ENamedThreads::GameThread,
+	          [=]
+	          {
+		          if (IsValid(this))
+		          {
+			          Event.Broadcast(Args...);
+		          }
+	          });
 }
