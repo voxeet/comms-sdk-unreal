@@ -572,7 +572,10 @@ void UDolbyIOSubsystem::SetLocationUsingFirstPlayer()
 	{
 		if (APlayerController* FirstPlayerController = World->GetFirstPlayerController())
 		{
-			SetLocalPlayerLocationImpl(FirstPlayerController->GetPawn()->GetActorLocation());
+			if (APawn* Pawn = FirstPlayerController->GetPawn())
+			{
+				SetLocalPlayerLocationImpl(Pawn->GetActorLocation());
+			}
 		}
 	}
 }
@@ -583,7 +586,10 @@ void UDolbyIOSubsystem::SetRotationUsingFirstPlayer()
 	{
 		if (APlayerController* FirstPlayerController = World->GetFirstPlayerController())
 		{
-			SetLocalPlayerRotationImpl(FirstPlayerController->GetPawn()->GetActorRotation());
+			if (APawn* Pawn = FirstPlayerController->GetPawn())
+			{
+				SetLocalPlayerRotationImpl(Pawn->GetActorRotation());
+			}
 		}
 	}
 }
