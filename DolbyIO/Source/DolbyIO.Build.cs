@@ -31,22 +31,22 @@ public class DolbyIO : ModuleRules
 				Path.Combine(LibDir, "dolbyio_comms_sdk.lib"),
 			});
 
-			string[] Dlls =
-			    new string[] { "avutil-57.dll", "dvclient.dll", "dolbyio_comms_media.dll", "dolbyio_comms_sdk.dll" };
+			string[] Dlls = new string[] { "dvclient.dll", "dolbyio_comms_media.dll", "dolbyio_comms_sdk.dll" };
 			PublicDelayLoadDLLs.AddRange(Dlls);
 
+			string BinDir = Path.Combine(SdkDir, "bin");
 			foreach (string Dll in Dlls)
 			{
-				RuntimeDependencies.Add(Path.Combine(SdkDir, "bin", Dll));
+				RuntimeDependencies.Add(Path.Combine(BinDir, Dll));
 			}
+			RuntimeDependencies.Add(Path.Combine(BinDir, "dvdnr.dll"));
+			RuntimeDependencies.Add(Path.Combine(BinDir, "model.dnr"));
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
-			string[] Libs = new string[] {
-				Path.Combine(LibDir, "libdolbyio_comms_media.dylib"),
-				Path.Combine(LibDir, "libdolbyio_comms_sdk.dylib"),
-				Path.Combine(LibDir, "libdvclient.dylib"),
-			};
+			string[] Libs = new string[] { Path.Combine(LibDir, "libdvclient.dylib"),
+				                           Path.Combine(LibDir, "libdolbyio_comms_media.dylib"),
+				                           Path.Combine(LibDir, "libdolbyio_comms_sdk.dylib") };
 			PublicAdditionalLibraries.AddRange(Libs);
 			PublicDelayLoadDLLs.AddRange(Libs);
 
@@ -54,6 +54,8 @@ public class DolbyIO : ModuleRules
 			{
 				RuntimeDependencies.Add(Lib);
 			}
+			RuntimeDependencies.Add(Path.Combine(LibDir, "libdvdnr.dylib"));
+			RuntimeDependencies.Add(Path.Combine(LibDir, "model.dnr"));
 		}
 	}
 }
