@@ -40,6 +40,12 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	OnTokenNeeded.Broadcast();
 }
 
+void UDolbyIOSubsystem::Deinitialize()
+{
+	Sdk.Reset(); // make sure Sdk is dead so it doesn't call handle_frame on VideoSink during game destruction
+	Super::Deinitialize();
+}
+
 namespace
 {
 	std::string ToStdString(const FString& String)

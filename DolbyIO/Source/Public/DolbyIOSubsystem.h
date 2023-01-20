@@ -167,6 +167,7 @@ public:
 
 private:
 	void Initialize(FSubsystemCollectionBase&) override;
+	void Deinitialize() override;
 
 	bool CanConnect() const;
 	bool IsConnected() const;
@@ -190,9 +191,9 @@ private:
 	dolbyio::comms::conference_status ConferenceStatus;
 	FString LocalParticipantID;
 
+	TSharedPtr<DolbyIO::FVideoSink> VideoSink;
 	TSharedPtr<dolbyio::comms::sdk> Sdk;
 	TSharedPtr<dolbyio::comms::refresh_token> RefreshTokenCb;
-	TSharedPtr<DolbyIO::FVideoSink> VideoSink;
 
 	float SpatialEnvironmentScale = 1.0f;
 
