@@ -3,6 +3,7 @@
 #include "DolbyIOSubsystem.h"
 
 #include "DolbyIOLogging.h"
+#include "DolbyIOVideoSink.h"
 
 #if PLATFORM_MAC
 #define DOLBYIO_COMMS_SUPPRESS_APPLE_NO_RTTI_WARNING
@@ -29,6 +30,8 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 #endif
 
 	ConferenceStatus = dolbyio::comms::conference_status::destroyed;
+
+	VideoSink = MakeShared<DolbyIO::FVideoSink>();
 
 	FTimerManager& TimerManager = GetGameInstance()->GetTimerManager();
 	TimerManager.SetTimer(LocationTimerHandle, this, &UDolbyIOSubsystem::SetLocationUsingFirstPlayer, 0.1, true);
@@ -300,6 +303,32 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	    .then(
 	        [this](dolbyio::comms::event_handler_id)
 	        {
+		        return Sdk->conference().add_event_handler(
+		            [this](const dolbyio::comms::video_track_added& Event)
+		            {
+			            if (Event.remote)
+			            {
+				            VideoSink->AddStream(Event.peer_id.c_str(), Event.stream_id.c_str());
+			            }
+		            });
+	        })
+	    .then(
+	        [this](dolbyio::comms::event_handler_id)
+	        {
+		        return Sdk->conference().add_event_handler(
+		            [this](const dolbyio::comms::video_track_removed& Event)
+		            {
+			            if (Event.remote)
+			            {
+				            VideoSink->RemoveStream(Event.peer_id.c_str(), Event.stream_id.c_str());
+			            }
+		            });
+	        })
+	    .then([this](dolbyio::comms::event_handler_id)
+	          { return Sdk->video().remote().set_video_sink(VideoSink.Get()); })
+	    .then(
+	        [this]
+	        {
 		        DLB_UE_LOG(Log, "Initialized");
 		        BroadcastEvent(OnInitialized);
 	        })
@@ -520,6 +549,11 @@ void UDolbyIOSubsystem::DisableVideo()
 
 	DLB_UE_LOG(Log, "Disabling video");
 	Sdk->video().local().stop().on_error(DLB_ERROR_HANDLER);
+}
+
+UTexture2D* UDolbyIOSubsystem::GetTexture(const FString& ParticipantID)
+{
+	return VideoSink->GetTexture(ParticipantID);
 }
 
 void UDolbyIOSubsystem::SetLocalPlayerLocation(const FVector& Location)

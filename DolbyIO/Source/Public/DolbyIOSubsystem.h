@@ -30,6 +30,11 @@ namespace dolbyio::comms
 	class sdk;
 }
 
+namespace DolbyIO
+{
+	class FVideoSink;
+}
+
 UCLASS(DisplayName = "Dolby.io Subsystem")
 class DOLBYIO_API UDolbyIOSubsystem : public UGameInstanceSubsystem
 {
@@ -115,6 +120,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void DisableVideo();
 
+	/** Gets the texture to which video from a given participant is being rendered.
+	 *
+	 * @param ParticipantID - The participant's ID.
+	 * @return The texture holding the participant's video frame or NULL if no such texture exists.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	class UTexture2D* GetTexture(const FString& ParticipantID);
+
 	/** Updates the location of the listener for spatial audio purposes.
 	 *
 	 * Calling this function even once disables the default behavior, which is to automatically use the location of the
@@ -178,6 +191,7 @@ private:
 
 	TSharedPtr<dolbyio::comms::sdk> Sdk;
 	TSharedPtr<dolbyio::comms::refresh_token> RefreshTokenCb;
+	TSharedPtr<DolbyIO::FVideoSink> VideoSink;
 
 	float SpatialEnvironmentScale = 1.0f;
 
