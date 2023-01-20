@@ -399,6 +399,11 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 		        SetSpatialEnvironment();
 		        ToggleInputMute();
 		        ToggleOutputMute();
+
+		        if (bIsVideoEnabled)
+		        {
+			        Sdk->video().local().start().on_error(DLB_ERROR_HANDLER);
+		        }
 	        })
 	    .on_error(DLB_ERROR_HANDLER);
 }
@@ -448,6 +453,15 @@ void UDolbyIOSubsystem::ToggleOutputMute()
 	if (IsConnected())
 	{
 		Sdk->conference().mute_output(bIsOutputMuted).on_error(DLB_ERROR_HANDLER);
+	}
+}
+
+void UDolbyIOSubsystem::ToggleVideo()
+{
+	if (IsConnected())
+	{
+		bIsVideoEnabled ? Sdk->video().local().start().on_error(DLB_ERROR_HANDLER)
+		                : Sdk->video().local().stop().on_error(DLB_ERROR_HANDLER);
 	}
 }
 
@@ -530,25 +544,16 @@ void UDolbyIOSubsystem::UnmuteOutput()
 
 void UDolbyIOSubsystem::EnableVideo()
 {
-	if (!Sdk)
-	{
-		DLB_UE_LOG(Warning, "Cannot enable video - not initialized");
-		return;
-	}
-
 	DLB_UE_LOG(Log, "Enabling video");
-	Sdk->video().local().start().on_error(DLB_ERROR_HANDLER);
+	bIsVideoEnabled = true;
+	ToggleVideo();
 }
 
 void UDolbyIOSubsystem::DisableVideo()
 {
-	if (!Sdk)
-	{
-		return;
-	}
-
 	DLB_UE_LOG(Log, "Disabling video");
-	Sdk->video().local().stop().on_error(DLB_ERROR_HANDLER);
+	bIsVideoEnabled = false;
+	ToggleVideo();
 }
 
 UTexture2D* UDolbyIOSubsystem::GetTexture(const FString& ParticipantID)

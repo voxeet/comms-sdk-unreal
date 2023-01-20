@@ -178,6 +178,7 @@ private:
 
 	void ToggleInputMute();
 	void ToggleOutputMute();
+	void ToggleVideo();
 
 	void SetLocationUsingFirstPlayer();
 	void SetLocalPlayerLocationImpl(const FVector& Location);
@@ -197,6 +198,7 @@ private:
 
 	bool bIsInputMuted = false;
 	bool bIsOutputMuted = false;
+	bool bIsVideoEnabled = false;
 
 	FTimerHandle LocationTimerHandle;
 	FTimerHandle RotationTimerHandle;
