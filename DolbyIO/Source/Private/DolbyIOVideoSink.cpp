@@ -4,6 +4,9 @@
 
 #include "DolbyIOLogging.h"
 
+#if PLATFORM_MAC
+#include <dolbyio/comms/media_engine/video_frame_macos.h>
+#endif
 #include <dolbyio/comms/media_engine/video_utils.h>
 
 #include "Engine/Texture2D.h"
@@ -76,6 +79,7 @@ namespace DolbyIO
 
 	void FVideoSink::FFrame::Convert(dolbyio::comms::video_frame& VideoFrame)
 	{
+#if PLATFORM_WINDOWS
 		if (dolbyio::comms::video_frame_i420* FrameI420 = VideoFrame.get_i420_frame())
 		{
 			dolbyio::comms::video_utils::format_converter::i420_to_argb(
@@ -83,6 +87,39 @@ namespace DolbyIO
 			    FrameI420->get_v(), FrameI420->stride_v(), Buffer.GetData(), VideoFrame.width() * Stride,
 			    VideoFrame.width(), VideoFrame.height());
 		}
+#elif PLATFORM_MAC
+		class FLockedCVPixelBuffer
+		{
+		public:
+			FLockedCVPixelBuffer(CVPixelBufferRef PixelBuffer) : PixelBuffer(PixelBuffer)
+			{
+				CVPixelBufferLockBaseAddress(PixelBuffer, kCVPixelBufferLock_ReadOnly);
+			}
+			~FLockedCVPixelBuffer()
+			{
+				CVPixelBufferUnlockBaseAddress(PixelBuffer, kCVPixelBufferLock_ReadOnly);
+			}
+
+			operator CVPixelBufferRef() const
+			{
+				return PixelBuffer;
+			}
+
+		private:
+			CVPixelBufferRef PixelBuffer;
+		};
+
+		if (dolbyio::comms::video_frame_macos* FrameMac = VideoFrame.get_native_frame())
+		{
+			FLockedCVPixelBuffer PixelBuffer{FrameMac->get_buffer()};
+			dolbyio::comms::video_utils::format_converter::nv12_to_argb(
+			    static_cast<uint8*>(CVPixelBufferGetBaseAddressOfPlane(PixelBuffer, 0)),
+			    CVPixelBufferGetBytesPerRowOfPlane(PixelBuffer, 0),
+			    static_cast<uint8*>(CVPixelBufferGetBaseAddressOfPlane(PixelBuffer, 1)),
+			    CVPixelBufferGetBytesPerRowOfPlane(PixelBuffer, 1), Buffer.GetData(), VideoFrame.width() * Stride,
+			    VideoFrame.width(), VideoFrame.height());
+		}
+#endif
 	}
 
 	void FVideoSink::handle_frame(const std::string& StreamID, const std::string& TrackID,
