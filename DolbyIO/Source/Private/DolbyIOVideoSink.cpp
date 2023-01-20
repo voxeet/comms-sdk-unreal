@@ -7,6 +7,7 @@
 #include <dolbyio/comms/media_engine/video_utils.h>
 
 #include "Engine/Texture2D.h"
+#include "Launch/Resources/Version.h"
 
 namespace DolbyIO
 {
@@ -49,8 +50,14 @@ namespace DolbyIO
 
 	void FVideoSink::FFrame::RecreateIfNeeded(int Width, int Height)
 	{
-		FTexturePlatformData** FrameData = Texture ? Texture->GetRunningPlatformData() : nullptr;
-		if (FrameData && *FrameData && (**FrameData).SizeX == Width && (**FrameData).SizeY == Height)
+		FTexturePlatformData* FrameData = Texture ? Texture->
+#if ENGINE_MAJOR_VERSION == 4
+		                                            PlatformData
+#else
+		                                            GetPlatformData()
+#endif
+		                                          : nullptr;
+		if (FrameData && FrameData->SizeX == Width && FrameData->SizeY == Height)
 		{
 			return;
 		}
