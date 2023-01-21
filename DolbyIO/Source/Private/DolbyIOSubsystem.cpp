@@ -5,13 +5,7 @@
 #include "DolbyIOLogging.h"
 #include "DolbyIOVideoSink.h"
 
-#if PLATFORM_MAC
-#define DOLBYIO_COMMS_SUPPRESS_APPLE_NO_RTTI_WARNING
-#endif
-#include <dolbyio/comms/sdk.h>
-
 #include "Async/Async.h"
-#include "Engine/Texture2D.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Misc/Base64.h"
@@ -253,26 +247,31 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		        return Sdk->conference().add_event_handler(
 		            [this](const dolbyio::comms::participant_updated& Event)
 		            {
-			            if (!Event.participant.status)
+			            if (!Event.participant.status || Event.participant.user_id == ToStdString(LocalParticipantID))
 			            {
 				            return;
 			            }
 
 			            const FDolbyIOParticipantInfo Info = ToUnrealParticipantInfo(Event.participant);
+			            const dolbyio::comms::participant_status Status = *Event.participant.status;
 			            DLB_UE_LOG(Log, "Participant status updated: UserID=%s Name=%s ExternalID=%s Status=%s",
-			                       *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
+			                       *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(Status));
 
-			            if (Info.UserID == LocalParticipantID)
+			            if (Status == dolbyio::comms::participant_status::on_air)
 			            {
-				            return;
+				            bool AlreadyAdded = false;
+				            ParticipantIDs.Add(Info.UserID, &AlreadyAdded);
+				            if (!AlreadyAdded)
+				            {
+					            BroadcastEvent(OnParticipantAdded, Info);
+				            }
 			            }
-
-			            switch (*Event.participant.status)
+			            else if (Status == dolbyio::comms::participant_status::left)
 			            {
-				            case dolbyio::comms::participant_status::on_air:
-					            return BroadcastEvent(OnParticipantAdded, Info);
-				            case dolbyio::comms::participant_status::left:
-					            return BroadcastEvent(OnParticipantLeft, Info.UserID);
+				            if (ParticipantIDs.Remove(Info.UserID))
+				            {
+					            BroadcastEvent(OnParticipantLeft, Info.UserID);
+				            }
 			            }
 		            });
 	        })
