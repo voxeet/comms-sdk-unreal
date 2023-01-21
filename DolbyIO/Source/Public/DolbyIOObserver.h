@@ -14,8 +14,11 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnConnectedDelegate, const 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FObserverOnDisconnectedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnParticipantAddedDelegate, const FDolbyIOParticipantInfo&,
                                             ParticipantInfo);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnParticipantLeftDelegate, const FDolbyIOParticipantInfo&,
-                                            ParticipantInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnParticipantLeftDelegate, const FString&, ParticipantID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnVideoTrackAddedDelegate, const FString&, ParticipantID,
+                                             const FString&, StreamID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnVideoTrackRemovedDelegate, const FString&, ParticipantID,
+                                             const FString&, StreamID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnActiveSpeakersChangedDelegate, const TArray<FString>&,
                                             ActiveSpeakers);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnAudioLevelsChangedDelegate, const TArray<FString>&,
@@ -63,6 +66,14 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnParticipantLeftDelegate OnParticipantLeft;
 
+	/** Triggered when a video track is added. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnVideoTrackAddedDelegate OnVideoTrackAdded;
+
+	/** Triggered when a video track is removed. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnVideoTrackRemovedDelegate OnVideoTrackRemoved;
+
 	/** Triggered when participants start or stop speaking. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnActiveSpeakersChangedDelegate OnActiveSpeakersChanged;
@@ -93,7 +104,13 @@ private:
 	void FwdOnParticipantAdded(const FDolbyIOParticipantInfo& ParticipantInfo);
 
 	UFUNCTION()
-	void FwdOnParticipantLeft(const FDolbyIOParticipantInfo& ParticipantInfo);
+	void FwdOnParticipantLeft(const FString& ParticipantID);
+
+	UFUNCTION()
+	void FwdOnVideoTrackAdded(const FString& ParticipantID, const FString& StreamID);
+
+	UFUNCTION()
+	void FwdOnVideoTrackRemoved(const FString& ParticipantID, const FString& StreamID);
 
 	UFUNCTION()
 	void FwdOnActiveSpeakersChanged(const TArray<FString>& ActiveSpeakers);

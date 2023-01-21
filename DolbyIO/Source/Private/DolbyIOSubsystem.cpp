@@ -272,7 +272,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 				            case dolbyio::comms::participant_status::on_air:
 					            return BroadcastEvent(OnParticipantAdded, Info);
 				            case dolbyio::comms::participant_status::left:
-					            return BroadcastEvent(OnParticipantLeft, Info);
+					            return BroadcastEvent(OnParticipantLeft, Info.UserID);
 			            }
 		            });
 	        })
@@ -314,7 +314,12 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		            {
 			            if (Event.remote)
 			            {
-				            VideoSink->AddStream(Event.peer_id.c_str(), Event.stream_id.c_str());
+				            const FString ParticipantID = Event.peer_id.c_str();
+				            const FString StreamID = Event.stream_id.c_str();
+				            DLB_UE_LOG(Log, "Video track added: ParticipantID=%s StreamID=%s", *ParticipantID,
+				                       *StreamID);
+				            VideoSink->AddStream(ParticipantID, StreamID);
+				            BroadcastEvent(OnVideoTrackAdded, ParticipantID, StreamID);
 			            }
 		            });
 	        })
@@ -326,7 +331,12 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		            {
 			            if (Event.remote)
 			            {
-				            VideoSink->RemoveStream(Event.peer_id.c_str(), Event.stream_id.c_str());
+				            const FString ParticipantID = Event.peer_id.c_str();
+				            const FString StreamID = Event.stream_id.c_str();
+				            DLB_UE_LOG(Log, "Video track removed: ParticipantID=%s StreamID=%s", *ParticipantID,
+				                       *StreamID);
+				            VideoSink->RemoveStream(ParticipantID, StreamID);
+				            BroadcastEvent(OnVideoTrackRemoved, ParticipantID, StreamID);
 			            }
 		            });
 	        })

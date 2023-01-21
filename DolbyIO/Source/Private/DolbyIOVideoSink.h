@@ -21,15 +21,12 @@ namespace DolbyIO
 	private:
 		struct FFrame
 		{
-			FFrame(const FString& ParticipantID);
-
 			void RecreateIfNeeded(int Width, int Height);
 			void Convert(dolbyio::comms::video_frame&);
 
-			FString ParticipantID;
-			FUpdateTextureRegion2D Region;
+			UTexture2D* Texture{};
 			TArray<uint8> Buffer;
-			UTexture2D* Texture;
+			FUpdateTextureRegion2D Region{0, 0, 0, 0, 0, 0};
 		};
 
 		void handle_frame(const std::string&, const std::string&,

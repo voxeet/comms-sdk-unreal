@@ -2,8 +2,6 @@
 
 #include "DolbyIOVideoSink.h"
 
-#include "DolbyIOLogging.h"
-
 #if PLATFORM_MAC
 #include <dolbyio/comms/media_engine/video_frame_macos.h>
 #endif
@@ -16,18 +14,12 @@ namespace DolbyIO
 {
 	void FVideoSink::AddStream(const FString& ParticipantID, const FString& StreamID)
 	{
-		DLB_UE_LOG(Log, "Video track added: ParticipantId=%s StreamId=%s", *ParticipantID, *StreamID);
-		Frames.Emplace(StreamID, FFrame{ParticipantID});
+		Frames.Emplace(StreamID, FFrame{});
 		ParticipantStreams.Emplace(ParticipantID, StreamID);
 	}
 
 	void FVideoSink::RemoveStream(const FString& ParticipantID, const FString& StreamID)
 	{
-		DLB_UE_LOG(Log, "Video track removed: ParticipantId=%s StreamId=%s", *ParticipantID, *StreamID);
-		if (FFrame* Frame = Frames.Find(StreamID))
-		{
-			Frame->Texture->ReleaseResource();
-		}
 		Frames.Remove(StreamID);
 		ParticipantStreams.Remove(ParticipantID);
 	}
@@ -42,11 +34,6 @@ namespace DolbyIO
 			}
 		}
 		return nullptr;
-	}
-
-	FVideoSink::FFrame::FFrame(const FString& ParticipantID)
-	    : ParticipantID(ParticipantID), Region(0, 0, 0, 0, 0, 0), Texture(nullptr)
-	{
 	}
 
 	constexpr int Stride = 4;

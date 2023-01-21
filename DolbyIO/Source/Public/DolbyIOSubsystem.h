@@ -16,8 +16,11 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnConnectedDelegate, const
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSubsystemOnDisconnectedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnParticipantAddedDelegate, const FDolbyIOParticipantInfo&,
                                             ParticipantInfo);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnParticipantLeftDelegate, const FDolbyIOParticipantInfo&,
-                                            ParticipantInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnParticipantLeftDelegate, const FString&, ParticipantID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnVideoTrackAddedDelegate, const FString&, ParticipantID,
+                                             const FString&, StreamID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnVideoTrackRemovedDelegate, const FString&, ParticipantID,
+                                             const FString&, StreamID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnActiveSpeakersChangedDelegate, const TArray<FString>&,
                                             ActiveSpeakers);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnAudioLevelsChangedDelegate, const TArray<FString>&,
@@ -160,6 +163,10 @@ public:
 	FSubsystemOnParticipantAddedDelegate OnParticipantAdded;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnParticipantLeftDelegate OnParticipantLeft;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnVideoTrackAddedDelegate OnVideoTrackAdded;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnVideoTrackRemovedDelegate OnVideoTrackRemoved;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnActiveSpeakersChangedDelegate OnActiveSpeakersChanged;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
