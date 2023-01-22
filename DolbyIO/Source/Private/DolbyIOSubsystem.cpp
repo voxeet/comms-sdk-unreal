@@ -5,7 +5,13 @@
 #include "DolbyIOLogging.h"
 #include "DolbyIOVideoSink.h"
 
+#if PLATFORM_MAC
+#define DOLBYIO_COMMS_SUPPRESS_APPLE_NO_RTTI_WARNING
+#endif
+#include <dolbyio/comms/sdk.h>
+
 #include "Async/Async.h"
+#include "Engine/Texture2D.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Misc/Base64.h"
@@ -247,31 +253,26 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		        return Sdk->conference().add_event_handler(
 		            [this](const dolbyio::comms::participant_updated& Event)
 		            {
-			            if (!Event.participant.status || Event.participant.user_id == ToStdString(LocalParticipantID))
+			            if (!Event.participant.status)
 			            {
 				            return;
 			            }
 
 			            const FDolbyIOParticipantInfo Info = ToUnrealParticipantInfo(Event.participant);
-			            const dolbyio::comms::participant_status Status = *Event.participant.status;
 			            DLB_UE_LOG(Log, "Participant status updated: UserID=%s Name=%s ExternalID=%s Status=%s",
-			                       *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(Status));
+			                       *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
 
-			            if (Status == dolbyio::comms::participant_status::on_air)
+			            if (Info.UserID == LocalParticipantID)
 			            {
-				            bool AlreadyAdded = false;
-				            ParticipantIDs.Add(Info.UserID, &AlreadyAdded);
-				            if (!AlreadyAdded)
-				            {
-					            BroadcastEvent(OnParticipantAdded, Info);
-				            }
+				            return;
 			            }
-			            else if (Status == dolbyio::comms::participant_status::left)
+
+			            switch (*Event.participant.status)
 			            {
-				            if (ParticipantIDs.Remove(Info.UserID))
-				            {
-					            BroadcastEvent(OnParticipantLeft, Info.UserID);
-				            }
+				            case dolbyio::comms::participant_status::on_air:
+					            return BroadcastEvent(OnParticipantAdded, Info);
+				            case dolbyio::comms::participant_status::left:
+					            return BroadcastEvent(OnParticipantLeft, Info.UserID);
 			            }
 		            });
 	        })

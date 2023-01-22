@@ -197,7 +197,6 @@ private:
 
 	dolbyio::comms::conference_status ConferenceStatus;
 	FString LocalParticipantID;
-	TSet<FString> ParticipantIDs;
 
 	TSharedPtr<DolbyIO::FVideoSink> VideoSink;
 	TSharedPtr<dolbyio::comms::sdk> Sdk;
