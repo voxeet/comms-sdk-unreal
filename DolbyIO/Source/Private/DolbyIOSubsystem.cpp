@@ -5,13 +5,7 @@
 #include "DolbyIOLogging.h"
 #include "DolbyIOVideoSink.h"
 
-#if PLATFORM_MAC
-#define DOLBYIO_COMMS_SUPPRESS_APPLE_NO_RTTI_WARNING
-#endif
-#include <dolbyio/comms/sdk.h>
-
 #include "Async/Async.h"
-#include "Engine/Texture2D.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Misc/Base64.h"
