@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "HAL/Platform.h"
+
 #if PLATFORM_WINDOWS
 #pragma warning(push)
 // 'type' : class 'type1' needs to have dll-interface to be used by clients of class 'type2'
