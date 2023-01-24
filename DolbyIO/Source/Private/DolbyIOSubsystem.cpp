@@ -141,14 +141,14 @@ namespace
 		};
 	}
 
+#define MAKE_DLB_ERROR_HANDLER(ConferenceStatus) FErrorHandler(ConferenceStatus, __LINE__)
 	class FErrorHandler final
 	{
 	public:
-		FErrorHandler(dolbyio::comms::conference_status ConferenceStatus, int Line)
+		FErrorHandler(const dolbyio::comms::conference_status& ConferenceStatus, int Line)
 		    : ConferenceStatus(ConferenceStatus), Line(Line)
 		{
 		}
-#define DLB_ERROR_HANDLER FErrorHandler(ConferenceStatus, __LINE__)
 
 		void operator()(std::exception_ptr&& ExcPtr) const
 		{
@@ -192,16 +192,16 @@ namespace
 		}
 		catch (...)
 		{
-			LogException("unknown exception", "");
+			LogException("unknown exception");
 		}
 
-		void LogException(const FString& Type, const FString& What) const
+		void LogException(const FString& Type, const FString& What = "") const
 		{
 			DLB_UE_ERROR("Caught %s: %s (conference status: %s, line: %d)", *Type, *What,
 			           *ToString(ConferenceStatus), Line);
 		}
 
-		dolbyio::comms::conference_status ConferenceStatus;
+		const dolbyio::comms::conference_status& ConferenceStatus;
 		int Line;
 	};
 }
@@ -223,7 +223,7 @@ try
 }
 catch (...)
 {
-	DLB_ERROR_HANDLER.HandleError();
+	MAKE_DLB_ERROR_HANDLER(ConferenceStatus).HandleError();
 }
 
 void UDolbyIOSubsystem::Initialize(const FString& Token)
@@ -342,7 +342,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		        DLB_UE_LOG("Initialized");
 		        BroadcastEvent(OnInitialized);
 	        })
-	    .on_error(DLB_ERROR_HANDLER);
+	    .on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
 }
 
 void UDolbyIOSubsystem::UpdateStatus(dolbyio::comms::conference_status Status)
@@ -412,10 +412,10 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 
 		        if (bIsVideoEnabled)
 		        {
-			        Sdk->video().local().start().on_error(DLB_ERROR_HANDLER);
+			        Sdk->video().local().start().on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
 		        }
 	        })
-	    .on_error(DLB_ERROR_HANDLER);
+	    .on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
 }
 
 bool UDolbyIOSubsystem::CanConnect() const
@@ -447,14 +447,14 @@ void UDolbyIOSubsystem::SetSpatialEnvironment()
 	const dolbyio::comms::spatial_position Forward{1, 0, 0};
 	const dolbyio::comms::spatial_position Up{0, 0, 1};
 	const dolbyio::comms::spatial_position Right{0, 1, 0};
-	Sdk->conference().set_spatial_environment(Scale, Forward, Up, Right).on_error(DLB_ERROR_HANDLER);
+	Sdk->conference().set_spatial_environment(Scale, Forward, Up, Right).on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
 }
 
 void UDolbyIOSubsystem::ToggleInputMute()
 {
 	if (IsConnected())
 	{
-		Sdk->conference().mute(bIsInputMuted).on_error(DLB_ERROR_HANDLER);
+		Sdk->conference().mute(bIsInputMuted).on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
 	}
 }
 
@@ -462,7 +462,7 @@ void UDolbyIOSubsystem::ToggleOutputMute()
 {
 	if (IsConnected())
 	{
-		Sdk->conference().mute_output(bIsOutputMuted).on_error(DLB_ERROR_HANDLER);
+		Sdk->conference().mute_output(bIsOutputMuted).on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
 	}
 }
 
@@ -470,8 +470,8 @@ void UDolbyIOSubsystem::ToggleVideo()
 {
 	if (IsConnected())
 	{
-		bIsVideoEnabled ? Sdk->video().local().start().on_error(DLB_ERROR_HANDLER)
-		                : Sdk->video().local().stop().on_error(DLB_ERROR_HANDLER);
+		bIsVideoEnabled ? Sdk->video().local().start().on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus))
+		                : Sdk->video().local().stop().on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
 	}
 }
 
@@ -500,7 +500,7 @@ void UDolbyIOSubsystem::DemoConference()
 		        ToggleInputMute();
 		        ToggleOutputMute();
 	        })
-	    .on_error(DLB_ERROR_HANDLER);
+	    .on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
 }
 
 void UDolbyIOSubsystem::Disconnect()
@@ -511,7 +511,7 @@ void UDolbyIOSubsystem::Disconnect()
 	}
 
 	DLB_UE_LOG("Disconnecting");
-	Sdk->conference().leave().then([this]() { return Sdk->session().close(); }).on_error(DLB_ERROR_HANDLER);
+	Sdk->conference().leave().then([this]() { return Sdk->session().close(); }).on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
 }
 
 void UDolbyIOSubsystem::SetSpatialEnvironmentScale(float Scale)
@@ -590,7 +590,7 @@ void UDolbyIOSubsystem::SetLocalPlayerLocationImpl(const FVector& Location)
 
 	Sdk->conference()
 	    .set_spatial_position(ToStdString(LocalParticipantID), {Location.X, Location.Y, Location.Z})
-	    .on_error(DLB_ERROR_HANDLER);
+	    .on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
 }
 
 void UDolbyIOSubsystem::SetLocalPlayerRotation(const FRotator& Rotation)
@@ -612,7 +612,7 @@ void UDolbyIOSubsystem::SetLocalPlayerRotationImpl(const FRotator& Rotation)
 
 	// The SDK expects the direction values to mean rotations around the {x,y,z} axes as specified by the
 	// environment. In Unreal, rotation around x is roll (because x is forward), y is pitch and z is yaw.
-	Sdk->conference().set_spatial_direction({Rotation.Roll, Rotation.Pitch, Rotation.Yaw}).on_error(DLB_ERROR_HANDLER);
+	Sdk->conference().set_spatial_direction({Rotation.Roll, Rotation.Pitch, Rotation.Yaw}).on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
 }
 
 void UDolbyIOSubsystem::SetLocationUsingFirstPlayer()
