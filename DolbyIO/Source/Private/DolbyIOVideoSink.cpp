@@ -14,13 +14,13 @@ namespace DolbyIO
 {
 	void FVideoSink::AddStream(const FString& ParticipantID, const FString& StreamID)
 	{
-		Frames.Emplace(StreamID, FFrame{});
+		StreamFrames.Emplace(StreamID, FFrame{});
 		ParticipantStreams.Emplace(ParticipantID, StreamID);
 	}
 
 	void FVideoSink::RemoveStream(const FString& ParticipantID, const FString& StreamID)
 	{
-		Frames.Remove(StreamID);
+		StreamFrames.Remove(StreamID);
 		ParticipantStreams.Remove(ParticipantID);
 	}
 
@@ -28,7 +28,7 @@ namespace DolbyIO
 	{
 		if (FString* StreamID = ParticipantStreams.Find(ParticipantID))
 		{
-			if (FFrame* Frame = Frames.Find(*StreamID))
+			if (FFrame* Frame = StreamFrames.Find(*StreamID))
 			{
 				return Frame->Texture;
 			}
@@ -112,7 +112,7 @@ namespace DolbyIO
 	void FVideoSink::handle_frame(const std::string& StreamID, const std::string& TrackID,
 	                              std::unique_ptr<dolbyio::comms::video_frame> VideoFrame)
 	{
-		if (FFrame* Frame = Frames.Find(StreamID.c_str()))
+		if (FFrame* Frame = StreamFrames.Find(StreamID.c_str()))
 		{
 			Frame->RecreateIfNeeded(VideoFrame->width(), VideoFrame->height());
 			Frame->Convert(*VideoFrame);
