@@ -197,7 +197,7 @@ namespace
 
 		void LogException(const FString& Type, const FString& What) const
 		{
-			DLB_UE_LOG(Error, "Caught %s: %s (conference status: %s, line: %d)", *Type, *What,
+			DLB_UE_ERROR("Caught %s: %s (conference status: %s, line: %d)", *Type, *What,
 			           *ToString(ConferenceStatus), Line);
 		}
 
@@ -211,12 +211,12 @@ try
 {
 	if (!Sdk)
 	{
-		DLB_UE_LOG(Log, "Initializing with token: %s", *Token);
+		DLB_UE_LOG("Initializing with token: %s", *Token);
 		Initialize(Token);
 	}
 	else if (RefreshTokenCb)
 	{
-		DLB_UE_LOG(Log, "Refreshing token: %s", *Token);
+		DLB_UE_LOG("Refreshing token: %s", *Token);
 		(*RefreshTokenCb)(ToStdString(Token));
 		RefreshTokenCb.Reset(); // RefreshToken callback can only be called once
 	}
@@ -232,7 +232,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	    dolbyio::comms::sdk::create(ToStdString(Token),
 	                                [this](std::unique_ptr<dolbyio::comms::refresh_token>&& RefreshCb)
 	                                {
-		                                DLB_UE_LOG(Log, "Refresh token requested");
+		                                DLB_UE_LOG("Refresh token requested");
 		                                RefreshTokenCb = TSharedPtr<dolbyio::comms::refresh_token>(RefreshCb.release());
 		                                BroadcastEvent(OnTokenNeeded);
 	                                })
@@ -253,7 +253,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            }
 
 			            const FDolbyIOParticipantInfo Info = ToUnrealParticipantInfo(Event.participant);
-			            DLB_UE_LOG(Log, "Participant status updated: UserID=%s Name=%s ExternalID=%s Status=%s",
+			            DLB_UE_LOG("Participant status updated: UserID=%s Name=%s ExternalID=%s Status=%s",
 			                       *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
 
 			            if (Info.UserID == LocalParticipantID)
@@ -310,7 +310,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            {
 				            const FString ParticipantID = Event.peer_id.c_str();
 				            const FString StreamID = Event.stream_id.c_str();
-				            DLB_UE_LOG(Log, "Video track added: ParticipantID=%s StreamID=%s", *ParticipantID,
+				            DLB_UE_LOG("Video track added: ParticipantID=%s StreamID=%s", *ParticipantID,
 				                       *StreamID);
 				            VideoSink->AddStream(ParticipantID, StreamID);
 				            BroadcastEvent(OnVideoTrackAdded, ParticipantID, StreamID);
@@ -327,7 +327,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            {
 				            const FString ParticipantID = Event.peer_id.c_str();
 				            const FString StreamID = Event.stream_id.c_str();
-				            DLB_UE_LOG(Log, "Video track removed: ParticipantID=%s StreamID=%s", *ParticipantID,
+				            DLB_UE_LOG("Video track removed: ParticipantID=%s StreamID=%s", *ParticipantID,
 				                       *StreamID);
 				            VideoSink->RemoveStream(ParticipantID, StreamID);
 				            BroadcastEvent(OnVideoTrackRemoved, ParticipantID, StreamID);
@@ -339,7 +339,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	    .then(
 	        [this]
 	        {
-		        DLB_UE_LOG(Log, "Initialized");
+		        DLB_UE_LOG("Initialized");
 		        BroadcastEvent(OnInitialized);
 	        })
 	    .on_error(DLB_ERROR_HANDLER);
@@ -348,7 +348,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 void UDolbyIOSubsystem::UpdateStatus(dolbyio::comms::conference_status Status)
 {
 	ConferenceStatus = Status;
-	DLB_UE_LOG(Log, "Conference status: %s", *ToString(ConferenceStatus));
+	DLB_UE_LOG("Conference status: %s", *ToString(ConferenceStatus));
 
 	switch (ConferenceStatus)
 	{
@@ -371,11 +371,11 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 	}
 	if (ConferenceName.IsEmpty())
 	{
-		DLB_UE_LOG(Warning, "Cannot connect - conference name cannot be empty");
+		DLB_UE_WARN("Cannot connect - conference name cannot be empty");
 		return;
 	}
 
-	DLB_UE_LOG(Log, "Connecting to conference %s as %s", *ConferenceName, *UserName);
+	DLB_UE_LOG("Connecting to conference %s as %s", *ConferenceName, *UserName);
 
 	dolbyio::comms::services::session::user_info UserInfo{};
 	UserInfo.name = ToStdString(UserName);
@@ -405,7 +405,7 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 	    .then(
 	        [this](dolbyio::comms::conference_info&& ConferenceInfo)
 	        {
-		        DLB_UE_LOG(Log, "Connected to conference ID %s", *FString{ConferenceInfo.id.c_str()});
+		        DLB_UE_LOG("Connected to conference ID %s", *FString{ConferenceInfo.id.c_str()});
 		        SetSpatialEnvironment();
 		        ToggleInputMute();
 		        ToggleOutputMute();
@@ -422,12 +422,12 @@ bool UDolbyIOSubsystem::CanConnect() const
 {
 	if (!Sdk)
 	{
-		DLB_UE_LOG(Warning, "Cannot connect - not initialized");
+		DLB_UE_WARN("Cannot connect - not initialized");
 		return false;
 	}
 	if (IsConnected())
 	{
-		DLB_UE_LOG(Warning, "Cannot connect - already connected, please disconnect first");
+		DLB_UE_WARN("Cannot connect - already connected, please disconnect first");
 		return false;
 	}
 	return true;
@@ -482,7 +482,7 @@ void UDolbyIOSubsystem::DemoConference()
 		return;
 	}
 
-	DLB_UE_LOG(Log, "Connecting to demo conference");
+	DLB_UE_LOG("Connecting to demo conference");
 
 	Sdk->session()
 	    .open({})
@@ -495,7 +495,7 @@ void UDolbyIOSubsystem::DemoConference()
 	    .then(
 	        [this](dolbyio::comms::conference_info&& ConferenceInfo)
 	        {
-		        DLB_UE_LOG(Log, "Connected to conference ID %s", *FString{ConferenceInfo.id.c_str()});
+		        DLB_UE_LOG("Connected to conference ID %s", *FString{ConferenceInfo.id.c_str()});
 		        SetSpatialEnvironment();
 		        ToggleInputMute();
 		        ToggleOutputMute();
@@ -510,13 +510,13 @@ void UDolbyIOSubsystem::Disconnect()
 		return;
 	}
 
-	DLB_UE_LOG(Log, "Disconnecting");
+	DLB_UE_LOG("Disconnecting");
 	Sdk->conference().leave().then([this]() { return Sdk->session().close(); }).on_error(DLB_ERROR_HANDLER);
 }
 
 void UDolbyIOSubsystem::SetSpatialEnvironmentScale(float Scale)
 {
-	DLB_UE_LOG(Log, "Setting spatial environment scale: %f", Scale);
+	DLB_UE_LOG("Setting spatial environment scale: %f", Scale);
 	SpatialEnvironmentScale = Scale;
 	if (IsConnected())
 	{
@@ -526,42 +526,42 @@ void UDolbyIOSubsystem::SetSpatialEnvironmentScale(float Scale)
 
 void UDolbyIOSubsystem::MuteInput()
 {
-	DLB_UE_LOG(Log, "Muting input");
+	DLB_UE_LOG("Muting input");
 	bIsInputMuted = true;
 	ToggleInputMute();
 }
 
 void UDolbyIOSubsystem::UnmuteInput()
 {
-	DLB_UE_LOG(Log, "Unmuting input");
+	DLB_UE_LOG("Unmuting input");
 	bIsInputMuted = false;
 	ToggleInputMute();
 }
 
 void UDolbyIOSubsystem::MuteOutput()
 {
-	DLB_UE_LOG(Log, "Muting output");
+	DLB_UE_LOG("Muting output");
 	bIsOutputMuted = true;
 	ToggleOutputMute();
 }
 
 void UDolbyIOSubsystem::UnmuteOutput()
 {
-	DLB_UE_LOG(Log, "Unmuting output");
+	DLB_UE_LOG("Unmuting output");
 	bIsOutputMuted = false;
 	ToggleOutputMute();
 }
 
 void UDolbyIOSubsystem::EnableVideo()
 {
-	DLB_UE_LOG(Log, "Enabling video");
+	DLB_UE_LOG("Enabling video");
 	bIsVideoEnabled = true;
 	ToggleVideo();
 }
 
 void UDolbyIOSubsystem::DisableVideo()
 {
-	DLB_UE_LOG(Log, "Disabling video");
+	DLB_UE_LOG("Disabling video");
 	bIsVideoEnabled = false;
 	ToggleVideo();
 }
@@ -575,7 +575,7 @@ void UDolbyIOSubsystem::SetLocalPlayerLocation(const FVector& Location)
 {
 	if (LocationTimerHandle.IsValid())
 	{
-		DLB_UE_LOG(Log, "Disabling automatic location setting");
+		DLB_UE_LOG("Disabling automatic location setting");
 		GetGameInstance()->GetTimerManager().ClearTimer(LocationTimerHandle);
 	}
 	SetLocalPlayerLocationImpl(Location);
@@ -597,7 +597,7 @@ void UDolbyIOSubsystem::SetLocalPlayerRotation(const FRotator& Rotation)
 {
 	if (RotationTimerHandle.IsValid())
 	{
-		DLB_UE_LOG(Log, "Disabling automatic rotation setting");
+		DLB_UE_LOG("Disabling automatic rotation setting");
 		GetGameInstance()->GetTimerManager().ClearTimer(RotationTimerHandle);
 	}
 	SetLocalPlayerRotationImpl(Rotation);
