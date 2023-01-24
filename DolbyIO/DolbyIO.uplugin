@@ -4,7 +4,7 @@
 	"VersionName": "1.1",
 	"FriendlyName": "Dolby.io Virtual World",
 	"Description": "Plugin integrating Dolby.io Communications.",
-	"Category": "Audio",
+	"Category": "Media",
 	"CreatedBy": "Dolby Laboratories",
 	"CreatedByURL": "https://dolby.io",
 	"DocsURL": "https://github.com/DolbyIO/comms-sdk-unreal",
@@ -15,7 +15,7 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "DolbyIOModule",
+			"Name": "DolbyIO",
 			"Type": "Runtime",
 			"LoadingPhase": "PreDefault",
 			"WhitelistPlatforms": [ "Win64", "Mac" ]
