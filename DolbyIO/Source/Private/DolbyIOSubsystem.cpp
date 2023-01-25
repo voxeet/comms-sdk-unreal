@@ -313,7 +313,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 				            DLB_UE_LOG("Video track added: ParticipantID=%s StreamID=%s", *ParticipantID,
 				                       *StreamID);
 				            VideoSink->AddStream(ParticipantID, StreamID);
-				            BroadcastEvent(OnVideoTrackAdded, ParticipantID, StreamID);
+				            BroadcastEvent(OnVideoTrackAdded, ParticipantID);
 			            }
 		            });
 	        })
@@ -330,7 +330,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 				            DLB_UE_LOG("Video track removed: ParticipantID=%s StreamID=%s", *ParticipantID,
 				                       *StreamID);
 				            VideoSink->RemoveStream(ParticipantID, StreamID);
-				            BroadcastEvent(OnVideoTrackRemoved, ParticipantID, StreamID);
+				            BroadcastEvent(OnVideoTrackRemoved, ParticipantID);
 			            }
 		            });
 	        })

@@ -15,10 +15,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FObserverOnDisconnectedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnParticipantAddedDelegate, const FDolbyIOParticipantInfo&,
                                             ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnParticipantLeftDelegate, const FString&, ParticipantID);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnVideoTrackAddedDelegate, const FString&, ParticipantID,
-                                             const FString&, StreamID);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnVideoTrackRemovedDelegate, const FString&, ParticipantID,
-                                             const FString&, StreamID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackAddedDelegate, const FString&, ParticipantID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackRemovedDelegate, const FString&, ParticipantID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnActiveSpeakersChangedDelegate, const TArray<FString>&,
                                             ActiveSpeakers);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnAudioLevelsChangedDelegate, const TArray<FString>&,
@@ -107,10 +105,10 @@ private:
 	void FwdOnParticipantLeft(const FString& ParticipantID);
 
 	UFUNCTION()
-	void FwdOnVideoTrackAdded(const FString& ParticipantID, const FString& StreamID);
+	void FwdOnVideoTrackAdded(const FString& ParticipantID);
 
 	UFUNCTION()
-	void FwdOnVideoTrackRemoved(const FString& ParticipantID, const FString& StreamID);
+	void FwdOnVideoTrackRemoved(const FString& ParticipantID);
 
 	UFUNCTION()
 	void FwdOnActiveSpeakersChanged(const TArray<FString>& ActiveSpeakers);

@@ -55,13 +55,13 @@ void UDolbyIOObserver::FwdOnParticipantLeft(const FString& ParticipantID)
 {
 	BroadcastEvent(OnParticipantLeft, ParticipantID);
 }
-void UDolbyIOObserver::FwdOnVideoTrackAdded(const FString& ParticipantID, const FString& StreamID)
+void UDolbyIOObserver::FwdOnVideoTrackAdded(const FString& ParticipantID)
 {
-	BroadcastEvent(OnVideoTrackAdded, ParticipantID, StreamID);
+	BroadcastEvent(OnVideoTrackAdded, ParticipantID);
 }
-void UDolbyIOObserver::FwdOnVideoTrackRemoved(const FString& ParticipantID, const FString& StreamID)
+void UDolbyIOObserver::FwdOnVideoTrackRemoved(const FString& ParticipantID)
 {
-	BroadcastEvent(OnVideoTrackRemoved, ParticipantID, StreamID);
+	BroadcastEvent(OnVideoTrackRemoved, ParticipantID);
 }
 void UDolbyIOObserver::FwdOnActiveSpeakersChanged(const TArray<FString>& ActiveSpeakers)
 {

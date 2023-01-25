@@ -17,10 +17,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSubsystemOnDisconnectedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnParticipantAddedDelegate, const FDolbyIOParticipantInfo&,
                                             ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnParticipantLeftDelegate, const FString&, ParticipantID);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnVideoTrackAddedDelegate, const FString&, ParticipantID,
-                                             const FString&, StreamID);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnVideoTrackRemovedDelegate, const FString&, ParticipantID,
-                                             const FString&, StreamID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackAddedDelegate, const FString&, ParticipantID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackRemovedDelegate, const FString&, ParticipantID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnActiveSpeakersChangedDelegate, const TArray<FString>&,
                                             ActiveSpeakers);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnAudioLevelsChangedDelegate, const TArray<FString>&,
