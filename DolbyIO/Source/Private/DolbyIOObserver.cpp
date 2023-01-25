@@ -14,9 +14,10 @@ UDolbyIOObserver::UDolbyIOObserver()
 
 void UDolbyIOObserver::InitializeComponent()
 {
-	if (GetWorld() && GetWorld()->GetGameInstance())
+	auto World = GetWorld();
+	if (World && World->GetGameInstance())
 	{
-		UDolbyIOSubsystem* DolbyIOSubsystem = GetWorld()->GetGameInstance()->GetSubsystem<UDolbyIOSubsystem>();
+		UDolbyIOSubsystem* DolbyIOSubsystem = World->GetGameInstance()->GetSubsystem<UDolbyIOSubsystem>();
 		DolbyIOSubsystem->OnTokenNeeded.AddDynamic(this, &UDolbyIOObserver::FwdOnTokenNeeded);
 		DolbyIOSubsystem->OnInitialized.AddDynamic(this, &UDolbyIOObserver::FwdOnInitialized);
 		DolbyIOSubsystem->OnConnected.AddDynamic(this, &UDolbyIOObserver::FwdOnConnected);
