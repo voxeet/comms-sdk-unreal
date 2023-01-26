@@ -197,8 +197,8 @@ namespace
 
 		void LogException(const FString& Type, const FString& What = "") const
 		{
-			DLB_UE_ERROR("Caught %s: %s (conference status: %s, line: %d)", *Type, *What,
-			           *ToString(ConferenceStatus), Line);
+			DLB_UE_ERROR("Caught %s: %s (conference status: %s, line: %d)", *Type, *What, *ToString(ConferenceStatus),
+			             Line);
 		}
 
 		const dolbyio::comms::conference_status& ConferenceStatus;
@@ -310,8 +310,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            {
 				            const FString ParticipantID = Event.peer_id.c_str();
 				            const FString StreamID = Event.stream_id.c_str();
-				            DLB_UE_LOG("Video track added: ParticipantID=%s StreamID=%s", *ParticipantID,
-				                       *StreamID);
+				            DLB_UE_LOG("Video track added: ParticipantID=%s StreamID=%s", *ParticipantID, *StreamID);
 				            VideoSink->AddStream(ParticipantID, StreamID);
 				            BroadcastEvent(OnVideoTrackAdded, ParticipantID);
 			            }
@@ -327,8 +326,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            {
 				            const FString ParticipantID = Event.peer_id.c_str();
 				            const FString StreamID = Event.stream_id.c_str();
-				            DLB_UE_LOG("Video track removed: ParticipantID=%s StreamID=%s", *ParticipantID,
-				                       *StreamID);
+				            DLB_UE_LOG("Video track removed: ParticipantID=%s StreamID=%s", *ParticipantID, *StreamID);
 				            VideoSink->RemoveStream(ParticipantID, StreamID);
 				            BroadcastEvent(OnVideoTrackRemoved, ParticipantID);
 			            }
@@ -447,7 +445,9 @@ void UDolbyIOSubsystem::SetSpatialEnvironment()
 	const dolbyio::comms::spatial_position Forward{1, 0, 0};
 	const dolbyio::comms::spatial_position Up{0, 0, 1};
 	const dolbyio::comms::spatial_position Right{0, 1, 0};
-	Sdk->conference().set_spatial_environment(Scale, Forward, Up, Right).on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
+	Sdk->conference()
+	    .set_spatial_environment(Scale, Forward, Up, Right)
+	    .on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
 }
 
 void UDolbyIOSubsystem::ToggleInputMute()
@@ -511,7 +511,10 @@ void UDolbyIOSubsystem::Disconnect()
 	}
 
 	DLB_UE_LOG("Disconnecting");
-	Sdk->conference().leave().then([this]() { return Sdk->session().close(); }).on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
+	Sdk->conference()
+	    .leave()
+	    .then([this]() { return Sdk->session().close(); })
+	    .on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
 }
 
 void UDolbyIOSubsystem::SetSpatialEnvironmentScale(float Scale)
@@ -612,7 +615,9 @@ void UDolbyIOSubsystem::SetLocalPlayerRotationImpl(const FRotator& Rotation)
 
 	// The SDK expects the direction values to mean rotations around the {x,y,z} axes as specified by the
 	// environment. In Unreal, rotation around x is roll (because x is forward), y is pitch and z is yaw.
-	Sdk->conference().set_spatial_direction({Rotation.Roll, Rotation.Pitch, Rotation.Yaw}).on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
+	Sdk->conference()
+	    .set_spatial_direction({Rotation.Roll, Rotation.Pitch, Rotation.Yaw})
+	    .on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
 }
 
 void UDolbyIOSubsystem::SetLocationUsingFirstPlayer()

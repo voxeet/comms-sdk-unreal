@@ -58,10 +58,10 @@ Example:
 Triggered when a remote participant leaves the conference. Provides the participant ID in its argument.
 
 ### On Video Track Added
-Triggered when a video track is added. Provides the participant ID and the stream ID in its arguments.
+Triggered when a video track is added. Provides the participant ID in its argument.
 
 ### On Video Track Removed
-Triggered when a video track is removed. Provides the participant ID and the stream ID in its arguments.
+Triggered when a video track is removed. Provides the participant ID in its argument.
 
 ### On Active Speakers Changed
 Triggered when participants start or stop speaking. The event provides the IDs of the current speakers in its argument.
