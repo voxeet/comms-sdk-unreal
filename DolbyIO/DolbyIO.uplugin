@@ -4,7 +4,7 @@
 	"VersionName": "1.0",
 	"FriendlyName": "Dolby.io Virtual World",
 	"Description": "Plugin integrating Dolby.io Communications.",
-	"Category": "Media",
+	"Category": "Communications",
 	"CreatedBy": "Dolby Laboratories",
 	"CreatedByURL": "https://dolby.io",
 	"DocsURL": "https://github.com/DolbyIO/comms-sdk-unreal",
