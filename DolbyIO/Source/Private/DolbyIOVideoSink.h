@@ -48,7 +48,7 @@ namespace DolbyIO
 		void handle_frame(const std::string&, const std::string&,
 		                  std::unique_ptr<dolbyio::comms::video_frame>) override;
 
-		TMap<FString, FFrame> Frames;
+		TMap<FString, FFrame> StreamFrames;
 		TMap<FString, FString> ParticipantStreams;
 	};
 }
