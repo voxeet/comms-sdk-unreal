@@ -147,15 +147,15 @@ Updates the rotation of the listener for spatial audio purposes. Calling this fu
 6. Build the project in the Development Editor configuration.
 
 ## macOS advice
-Using the plugin in Unreal Editor requires the Editor to obtain microphone and camera permissions. However, Unreal Editor will never ask for the appropriate permissions, so we need to forcefully provide them to the application. One method to do so is to use [this tool](https://github.com/DocSystem/tccutil):  
-- Unreal Engine 4: `sudo python tccutil.py -e -id com.epicgames.UE4Editor --microphone --camera`  
-- Unreal Engine 5: `sudo python tccutil.py -e -id com.epicgames.UnrealEditor --microphone --camera`
+Using the plugin requires microphone and camera permissions. However, Unreal Editor cannot obtain these permissions because it misses critical entries in its Info.plist file. Edit the following file:
+- UE4: {UnrealEngineRoot}/Engine/Binaries/Mac/UE4Editor.app/Contents/Info.plist
+- UE5: {UnrealEngineRoot}/Engine/Binaries/Mac/UnrealEditor.app/Contents/Info.plist
 
-Please be aware that this tool is not endorsed by Dolby in any way and may be dangerous as it needs root permissions to access sensitive system files and requires you to grant full disk access to the terminal. If you do not wish to use it, you will need to find another way to provide the required permissions to the Unreal Editor, otherwise, you will need to package the game to use the plugin and you will be unable to test it in the Editor. In order to package games using the plugin with the data required to request the necessary permissions, you will also need to add these lines:
+and add these lines inside the topmost dict element:
 ```
 <key>NSMicrophoneUsageDescription</key>
 <string>Dolby.io Virtual World</string>
 <key>NSCameraUsageDescription</key>
 <string>Dolby.io Virtual World</string>
 ```
-in your game's Info.plist or, if you want to automatically add these lines in all packaged games, in {UnrealEngineRoot}/Engine/Source/Runtime/Launch/Resources/Mac/Info.plist. The latter solution is recommended if it does not conflict with your setup because the Info.plist file is overwritten each time the game is packaged.
+UE will also not package games with these entries by default, so you will also need to add these lines in your game's Info.plist or, if you want to automatically add these lines in all packaged games, in {UnrealEngineRoot}/Engine/Source/Runtime/Launch/Resources/Mac/Info.plist. The latter solution is recommended if it does not conflict with your setup because the Info.plist file is overwritten each time the game is packaged.
