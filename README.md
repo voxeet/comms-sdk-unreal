@@ -139,7 +139,7 @@ Updates the location of the listener for spatial audio purposes. Calling this fu
 Updates the rotation of the listener for spatial audio purposes. Calling this function even once disables the default behavior, which is to automatically use the rotation of the first player controller.
 
 ## Building from source
-1. Download and unzip [this](https://github.com/DolbyIO/comms-sdk-cpp/releases/tag/2.3.0-beta.2) Dolby.io Communications C++ SDK release.
+1. Download and unzip [this](https://github.com/DolbyIO/comms-sdk-cpp/releases/tag/2.3.0) Dolby.io Communications C++ SDK release.
 2. Place the unzipped sdk-release (sdk-release-x86 for macOS) folder inside the DolbyIO folder.
 3. Place the DolbyIO folder in {YourGameRoot}/Plugins. Create a Plugins folder if it does not exist.
 4. Regenerate project files.
