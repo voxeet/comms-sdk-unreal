@@ -274,7 +274,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	        [this](dolbyio::comms::event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
-		            [this](const dolbyio::comms::active_speaker_change& Event)
+		            [this](const dolbyio::comms::active_speaker_changed& Event)
 		            {
 			            TArray<FString> ActiveSpeakers;
 			            for (const std::string& Speaker : Event.active_speakers)
