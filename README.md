@@ -99,7 +99,7 @@ After enabling the plugin, you need to add the `Dolby.io Subsystem` node to the 
 
 7. Add an `On Initialized` event by clicking the add button (+) next to the event located in the `Details` sub-window. After this step, the `On Initialized (DolbyIOObserver)` element should appear in the main window.
 
-8. Right-click the Blueprint, add a `Demo Conference` component and connect the component with the `On Initialized` event.
+8. Right-click the Blueprint, add a `Demo Conference` component, and connect the component with the `On Initialized` event.
 
 9. Connect the `Target` pins of `Demo Conference` and `Dolby.io Subsystem`.
 ![example](./Images/all-token.png)
@@ -107,7 +107,8 @@ After enabling the plugin, you need to add the `Dolby.io Subsystem` node to the 
 10. Click `Compile`, and then click `Play`. After this step, you should be able to run First Person Example and enjoy spatial audio.
 
 ## Events
-Below sections desribe events provided by *Dolby.io Subsystem* node.
+The `Dolby.io Subsystem` node provides the following events:
+
 ### On Token Needed
 Triggered when an initial or refreshed [client access token](https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) is needed, which happens when the game starts or when a refresh token is requested.
 
@@ -158,6 +159,8 @@ Example:
 ![example](Images/on_audio_levels_changed.PNG)
 
 ## Functions
+The `Dolby.io Subsystem` node provides the following functions:
+
 ### Set Token
 Initializes or refreshes the client access token. The function takes the token as a parameter and initializes the plugin unless already initialized. Successful initialization triggers the [On Initialized](#on-initialized) event.
 
