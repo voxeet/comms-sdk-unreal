@@ -6,25 +6,12 @@ The plugin is compatible with the following Unreal Engine versions:
 - 4.27.2
 - 5.0.3
 
-The plugin is compatible with the following operating systems:
-- Windows 10 or newer
-- macOS:
-    - UE4: latest Mojave or newer
-    - UE5: latest Monterey or newer
-    - please see our [advice for macOS](#macos-advice)
-
 ## Prerequisites
 Before you start, make sure that you have:
 - Unreal Engine installed on your computer. For more details, see the [Unreal Engine download](https://www.unrealengine.com/en-US/download) page and the [4.27](https://docs.unrealengine.com/4.27/en-US/Basics/InstallingUnrealEngine/) or [5.0](https://docs.unrealengine.com/5.0/en-US/installing-unreal-engine/) installation manuals.
 - An Epic Games [account](https://www.epicgames.com/id/register).
 - A [Dolby.io](https://dolby.io) account. If you do not have an account, [sign up](https://dolby.io/signup) for free.
 - A client access token or an app key and an app secret copied from the Communications & Media [Dolby.io Dashboard](https://dashboard.dolby.io/).
-
-### A project
-If you have your own project you would like to use, please do that.
-In case you you would like to just evaluate the plugin, feel free to use First Person Shooter template. Please follow proper manual:
-- [manual for Unreal Engine 4.27](https://docs.unrealengine.com/4.27/en-US/ProgrammingAndScripting/ProgrammingWithCPP/CPPTutorials/FirstPersonShooter/)
-- or [manual for Unreal Engine 5.0](https://docs.unrealengine.com/5.0/en-US/first-person-template-in-unreal-engine/)
 
 ## Getting started
 This guide explains how to enable and use the plugin in the Unreal Editor to experience spatial audio in a game.
@@ -53,14 +40,14 @@ Using the plugin in the Unreal Editor requires the editor to obtain microphone a
 - Unreal Engine 4: `sudo python tccutil.py -e -id com.epicgames.UE4Editor --microphone --camera`
 - Unreal Engine 5: `sudo python tccutil.py -e -id com.epicgames.UnrealEditor --microphone --camera`
 
-Please be aware that this tool is not endorsed by Dolby in any way and may be dangerous as it needs root permissions to access sensitive system files and requires you to grant full disk access to the terminal. If you do not wish to use it, you will need to find another way to provide the required permissions to the Unreal Editor, otherwise, you will need to package the game to use the plugin and you will be unable to test it in the Editor. In order to package games using the plugin with the data required to request the necessary permissions, you will also need to add these lines:
+The mentioned permissions manager is not endorsed by Dolby in any way and may be dangerous as it needs root permissions to access sensitive system files and requires you to grant full disk access to the terminal. If you do not wish to use it, you need to find another way to provide the required permissions to the Unreal Editor. Otherwise, you need to package the game to use the plugin and cannot test it in the editor. In order to package games using the plugin with the data required to request the necessary permissions, you need to add the following lines to your game's `Info.plist` file, or, if you want to automatically add these lines to all your packaged games, to the `{UnrealEngineRoot}/Engine/Source/Runtime/Launch/Resources/Mac/Info.plist` file:
 ```
 <key>NSMicrophoneUsageDescription</key>
 <string>Dolby.io Virtual World</string>
 <key>NSCameraUsageDescription</key>
 <string>Dolby.io Virtual World</string>
 ```
-in your game's Info.plist or, if you want to automatically add these lines in all packaged games, in {UnrealEngineRoot}/Engine/Source/Runtime/Launch/Resources/Mac/Info.plist. The latter solution is recommended if it does not conflict with your setup because the Info.plist file is overwritten each time the game is packaged.
+We recommend the latter solution if it does not conflict with your setup because the editor overwrites the `Info.plist` file each time the game is packaged.
 
 ### Use the plugin
 
