@@ -1,0 +1,19 @@
+name: 'Sign'
+description: 'Sign Unreal Plugin libs'
+inputs:
+  path:
+    description: 'Path to dir with objects which going to be sign'
+    required: true
+  platform:
+    description: 'Define build platform [macos|windows]'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Sign Unreal Plugin
+      run: |
+        $env:INPUT_SIGN_PATH = "${{ inputs.path }}"
+        $env:INPUT_PLATFORM = "${{ inputs.platform }}"
+        $env:WINDOWS_CERTIFICATE_PASSWORD = "$env:WINDOWS_CERTIFICATE_PASSWORD"
+        python ./.github/actions/sign/sign.py
+      shell: powershell
