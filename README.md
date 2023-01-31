@@ -75,9 +75,11 @@ After enabling the plugin, you need to add the `Dolby.io Subsystem` node to the 
     <img src="./Images/settoken.png" width="500"/>
     
     2. Connect the `On Token Needed (DolbyIOObserver)` element with the `Set Token` action.
+    
+    3. Connect the `Target` pins of `Set Token` and `Dolby.io Subsystem`.
     <img src="./Images/token.png"/>
     
-    3. Provide your client access token copied from the Dolby.io dashboard to the `Set Token` action.
+    4. Provide your client access token copied from the Dolby.io dashboard to the `Set Token` action.
     
     If you want to use an app key and an app secret, follow these steps:
     
@@ -98,9 +100,11 @@ After enabling the plugin, you need to add the `Dolby.io Subsystem` node to the 
 7. Add an `On Initialized` event by clicking the add button (+) next to the event located in the `Details` sub-window. After this step, the `On Initialized (DolbyIOObserver)` element should appear in the main window.
 
 8. Right-click the Blueprint, add a `Demo Conference` component and connect the component with the `On Initialized` event.
+
+9. Connect the `Target` pins of `Demo Conference` and `Dolby.io Subsystem`.
 ![example](./Images/all-token.png)
 
-9. Click `Compile`, and then click `Play`. After this step, you should be able to run First Person Example and enjoy spatial audio.
+10. Click `Compile`, and then click `Play`. After this step, you should be able to run First Person Example and enjoy spatial audio.
 
 ## Events
 Below sections desribe events provided by *Dolby.io Subsystem* node.
