@@ -207,36 +207,46 @@ namespace
 }
 
 void UDolbyIOSubsystem::SetToken(const FString& Token)
-try
 {
 	if (!Sdk)
 	{
 		DLB_UE_LOG("Initializing with token: %s", *Token);
-		Initialize(Token);
+		AsyncTask(ENamedThreads::AnyThread, [this, Token] { Initialize(Token); });
 	}
 	else if (RefreshTokenCb)
 	{
 		DLB_UE_LOG("Refreshing token: %s", *Token);
-		(*RefreshTokenCb)(ToStdString(Token));
+		try
+		{
+			(*RefreshTokenCb)(ToStdString(Token));
+		}
+		catch (...)
+		{
+			MAKE_DLB_ERROR_HANDLER(ConferenceStatus).HandleError();
+		}
 		RefreshTokenCb.Reset(); // RefreshToken callback can only be called once
 	}
-}
-catch (...)
-{
-	MAKE_DLB_ERROR_HANDLER(ConferenceStatus).HandleError();
 }
 
 void UDolbyIOSubsystem::Initialize(const FString& Token)
 {
-	Sdk = TSharedPtr<dolbyio::comms::sdk>(
-	    dolbyio::comms::sdk::create(ToStdString(Token),
-	                                [this](std::unique_ptr<dolbyio::comms::refresh_token>&& RefreshCb)
-	                                {
-		                                DLB_UE_LOG("Refresh token requested");
-		                                RefreshTokenCb = TSharedPtr<dolbyio::comms::refresh_token>(RefreshCb.release());
-		                                BroadcastEvent(OnTokenNeeded);
-	                                })
-	        .release());
+	try
+	{
+		Sdk = TSharedPtr<dolbyio::comms::sdk>(
+		    dolbyio::comms::sdk::create(ToStdString(Token),
+		                                [this](std::unique_ptr<dolbyio::comms::refresh_token>&& RefreshCb)
+		                                {
+			                                DLB_UE_LOG("Refresh token requested");
+			                                RefreshTokenCb =
+			                                    TSharedPtr<dolbyio::comms::refresh_token>(RefreshCb.release());
+			                                BroadcastEvent(OnTokenNeeded);
+		                                })
+		        .release());
+	}
+	catch (...)
+	{
+		MAKE_DLB_ERROR_HANDLER(ConferenceStatus).HandleError();
+	}
 
 	Sdk->conference()
 	    .add_event_handler([this](const dolbyio::comms::conference_status_updated& Event)
