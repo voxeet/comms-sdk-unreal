@@ -68,16 +68,16 @@ After enabling the plugin, you need to add the `Dolby.io Subsystem` node to the 
 1. Open your Blueprints editor and locate the `Blueprints` folder in the `Content Browser` window visible at the bottom of the editor. Double-click the folder and select the `FirstPersonCharacter` blueprint. This step should open an Event Graph for the selected blueprint.
 
 2. Right-click your blueprint to see a list of all nodes that can be added to the graph, and select `Get DolbyIOSubsystem` from the list. After this step, you should have the `Dolby.io Subsystem` node in your editor.
-![example](Images/subsystem.PNG)
+![example](./Images/subsystem.png)
 
 3. Click the `+Add Component` button located in the `Components` sub-window in the left sidebar, and select `DolbyIOObserver`.
-![example](Images/components.PNG)
+![example](./Images/components.png)
 
 4. Select the added component and check its details in the `Details` sub-window in the right sidebar. Scroll down to the `Events` section to see the available events.
-![example](Images/details.PNG)
+![example](./Images/details.png)
 
 5. Select the `On Token Needed` event from the list by clicking the add button (+). After this step, an `On Token Needed (DolbyIOObserver)` element should appear in your editor.  
-![example](Images/ontoken.PNG)
+![example](./Images/ontoken.png)
 
 6. Provide either your token or your app key and app secret to the event.
 
@@ -86,7 +86,7 @@ After enabling the plugin, you need to add the `Dolby.io Subsystem` node to the 
     1. Right-click the Blueprint to see the `All Possible Actions` window. Tick off `Context Sensitive` to see all available components and actions, and add a `Set Token` action.
     
     2. Connect the `On Token Needed (DolbyIOObserver)` element with the `Set Token` action.
-    ![example](Images/token.PNG)
+    ![example](./Images/token.png)
     
     3. Provide your client access token copied from the Dolby.io dashboard to the `Set Token` action.
     
@@ -101,7 +101,7 @@ After enabling the plugin, you need to add the `Dolby.io Subsystem` node to the 
     4. Connect `Get Dolby.io Token` with `Set Token`, and connect their `Token` pins.
     
     5. Connect the `Target` pins of `Set Token` and `Dolby.io Subsystem`.
-    ![example](Images/appsecret.PNG)
+    ![example](./Images/appsecret.png)
     
     6. Provide your app key and app secret to the `Get Dolby.io Token` component.
 
@@ -109,7 +109,7 @@ After enabling the plugin, you need to add the `Dolby.io Subsystem` node to the 
 
 8. Right-click the Blueprint, add a `Demo Conference` component and connect the component with the `On Initialized` event.
 
-![example](Images/all-token.PNG)
+![example](./Images/all-token.png)
 
 9. Click `Compile`, and then click `Play`. After this step, you should be able to run First Person Example and enjoy spatial audio.
 
