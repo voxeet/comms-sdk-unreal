@@ -46,6 +46,7 @@ The unpacked macOS package should contain the `sdk-release-x86` and the `sdk-rel
 5. Regenerate project files and make sure that the Unreal Editor is closed.
 6. Build the project using the Development Editor configuration.
 
+### Obtain permissions
 
 Using the plugin in the Unreal Editor requires the editor to obtain microphone and camera permissions. However, on macOS the editor never asks for permissions, so you need to forcefully provide them to your application. To do so, we recommend using the [tccutil](https://github.com/DocSystem/tccutil) permissions manager and the following commands:  
 - Epic Games Launcher: `sudo python tccutil.py -e -id com.epicgames.EpicGamesLauncher --microphone --camera`
