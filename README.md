@@ -2,8 +2,10 @@
 Plugin integrating [Dolby.io Communications](https://dolby.io) with the Unreal Engine.
 
 ## Supported environments
-- Unreal Engine 4.27.2 and 5.0.3
-- Windows 10 and macOS 12
+- Windows 10+ (all UE versions)
+- macOS:
+   - UE 4.27: latest Mojave
+   - UE 5: latest Monterey
 
 Note: If you want to use the plugin on macOS, see our [advice](#macos-advice).
 
