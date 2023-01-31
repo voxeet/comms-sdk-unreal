@@ -1,11 +1,17 @@
 # Dolby.io Virtual World plugin for Unreal Engine
 Plugin integrating [Dolby.io Communications](https://dolby.io) with the Unreal Engine.
 
-## Supported environments
-- Unreal Engine 4.27.2 and 5.0.3
-- Windows 10 and macOS 12
+## Supported platforms
+The plugin is compatible with the following Unreal Engine versions:
+- 4.27.2
+- 5.0.3
 
-Note: If you want to use the plugin on macOS, see our [advice](#macos-advice).
+The plugin is compatible with the following operating systems:
+- Windows 10 or newer
+- macOS:
+    - UE4: latest Mojave or newer
+    - UE5: latest Monterey or newer
+    - please see our [advice for macOS](#macos-advice)
 
 ## Prerequisites
 - A [Dolby.io](https://dolby.io) account - if you do not have an account, you can [sign up](https://dolby.io/signup) for free.
@@ -58,10 +64,10 @@ Example:
 Triggered when a remote participant leaves the conference. Provides the participant ID in its argument.
 
 ### On Video Track Added
-Triggered when a video track is added. Provides the participant ID and the stream ID in its arguments.
+Triggered when a video track is added. Provides the participant ID in its argument.
 
 ### On Video Track Removed
-Triggered when a video track is removed. Provides the participant ID and the stream ID in its arguments.
+Triggered when a video track is removed. Provides the participant ID in its argument.
 
 ### On Active Speakers Changed
 Triggered when participants start or stop speaking. The event provides the IDs of the current speakers in its argument.
@@ -139,7 +145,7 @@ Updates the location of the listener for spatial audio purposes. Calling this fu
 Updates the rotation of the listener for spatial audio purposes. Calling this function even once disables the default behavior, which is to automatically use the rotation of the first player controller.
 
 ## Building from source
-1. Download and unzip [this](https://github.com/DolbyIO/comms-sdk-cpp/releases/tag/2.3.0-beta.2) Dolby.io Communications C++ SDK release.
+1. Download and unzip [this](https://github.com/DolbyIO/comms-sdk-cpp/releases/tag/2.3.0) Dolby.io Communications C++ SDK release.
 2. Place the unzipped sdk-release (sdk-release-x86 for macOS) folder inside the DolbyIO folder.
 3. Place the DolbyIO folder in {YourGameRoot}/Plugins. Create a Plugins folder if it does not exist.
 4. Regenerate project files.
@@ -147,15 +153,15 @@ Updates the rotation of the listener for spatial audio purposes. Calling this fu
 6. Build the project in the Development Editor configuration.
 
 ## macOS advice
-Using the plugin in Unreal Editor requires the Editor to obtain microphone and camera permissions. However, Unreal Editor will never ask for the appropriate permissions, so we need to forcefully provide them to the application. One method to do so is to use [this tool](https://github.com/DocSystem/tccutil):  
-- Unreal Engine 4: `sudo python tccutil.py -e -id com.epicgames.UE4Editor --microphone --camera`  
-- Unreal Engine 5: `sudo python tccutil.py -e -id com.epicgames.UnrealEditor --microphone --camera`
+Using the plugin requires microphone and camera permissions. However, Unreal Editor cannot obtain these permissions because it misses critical entries in its Info.plist file. Edit the following file:
+- UE4: {UnrealEngineRoot}/Engine/Binaries/Mac/UE4Editor.app/Contents/Info.plist
+- UE5: {UnrealEngineRoot}/Engine/Binaries/Mac/UnrealEditor.app/Contents/Info.plist
 
-Please be aware that this tool is not endorsed by Dolby in any way and may be dangerous as it needs root permissions to access sensitive system files and requires you to grant full disk access to the terminal. If you do not wish to use it, you will need to find another way to provide the required permissions to the Unreal Editor, otherwise, you will need to package the game to use the plugin and you will be unable to test it in the Editor. In order to package games using the plugin with the data required to request the necessary permissions, you will also need to add these lines:
+and add these lines inside the topmost dict element:
 ```
 <key>NSMicrophoneUsageDescription</key>
 <string>Dolby.io Virtual World</string>
 <key>NSCameraUsageDescription</key>
 <string>Dolby.io Virtual World</string>
 ```
-in your game's Info.plist or, if you want to automatically add these lines in all packaged games, in {UnrealEngineRoot}/Engine/Source/Runtime/Launch/Resources/Mac/Info.plist. The latter solution is recommended if it does not conflict with your setup because the Info.plist file is overwritten each time the game is packaged.
+UE will also not package games with these entries by default, so you will also need to add these lines in your game's Info.plist or, if you want to automatically add these lines in all packaged games, in {UnrealEngineRoot}/Engine/Source/Runtime/Launch/Resources/Mac/Info.plist. The latter solution is recommended if it does not conflict with your setup because the Info.plist file is overwritten each time the game is packaged.

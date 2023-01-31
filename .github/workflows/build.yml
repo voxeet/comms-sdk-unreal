@@ -5,11 +5,11 @@ on:
   workflow_dispatch:
 
 env:
-  CPP_SDK_TAG: "2.3.0-beta.2"
+  CPP_SDK_TAG: "2.3.0"
   CPP_SDK_DESTINATION: "DolbyIO"
   CPP_SDK_URL: "https://github.com/DolbyIO/comms-sdk-cpp/releases/download"
   UNREAL_PLUGIN_OUTPUT: "Build/DolbyIO"
-  RETENTION: 14
+  RETENTION: 7
 
 jobs:
   build-macos:
@@ -46,8 +46,14 @@ jobs:
           -TargetPlatforms=Mac \
           -Package=$(pwd)/${{ env.UNREAL_PLUGIN_OUTPUT }} \
           -StrictIncludes
-      - name: Archive DolbyIO Plugin
-        if: contains(fromJson('["refs/heads/main", "refs/heads/develop", "refs/tags/v"]'), github.ref)
+      - name: Sign DolbyIO Unreal Plugin
+        env:
+          VOXEET_KEYCHAIN_PASSWORD: ${{ secrets.VOXEET_KEYCHAIN_PASSWORD }}
+        uses: ./.github/actions/sign/mac
+        with:
+          path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
+          platform: 'macos'
+      - name: Archive DolbyIO Unreal Plugin
         uses: actions/upload-artifact@v3
         with:
           name: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}
@@ -78,7 +84,6 @@ jobs:
           $UERunUAT = "C:\\Program Files\\Epic Games\\UE_${{ matrix.version }}\\Engine\\Build\\BatchFiles\\RunUAT.bat"
           & $UERunUAT BuildPlugin -Rocket -Plugin="$(pwd)\\DolbyIO\\DolbyIO.uplugin" -TargetPlatforms=Win64 -Package="$(pwd)\\Build\\DolbyIO" -StrictIncludes -VS2019 -NoTurnKeyVariables
       - name: Archive DolbyIO Plugin
-        if: contains(fromJson('["refs/heads/main", "refs/heads/develop", "refs/tags/v"]'), github.ref)
         uses: actions/upload-artifact@v3
         with:
           name: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}

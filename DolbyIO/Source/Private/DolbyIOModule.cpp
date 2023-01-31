@@ -45,7 +45,7 @@ private:
 		}
 		else
 		{
-			DLB_UE_LOG(Fatal, "Failed to load %s/%s", *BaseDir, *Dll);
+			DLB_UE_FATAL("Failed to load %s/%s", *BaseDir, *Dll);
 		}
 	}
 

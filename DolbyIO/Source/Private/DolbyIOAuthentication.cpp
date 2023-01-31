@@ -13,12 +13,12 @@ void UGetDolbyIOToken::Activate()
 {
 	if (AppKey.IsEmpty() || AppSecret.IsEmpty())
 	{
-		DLB_UE_LOG(Warning, "App key and secret must not be empty");
+		DLB_UE_WARN("App key and secret must not be empty");
 		return;
 	}
 	if (TokenExpirationTimeInSeconds <= 0)
 	{
-		DLB_UE_LOG(Warning, "Token expiration time must be greater than zero");
+		DLB_UE_WARN("Token expiration time must be greater than zero");
 		return;
 	}
 
@@ -37,7 +37,7 @@ void UGetDolbyIOToken::OnTokenObtained(FHttpRequestPtr, FHttpResponsePtr Respons
 {
 	if (!bConnectedSuccessfully)
 	{
-		DLB_UE_LOG(Error, "Could not connect to backend serving access tokens");
+		DLB_UE_ERROR("Could not connect to backend serving access tokens");
 		return;
 	}
 
@@ -50,7 +50,7 @@ void UGetDolbyIOToken::OnTokenObtained(FHttpRequestPtr, FHttpResponsePtr Respons
 	}
 	else
 	{
-		DLB_UE_LOG(Error, "Could not get access token - verify app key and secret and validity");
+		DLB_UE_ERROR("Could not get access token - verify app key and secret and validity");
 	}
 }
 
