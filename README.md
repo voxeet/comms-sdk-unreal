@@ -75,7 +75,7 @@ After enabling the plugin, you need to add the `Dolby.io Subsystem` node to the 
     <img src="./Images/settoken.png" width="500"/>
     
     2. Connect the `On Token Needed (DolbyIOObserver)` element with the `Set Token` action.
-    ![example](./Images/token.png)
+    <img src="./Images/token.png"/>
     
     3. Provide your client access token copied from the Dolby.io dashboard to the `Set Token` action.
     
@@ -91,7 +91,7 @@ After enabling the plugin, you need to add the `Dolby.io Subsystem` node to the 
     4. Connect `Get Dolby.io Token` with `Set Token`, and connect their `Token` pins.
     
     5. Connect the `Target` pins of `Set Token` and `Dolby.io Subsystem`.
-    ![example](./Images/appsecret.png)
+    <img src="./Images/appsecret.png"/>
     
     6. Provide your app key and app secret to the `Get Dolby.io Token` component.
 
