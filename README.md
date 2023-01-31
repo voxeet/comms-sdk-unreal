@@ -59,6 +59,7 @@ After enabling the plugin, you need to add the `Dolby.io Subsystem` node to the 
 <img src="./Images/subsystem.png" width="500"/>
 
 3. Click the `+Add Component` button located in the `Components` sub-window in the left sidebar, and select `DolbyIOObserver`.
+<img src="./Images/components.png" width="500"/>
 
 4. Select the added component and check its details in the `Details` sub-window in the right sidebar. Scroll down to the `Events` section to see the available events.
 <img src="./Images/details.png" width="500"/>
@@ -71,6 +72,7 @@ After enabling the plugin, you need to add the `Dolby.io Subsystem` node to the 
     If you want to use a client access token, follow these steps:
     
     1. Right-click the Blueprint to see the `All Possible Actions` window. Tick off `Context Sensitive` to see all available components and actions, and add a `Set Token` action.
+    <img src="./Images/settoken.png" width="500"/>
     
     2. Connect the `On Token Needed (DolbyIOObserver)` element with the `Set Token` action.
     ![example](./Images/token.png)
@@ -80,6 +82,7 @@ After enabling the plugin, you need to add the `Dolby.io Subsystem` node to the 
     If you want to use an app key and an app secret, follow these steps:
     
     1. Right-click the Blueprint to see the `All Possible Actions` window. Tick off `Context Sensitive` to see all available components and actions, and add a `Get Dolby.io Token` component.
+    <img src="./Images/gettoken.png" width="500"/>
     
     2. Right-click the Blueprint and add a `Set Token` action.
     
