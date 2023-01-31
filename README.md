@@ -68,16 +68,16 @@ After enabling the plugin, you need to add the `Dolby.io Subsystem` node to the 
 1. Open your Blueprints editor and locate the `Blueprints` folder in the `Content Browser` window visible at the bottom of the editor. Double-click the folder and select the `FirstPersonCharacter` blueprint. This step should open an Event Graph for the selected blueprint.
 
 2. Right-click your blueprint to see a list of all nodes that can be added to the graph, and select `Get DolbyIOSubsystem` from the list. After this step, you should have the `Dolby.io Subsystem` node in your editor.
-![example](./Images/subsystem.png)
+![example](./Images/subsystem.png | width=500)
 
 3. Click the `+Add Component` button located in the `Components` sub-window in the left sidebar, and select `DolbyIOObserver`.
-![example](./Images/components.png)
+![example](./Images/components.png | width=500)
 
 4. Select the added component and check its details in the `Details` sub-window in the right sidebar. Scroll down to the `Events` section to see the available events.
-![example](./Images/details.png)
+![example](./Images/details.png | width=500)
 
 5. Select the `On Token Needed` event from the list by clicking the add button (+). After this step, an `On Token Needed (DolbyIOObserver)` element should appear in your editor.  
-![example](./Images/ontoken.png)
+![example](./Images/ontoken.png | width=500)
 
 6. Provide either your token or your app key and app secret to the event.
 
