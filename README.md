@@ -1,13 +1,17 @@
 # Dolby.io Virtual World plugin for Unreal Engine
 Plugin integrating [Dolby.io Communications](https://dolby.io) with the Unreal Engine.
 
-## Supported environments
-- Windows 10+ (all UE versions)
-- macOS:
-   - UE 4.27: latest Mojave
-   - UE 5: latest Monterey
+## Supported platforms
+The plugin is compatible with the following Unreal Engine versions:
+- 4.27.2
+- 5.0.3
 
-Note: If you want to use the plugin on macOS, see our [advice](#macos-advice).
+The plugin is compatible with the following operating systems:
+- Windows 10 or newer
+- macOS:
+    - UE4: latest Mojave or newer
+    - UE5: latest Monterey or newer
+    - please see our [advice for macOS](#macos-advice)
 
 ## Prerequisites
 - A [Dolby.io](https://dolby.io) account - if you do not have an account, you can [sign up](https://dolby.io/signup) for free.
