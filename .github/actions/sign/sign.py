@@ -1,12 +1,14 @@
 import os
 import sys
+import base64
 
 
 class Sign():
     def __init__(self, root_app):
-        self.timestamp_servers = ['http://timestamp.verisign.com/scripts/timestamp.dll',
+        self.timestamp_servers = ['http://timestamp.comodoca.com/authenticode',
+                                  'http://timestamp.verisign.com/scripts/timestamp.dll',
                                   'http://timestamp.globalsign.com/scripts/timstamp.dll',
-                                  'http://timestamp.comodoca.com/authenticode',
+                                  'http://timestamp.globalsign.com/tsa/r6advanced1',
                                   'http://www.startssl.com/timestamp']
         self.root_app = root_app
         self.file_ext_win = ['.dll', '.exe']
@@ -59,6 +61,7 @@ class Sign():
 
     def sign_windows(self):
         targets = list()
+        passwd = os.environ["WINDOWS_CERTIFICATE_PASSWORD"]
 
         # signtool from Windows Kits 10 was added manually to env path on the Windows machine
 
@@ -68,18 +71,14 @@ class Sign():
                 if os.path.splitext(file_)[-1] in self.file_ext_win:
                     abs_file_path = os.path.join(root, file_)
                     targets += [abs_file_path]
-            for dir_ in dirs:
-                if dir_ in self.dirs_win:
-                    abs_dir_path = os.path.join(root, dir_)
-                    targets += [abs_dir_path]
 
         # sign targets
         for target in targets:
 
             # Sign target with corresponding timestamp server
             for timestamp_server in self.timestamp_servers:
-                print("Attempt for timestamp server: {}".format(timestamp_server))
-                signtool_cmd = 'signtool sign /f C:\Cert\Dolby.pfx /t {}'.format(timestamp_server)
+                print(f"Attempt for timestamp server: {timestamp_server}")
+                signtool_cmd = f"signtool sign /fd SHA256  /f C:\Cert\Dolby.pfx /p {passwd} /t {timestamp_server}"
                 ret_s = self._sign_target(target, signtool_cmd)
 
                 if ret_s != 0:
