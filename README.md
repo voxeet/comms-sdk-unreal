@@ -57,10 +57,10 @@ The following steps present how to create a sample application that uses the plu
 1. Open your Unreal Editor and locate the `Blueprints` folder in the `Content Browser` window. Double-click the folder and select the `FirstPersonCharacter` Blueprint. This step should open the Event Graph for the selected Blueprint.
 
 2. Right-click the empty space in the Blueprint to see a list of all nodes that can be added to the graph and select `Get DolbyIOSubsystem` from the list. After this step, you should have the `Dolby.io Subsystem` node in your editor.
-<img src="./Images/subsystem.png" width="500"/>
+<img src="./Images/subsystem.png" width="350"/>
 
 3. Click the `+Add Component` button located in the `Components` window and select `DolbyIOObserver`.
-<img src="./Images/components.png" width="500"/>
+<img src="./Images/components.png" width="350"/>
 
 4. Select the added component and check its details in the `Details` panel. Scroll down to the `Events` section to see the available events.
 <img src="./Images/details.png" width="500"/>
