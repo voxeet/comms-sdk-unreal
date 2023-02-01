@@ -9,25 +9,24 @@ The plugin is compatible with the following Unreal Engine versions:
 ## Prerequisites
 Before you start, make sure that you have:
 - Unreal Engine installed on your computer. For more details, see the [Unreal Engine download](https://www.unrealengine.com/en-US/download) page and the [4.27](https://docs.unrealengine.com/4.27/en-US/Basics/InstallingUnrealEngine/) or [5.0](https://docs.unrealengine.com/5.0/en-US/installing-unreal-engine/) installation manuals.
-- An Epic Games [account](https://www.epicgames.com/id/register).
 - A [Dolby.io](https://dolby.io) account. If you do not have an account, [sign up](https://dolby.io/signup) for free.
 - A client access token or an app key and an app secret copied from the Communications & Media [Dolby.io Dashboard](https://dashboard.dolby.io/).
 
 ## Getting started
-This guide explains how to enable and use the plugin in the Unreal Editor to experience spatial audio in a game.
+This guide explains how to enable and use the plugin in the Unreal Editor and hear the audio from other players rendered at their locations in a game.
 
 ### Enable the plugin
-Download and enable the plugin to be able to use in the Unreal Editor. You can either [use the binary](#using-the-binary) or [build the plugin from source](#building-from-source). On macOS, you need to additionally [obtain](#obtaining-permissions) permissions to use your microphone and camera.
+Download and enable the plugin to be able to use it in the Unreal Editor. You can either [use the binary](#enable-the-plugin-using-the-binary) or [build the plugin from source](#build-the-plugin--from-source). On macOS, you need to additionally [obtain permissions](#obtaining-permissions) to use your microphone and camera.
 
-#### Using the binary
+#### Enable the plugin using the binary
 1. Make sure that your project contains a `Plugins` folder in the root of your game folder. If you do not have this folder, create it.
 2. Download the latest plugin [release](https://github.com/DolbyIO/comms-sdk-unreal/releases) for your platform and unpack the plugin to the `Plugins` folder.
-3. Launch your project using the Unreal Editor. If you notice that the plugin is not automatically enabled, select `Edit > Plugins` from the menu to enable the plugin manually. This step requires restarting the editor.
+3. Launch your project using the Unreal Editor and select `Edit > Plugins` from the menu to enable the plugin manually. This step requires restarting the editor.
 
-#### Building from source
+#### Build the plugin from source
 1. Make sure that your project contains a `Plugins` folder in the root of your game folder. If you do not have this folder, create it.
 2. Download the `DolbyIO` folder from [GitHub](https://github.com/DolbyIO/comms-sdk-unreal/tree/main/DolbyIO) and add it to the `Plugins` folder.
-3. Download the Dolby.io Communications C++ SDK [2.3.0](https://github.com/DolbyIO/comms-sdk-cpp/releases/tag/2.3.0-beta.2) release for your platform and unzip it.
+3. Download the Dolby.io Communications C++ SDK [2.3.0](https://github.com/DolbyIO/comms-sdk-cpp/releases/tag/2.3.0) release for your platform and unzip it.
 The unpacked macOS package should contain the `sdk-release-x86` and the `sdk-release-arm` sub-folders, and the downloaded Windows package should be visible as the `sdk-release` folder. The `sdk-release-x86` package is designed for Macs with an Intel processor and `sdk-release-arm` is for Macs with Apple silicon.
 4. Move the proper unzipped folder to the `{YourGameRoot}/Plugins/DolbyIO` folder.
 5. Regenerate project files and make sure that the Unreal Editor is closed.
@@ -35,7 +34,7 @@ The unpacked macOS package should contain the `sdk-release-x86` and the `sdk-rel
 
 ### Obtain permissions
 
-Using the plugin in the Unreal Editor requires the editor to obtain microphone and camera permissions. However, on macOS the editor never asks for permissions, so you need to forcefully provide them to your application. To do so, we recommend using the [tccutil](https://github.com/DocSystem/tccutil) permissions manager and the following commands:  
+Using the plugin in the Unreal Editor requires the editor to obtain microphone and camera permissions. However, on macOS the editor never asks for permissions, so you need to forcefully provide them to your application. To do so, you can use the [tccutil](https://github.com/DocSystem/tccutil) permissions manager and the following commands:  
 - Epic Games Launcher: `sudo python tccutil.py -e -id com.epicgames.EpicGamesLauncher --microphone --camera`
 - Unreal Engine 4: `sudo python tccutil.py -e -id com.epicgames.UE4Editor --microphone --camera`
 - Unreal Engine 5: `sudo python tccutil.py -e -id com.epicgames.UnrealEditor --microphone --camera`
@@ -47,21 +46,23 @@ The mentioned permissions manager is not endorsed by Dolby in any way and may be
 <key>NSCameraUsageDescription</key>
 <string>Dolby.io Virtual World</string>
 ```
-We recommend the latter solution if it does not conflict with your setup because the editor overwrites the `Info.plist` file each time the game is packaged.
+We recommend the latter solution if it does not conflict with your setup because the `Info.plist` file is overwritten each time the game is packaged.
 
 ### Use the plugin
 
-After enabling the plugin, you need to add the `Dolby.io Subsystem` node to the Unreal Editor to be able to use the available features. The node represents the Dolby.io library and is responsible for handling the Dolby.io subsystem. Additionally, you need to add the [On Token Needed](#on-token-needed) and [On Initialized](#on-initialized) events to be able to authenticate and initialize the plugin. 
+After enabling the plugin, you need to use the `Dolby.io Subsystem` node in Blueprints to be able to use the available features. The node is responsible for handling the Dolby.io subsystem. Additionally, you need to add the [On Token Needed](#on-token-needed) and [On Initialized](#on-initialized) events to be able to initialize the plugin.
 
-1. Open your Blueprints editor and locate the `Blueprints` folder in the `Content Browser` window visible at the bottom of the editor. Double-click the folder and select the `FirstPersonCharacter` blueprint. This step should open an Event Graph for the selected blueprint.
+The following steps present how to create a sample application that uses the plugin:
 
-2. Right-click your blueprint to see a list of all nodes that can be added to the graph, and select `Get DolbyIOSubsystem` from the list. After this step, you should have the `Dolby.io Subsystem` node in your editor.
+1. Open your Unreal Editor and locate the `Blueprints` folder in the `Content Browser` window. Double-click the folder and select the `FirstPersonCharacter` Blueprint. This step should open the Event Graph for the selected Blueprint.
+
+2. Right-click the empty space in the Blueprint to see a list of all nodes that can be added to the graph and select `Get DolbyIOSubsystem` from the list. After this step, you should have the `Dolby.io Subsystem` node in your editor.
 <img src="./Images/subsystem.png" width="500"/>
 
-3. Click the `+Add Component` button located in the `Components` sub-window in the left sidebar, and select `DolbyIOObserver`.
+3. Click the `+Add Component` button located in the `Components` window and select `DolbyIOObserver`.
 <img src="./Images/components.png" width="500"/>
 
-4. Select the added component and check its details in the `Details` sub-window in the right sidebar. Scroll down to the `Events` section to see the available events.
+4. Select the added component and check its details in the `Details` panel. Scroll down to the `Events` section to see the available events.
 <img src="./Images/details.png" width="500"/>
 
 5. Select the `On Token Needed` event from the list by clicking the add button (+). After this step, an `On Token Needed (DolbyIOObserver)` element should appear in your editor.
@@ -71,40 +72,36 @@ After enabling the plugin, you need to add the `Dolby.io Subsystem` node to the 
 
     If you want to use a client access token, follow these steps:
     
-    1. Right-click the Blueprint to see the `All Possible Actions` window. Tick off `Context Sensitive` to see all available components and actions, and add a `Set Token` action.
+    1. Drag a node off `Dolby.io Subsystem` and select the `Set Token` action.
     <img src="./Images/settoken.png" width="500"/>
     
     2. Connect the `On Token Needed (DolbyIOObserver)` element with the `Set Token` action.
-    
-    3. Connect the `Target` pins of `Set Token` and `Dolby.io Subsystem`.
     <img src="./Images/token.png"/>
     
-    4. Provide your client access token copied from the Dolby.io dashboard to the `Set Token` action.
+    3. Provide your client access token copied from the Dolby.io dashboard to the `Set Token` action.
     
     If you want to use an app key and an app secret, follow these steps:
     
-    1. Right-click the Blueprint to see the `All Possible Actions` window. Tick off `Context Sensitive` to see all available components and actions, and add a `Get Dolby.io Token` component.
+    1. Right-click the empty space in the Blueprint to see the `All Possible Actions` window. Tick off `Context Sensitive` to see all available components and actions and add a `Get Dolby.io Token` function.
     <img src="./Images/gettoken.png" width="500"/>
     
-    2. Right-click the Blueprint and add a `Set Token` action.
+    2. Drag a node off `Dolby.io Subsystem` and select the `Set Token` action.
     
     3. Connect `On Token Needed` with `Get Dolby.io Token`.
     
-    4. Connect `Get Dolby.io Token` with `Set Token`, and connect their `Token` pins.
-    
-    5. Connect the `Target` pins of `Set Token` and `Dolby.io Subsystem`.
+    4. Connect `Get Dolby.io Token` with `Set Token` and connect their `Token` pins.
     <img src="./Images/appsecret.png"/>
     
-    6. Provide your app key and app secret to the `Get Dolby.io Token` component.
+    5. Provide your app key and app secret to the `Get Dolby.io Token` function.
 
-7. Add an `On Initialized` event by clicking the add button (+) next to the event located in the `Details` sub-window. After this step, the `On Initialized (DolbyIOObserver)` element should appear in the main window.
+7. Add an `On Initialized` event by clicking the add button (+) next to the event located in the `Details` panel. After this step, the `On Initialized (DolbyIOObserver)` element should appear in the main window.
 
-8. Right-click the Blueprint, add a `Demo Conference` component, and connect the component with the `On Initialized` event.
+8. Right-click the empty space in the Blueprint, add a `Demo Conference` component, and connect the component with the `On Initialized` event.
 
 9. Connect the `Target` pins of `Demo Conference` and `Dolby.io Subsystem`.
 ![example](./Images/all-token.png)
 
-10. Click `Compile`, and then click `Play`. After this step, you should be able to run First Person Example and enjoy spatial audio.
+10. Run the game. After this step, you should be able join a demo conference in your game and hear the audio from other players rendered at their locations in a game.
 
 ## Events
 The `Dolby.io Subsystem` node provides the following events:
