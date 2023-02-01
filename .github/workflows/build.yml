@@ -46,13 +46,6 @@ jobs:
           -TargetPlatforms=Mac \
           -Package=$(pwd)/${{ env.UNREAL_PLUGIN_OUTPUT }} \
           -StrictIncludes
-      - name: Sign DolbyIO Unreal Plugin
-        env:
-          VOXEET_KEYCHAIN_PASSWORD: ${{ secrets.VOXEET_KEYCHAIN_PASSWORD }}
-        uses: ./.github/actions/sign/mac
-        with:
-          path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
-          platform: 'macos'
       - name: Archive DolbyIO Unreal Plugin
         uses: actions/upload-artifact@v3
         with:
