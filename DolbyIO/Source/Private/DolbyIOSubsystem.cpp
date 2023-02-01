@@ -245,6 +245,19 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	        [this](dolbyio::comms::event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
+		            [this](const dolbyio::comms::participant_added& Event)
+		            {
+			            const FDolbyIOParticipantInfo Info = ToUnrealParticipantInfo(Event.participant);
+						auto Status = Event.participant.status;
+			    		DLB_UE_LOG(Log, "Participant added event: UserID=%s Name=%s ExternalID=%s Status=%s",
+			                       *Info.UserID, *Info.Name, *Info.ExternalID, Status ? *ToString(*Status) : TEXT("not set"));
+						BroadcastEvent(OnParticipantAdded, Info);
+		            });
+	        })
+	    .then(
+	        [this](dolbyio::comms::event_handler_id)
+	        {
+		        return Sdk->conference().add_event_handler(
 		            [this](const dolbyio::comms::participant_updated& Event)
 		            {
 			            if (!Event.participant.status)
@@ -263,10 +276,10 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 
 			            switch (*Event.participant.status)
 			            {
-				            case dolbyio::comms::participant_status::on_air:
-					            return BroadcastEvent(OnParticipantAdded, Info);
 				            case dolbyio::comms::participant_status::left:
 					            return BroadcastEvent(OnParticipantLeft, Info.UserID);
+				            // default:
+					        //     return BroadcastEvent(OnParticipantUpdated, Info);
 			            }
 		            });
 	        })
