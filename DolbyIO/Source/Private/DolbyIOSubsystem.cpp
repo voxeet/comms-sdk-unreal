@@ -251,7 +251,10 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 						auto Status = Event.participant.status;
 			    		DLB_UE_LOG(Log, "Participant added event: UserID=%s Name=%s ExternalID=%s Status=%s",
 			                       *Info.UserID, *Info.Name, *Info.ExternalID, Status ? *ToString(*Status) : TEXT("not set"));
-						BroadcastEvent(OnParticipantAdded, Info);
+				        if (!Status || *Status != dolbyio::comms::participant_status::left)
+						{
+					    	BroadcastEvent(OnParticipantAdded, Info);
+						}
 		            });
 	        })
 	    .then(
@@ -278,8 +281,6 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            {
 				            case dolbyio::comms::participant_status::left:
 					            return BroadcastEvent(OnParticipantLeft, Info.UserID);
-				            // default:
-					        //     return BroadcastEvent(OnParticipantUpdated, Info);
 			            }
 		            });
 	        })
