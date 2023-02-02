@@ -49,7 +49,7 @@ namespace
 
 	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<dolbyio::comms::participant_status> Status)
 	{
-        if (Status)
+		if (Status)
 			switch (*Status)
 			{
 				case dolbyio::comms::participant_status::reserved:
@@ -285,35 +285,37 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		        return Sdk->conference().add_event_handler(
 		            [this](const dolbyio::comms::participant_added& Event)
 		            {
-			            if (!Event.participant.status || LocalParticipantID == FString(Event.participant.user_id.c_str()))
+			            if (!Event.participant.status ||
+			                LocalParticipantID == FString(Event.participant.user_id.c_str()))
 			            {
 				            return;
 			            }
 			            const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
-			            DLB_UE_LOG("Participant status added: UserID=%s Name=%s ExternalID=%s Status=%s",
-			                       *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
+			            DLB_UE_LOG("Participant status added: UserID=%s Name=%s ExternalID=%s Status=%s", *Info.UserID,
+			                       *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
 
-                        return BroadcastEvent(OnParticipantAdded, Info.Status, Info);
+			            return BroadcastEvent(OnParticipantAdded, Info.Status, Info);
 		            });
 	        })
-        .then(
-            [this](dolbyio::comms::event_handler_id)
-            {
-                return Sdk->conference().add_event_handler(
-                    [this](const dolbyio::comms::participant_updated& Event)
-                    {
-			            if (!Event.participant.status || LocalParticipantID == FString(Event.participant.user_id.c_str()))
-                        {
-                            return;
-                        }
+	    .then(
+	        [this](dolbyio::comms::event_handler_id)
+	        {
+		        return Sdk->conference().add_event_handler(
+		            [this](const dolbyio::comms::participant_updated& Event)
+		            {
+			            if (!Event.participant.status ||
+			                LocalParticipantID == FString(Event.participant.user_id.c_str()))
+			            {
+				            return;
+			            }
 
-                        const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
-                        DLB_UE_LOG("Participant status updated: UserID=%s Name=%s ExternalID=%s Status=%s",
-                                   *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
-                        
-                        return BroadcastEvent(OnParticipantUpdated, Info.Status, Info);
-                    });
-            })
+			            const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
+			            DLB_UE_LOG("Participant status updated: UserID=%s Name=%s ExternalID=%s Status=%s",
+			                       *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
+
+			            return BroadcastEvent(OnParticipantUpdated, Info.Status, Info);
+		            });
+	        })
 	    .then(
 	        [this](dolbyio::comms::event_handler_id)
 	        {
@@ -370,7 +372,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            {
 				            const FString ParticipantID = Event.peer_id.c_str();
 				            const FString StreamID = Event.stream_id.c_str();
-				                DLB_UE_LOG("Video track removed: ParticipantID=%s StreamID=%s", *ParticipantID, *StreamID);
+				            DLB_UE_LOG("Video track removed: ParticipantID=%s StreamID=%s", *ParticipantID, *StreamID);
 				            VideoSink->RemoveStream(ParticipantID, StreamID);
 				            BroadcastEvent(OnVideoTrackRemoved, ParticipantID);
 			            }

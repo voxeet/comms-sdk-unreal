@@ -7,7 +7,6 @@
 #include "Async/Async.h"
 #include "Engine/World.h"
 
-
 UDolbyIOObserver::UDolbyIOObserver()
 {
 	bWantsInitializeComponent = true;
@@ -49,11 +48,13 @@ void UDolbyIOObserver::FwdOnDisconnected()
 {
 	BroadcastEvent(OnDisconnected);
 }
-void UDolbyIOObserver::FwdOnParticipantAdded(const EDolbyIOParticipantStatus Status, const FDolbyIOParticipantInfo& ParticipantInfo)
+void UDolbyIOObserver::FwdOnParticipantAdded(const EDolbyIOParticipantStatus Status,
+                                             const FDolbyIOParticipantInfo& ParticipantInfo)
 {
 	BroadcastEvent(OnParticipantAdded, Status, ParticipantInfo);
 }
-void UDolbyIOObserver::FwdOnParticipantUpdated(const EDolbyIOParticipantStatus Status, const FDolbyIOParticipantInfo& ParticipantInfo)
+void UDolbyIOObserver::FwdOnParticipantUpdated(const EDolbyIOParticipantStatus Status,
+                                               const FDolbyIOParticipantInfo& ParticipantInfo)
 {
 	BroadcastEvent(OnParticipantUpdated, Status, ParticipantInfo);
 }

@@ -12,12 +12,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FObserverOnTokenNeededDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FObserverOnInitializedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnConnectedDelegate, const FString&, LocalParticipantID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FObserverOnDisconnectedDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnParticipantAddedDelegate,
-                                             const EDolbyIOParticipantStatus, Status,
-                                             const FDolbyIOParticipantInfo&, ParticipantInfo);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnParticipantUpdatedDelegate,
-                                             const EDolbyIOParticipantStatus, Status,
-                                             const FDolbyIOParticipantInfo&, ParticipantInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnParticipantAddedDelegate, const EDolbyIOParticipantStatus,
+                                             Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnParticipantUpdatedDelegate, const EDolbyIOParticipantStatus,
+                                             Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnParticipantLeftDelegate, const FString&, ParticipantID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackAddedDelegate, const FString&, ParticipantID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackRemovedDelegate, const FString&, ParticipantID);
@@ -35,7 +33,6 @@ class DOLBYIO_API UDolbyIOObserver : public UActorComponent
 
 public:
 	UDolbyIOObserver();
-
 
 	/** Triggered when an initial or refreshed client access token
 	 * (https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) is needed, which
@@ -107,7 +104,8 @@ private:
 	void FwdOnParticipantAdded(const EDolbyIOParticipantStatus Status, const FDolbyIOParticipantInfo& ParticipantInfo);
 
 	UFUNCTION()
-	void FwdOnParticipantUpdated(const EDolbyIOParticipantStatus Status, const FDolbyIOParticipantInfo& ParticipantInfo);
+	void FwdOnParticipantUpdated(const EDolbyIOParticipantStatus Status,
+	                             const FDolbyIOParticipantInfo& ParticipantInfo);
 
 	UFUNCTION()
 	void FwdOnVideoTrackAdded(const FString& ParticipantID);
