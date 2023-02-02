@@ -18,14 +18,14 @@ class Sign():
 
     def _sign_target(self, target, sign_cmd):
 
-        print("Sign {}".format(target))
-        ret = os.system('{} "{}"'.format(sign_cmd, target))
+        print(f"Sign {target}")
+        ret = os.system(f"{sign_cmd} \"{target}\"")
 
         return ret
 
     def _verify_target(self, target, verify_cmd):
-        print("Verify {}".format(target))
-        ret = os.system('{} "{}"'.format(verify_cmd, target))
+        print(f"Verify {target}")
+        ret = os.system(f"{verify_cmd} \"{target}\"")
 
         return ret
 
@@ -34,9 +34,9 @@ class Sign():
         # Sign libs
         targets = list()
 
-        # Define sign cmd for macOS
-        codesign_cmd = "codesign --force --deep --sign 'Apple Distribution: VOXEET INC. (B55NRA8BRW)' --keychain ~/Library/Keychains/voxeet.keychain-db"
-        codesign_verify_cmd = 'codesign --verify --deep --verbose=4'
+        # Define codesign cmd
+        codesign_verify_cmd = "codesign --verify --deep --verbose=4"
+        codesign_cmd = "codesign --force --strict --timestamp --sign 'Developer ID Application: VOXEET INC. (B55NRA8BRW)'"
 
         # collect targets
         for root, dirs, files in os.walk(self.root_app):
@@ -50,14 +50,14 @@ class Sign():
             ret_s = self._sign_target(target, codesign_cmd)
 
             if ret_s != 0:
-                print("ERROR: {} returned {} during signing of {}. Checking another timestamp server.".format(codesign_cmd, ret_s, target))
+                print(f"ERROR: {codesign_cmd} returned {ret_s} during signing {target}.")
 
             ret_v = self._verify_target(target, codesign_verify_cmd)
 
             if ret_v !=0:
-                raise IOError("ERROR: {} returned {} during verifycation of {}.".format(codesign_verify_cmd, ret_v, target))
+                raise IOError(f"ERROR: {codesign_verify_cmd} returned {ret_v} during verification of {target}")
 
-        print("Done with {} targets.".format(len(targets)))
+        print(f"{len(targets)} target(s) signed")
 
     def sign_windows(self):
         targets = list()
@@ -78,13 +78,13 @@ class Sign():
             # Sign target with corresponding timestamp server
             for timestamp_server in self.timestamp_servers:
                 print(f"Attempt for timestamp server: {timestamp_server}")
-                signtool_cmd = f"signtool sign /fd SHA256  /f C:\Cert\Dolby.pfx /p {passwd} /t {timestamp_server}"
+                signtool_cmd = f"signtool sign /fd SHA256 /f C:\Cert\Dolby.pfx /p {passwd} /t {timestamp_server}"
                 ret_s = self._sign_target(target, signtool_cmd)
 
                 if ret_s != 0:
-                    print("ERROR: {} returned {} during signing of {}. Checking another timestamp server.".format(signtool_cmd, ret_s, target))
+                    print(f"ERROR: {signtool_cmd} returned {ret_s} during signing {target}. Checking another timestamp server.")
                 else:
-                    print("Successfully signed: {}".format(target))
+                    print(f"Signed: {target}")
                     break
 
             # Verify target
@@ -92,9 +92,9 @@ class Sign():
             ret_v = self._verify_target(target, signtool_verify_cmd)
 
             if ret_v != 0:
-                raise IOError("ERROR: {} returned {} during verifycation of {}.".format(signtool_verify_cmd, ret_v, target))
+                raise IOError(f"ERROR: {signtool_verify_cmd} returned {ret_v} during verification of {target}.")
 
-        print("Done with {} targets.".format(len(targets)))
+        print(f"{len(targets)} target(s) signed")
 
 
 if __name__ == '__main__':
