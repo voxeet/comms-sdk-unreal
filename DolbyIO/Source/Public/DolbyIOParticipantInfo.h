@@ -5,7 +5,7 @@
 #include "DolbyIOParticipantInfo.generated.h"
 
 UENUM(BlueprintType)
-enum class EParticiantStatusEnum : uint8
+enum class EDolbyIOParticipantStatus : uint8
 {
     /** A participant is invited to a conference. */
     Reserved UMETA(DisplayName = "Reserved"),
@@ -80,7 +80,7 @@ struct DOLBYIO_API FDolbyIOParticipantInfo
 	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
 	FRotator Rotation;
 
-    /** Participant Status */
+	/** The conference status of the remote participant. */
     UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
-    EParticiantStatusEnum Status;
+    EDolbyIOParticipantStatus Status;
 };

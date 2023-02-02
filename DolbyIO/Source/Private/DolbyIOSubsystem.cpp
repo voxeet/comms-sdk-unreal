@@ -47,9 +47,35 @@ namespace
 		return TCHAR_TO_UTF8(*String);
 	}
 
+	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<dolbyio::comms::participant_status> Status)
+	{
+        if (Status)
+			switch (*Status)
+			{
+				case dolbyio::comms::participant_status::reserved:
+					return EDolbyIOParticipantStatus::Reserved;
+				case dolbyio::comms::participant_status::connecting:
+					return EDolbyIOParticipantStatus::Connecting;
+				case dolbyio::comms::participant_status::on_air:
+					return EDolbyIOParticipantStatus::OnAir;
+				case dolbyio::comms::participant_status::decline:
+					return EDolbyIOParticipantStatus::Decline;
+				case dolbyio::comms::participant_status::inactive:
+					return EDolbyIOParticipantStatus::Inactive;
+				case dolbyio::comms::participant_status::left:
+					return EDolbyIOParticipantStatus::Left;
+				case dolbyio::comms::participant_status::warning:
+					return EDolbyIOParticipantStatus::Warning;
+				case dolbyio::comms::participant_status::error:
+					return EDolbyIOParticipantStatus::Error;
+			};
+
+		return EDolbyIOParticipantStatus::Unknown;
+	}
+
 	constexpr int ScaleCenti = 100;
 
-	FDolbyIOParticipantInfo ToUnrealParticipantInfo(const dolbyio::comms::participant_info& Info)
+	FDolbyIOParticipantInfo ToFDolbyIOParticipantInfo(const dolbyio::comms::participant_info& Info)
 	{
 		FDolbyIOParticipantInfo Ret{};
 		Ret.UserID = Info.user_id.c_str();
@@ -59,36 +85,7 @@ namespace
 		Ret.bIsListener = Info.type && *Info.type == dolbyio::comms::participant_type::listener;
 		Ret.bIsSendingAudio = Info.is_sending_audio.value_or(false);
 		Ret.bIsAudibleLocally = Info.audible_locally.value_or(false);
-
-        switch (*Info.status)
-        {
-            case dolbyio::comms::participant_status::reserved:
-                Ret.Status = EParticiantStatusEnum::Reserved;
-                break;
-            case dolbyio::comms::participant_status::connecting:
-                Ret.Status = EParticiantStatusEnum::Connecting;
-                break;
-            case dolbyio::comms::participant_status::on_air:
-                Ret.Status = EParticiantStatusEnum::OnAir;
-                break;
-            case dolbyio::comms::participant_status::decline:
-                Ret.Status = EParticiantStatusEnum::Decline;
-                break;
-            case dolbyio::comms::participant_status::inactive:
-                Ret.Status = EParticiantStatusEnum::Inactive;
-                break;
-            case dolbyio::comms::participant_status::left:
-                Ret.Status = EParticiantStatusEnum::Left;
-                break;
-            case dolbyio::comms::participant_status::warning:
-                Ret.Status = EParticiantStatusEnum::Warning;
-                break;
-            case dolbyio::comms::participant_status::error:
-                Ret.Status = EParticiantStatusEnum::Error;
-                break;
-            default:
-                Ret.Status = EParticiantStatusEnum::Unknown;
-        };
+		Ret.Status = ToEDolbyIOParticipantStatus(Info.status);
 
 		FString DecodedExternalID;
 		FBase64::Decode(Ret.ExternalID, DecodedExternalID);
@@ -287,20 +284,14 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		        return Sdk->conference().add_event_handler(
 		            [this](const dolbyio::comms::participant_added& Event)
 		            {
-			            if (!Event.participant.status)
+			            if (!Event.participant.status || LocalParticipantID == FString(Event.participant.user_id.c_str()))
 			            {
 				            return;
 			            }
-
-			            const FDolbyIOParticipantInfo Info = ToUnrealParticipantInfo(Event.participant);
+			            const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
 			            DLB_UE_LOG("Participant status added: UserID=%s Name=%s ExternalID=%s Status=%s",
 			                       *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
 
-			            if (Info.UserID == LocalParticipantID)
-			            {
-				            return;
-			            }
-                        
                         return BroadcastEvent(OnParticipantAdded, Info.Status, Info);
 		            });
 	        })
@@ -310,19 +301,14 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
                 return Sdk->conference().add_event_handler(
                     [this](const dolbyio::comms::participant_updated& Event)
                     {
-                        if (!Event.participant.status)
+			            if (!Event.participant.status || LocalParticipantID == FString(Event.participant.user_id.c_str()))
                         {
                             return;
                         }
 
-                        const FDolbyIOParticipantInfo Info = ToUnrealParticipantInfo(Event.participant);
+                        const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
                         DLB_UE_LOG("Participant status updated: UserID=%s Name=%s ExternalID=%s Status=%s",
                                    *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
-
-                        if (Info.UserID == LocalParticipantID)
-                        {
-                            return;
-                        }
                         
                         return BroadcastEvent(OnParticipantUpdated, Info.Status, Info);
                     });

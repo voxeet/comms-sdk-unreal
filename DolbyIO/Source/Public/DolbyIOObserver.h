@@ -13,13 +13,11 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FObserverOnInitializedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnConnectedDelegate, const FString&, LocalParticipantID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FObserverOnDisconnectedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnParticipantAddedDelegate,
-                                             EParticiantStatusEnum, Status,
-                                            const FDolbyIOParticipantInfo&,
-                                            ParticipantInfo);
+                                             const EDolbyIOParticipantStatus, Status,
+                                             const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnParticipantUpdatedDelegate,
-                                             EParticiantStatusEnum, Status,
-                                             const FDolbyIOParticipantInfo&,
-                                            ParticipantInfo);
+                                             const EDolbyIOParticipantStatus, Status,
+                                             const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnParticipantLeftDelegate, const FString&, ParticipantID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackAddedDelegate, const FString&, ParticipantID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackRemovedDelegate, const FString&, ParticipantID);
@@ -106,10 +104,10 @@ private:
 	void FwdOnDisconnected();
 
 	UFUNCTION()
-	void FwdOnParticipantAdded(EParticiantStatusEnum Status, const FDolbyIOParticipantInfo& ParticipantInfo);
+	void FwdOnParticipantAdded(const EDolbyIOParticipantStatus Status, const FDolbyIOParticipantInfo& ParticipantInfo);
 
 	UFUNCTION()
-	void FwdOnParticipantUpdated(EParticiantStatusEnum Status, const FDolbyIOParticipantInfo& ParticipantInfo);
+	void FwdOnParticipantUpdated(const EDolbyIOParticipantStatus Status, const FDolbyIOParticipantInfo& ParticipantInfo);
 
 	UFUNCTION()
 	void FwdOnVideoTrackAdded(const FString& ParticipantID);

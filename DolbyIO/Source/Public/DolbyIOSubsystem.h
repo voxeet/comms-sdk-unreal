@@ -15,13 +15,11 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSubsystemOnInitializedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnConnectedDelegate, const FString&, LocalParticipantID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSubsystemOnDisconnectedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnParticipantAddedDelegate,
-                                             EParticiantStatusEnum, Status,
-                                             const FDolbyIOParticipantInfo&,
-                                            ParticipantInfo);
+                                             const EDolbyIOParticipantStatus, Status,
+                                             const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnParticipantUpdatedDelegate,
-                                             EParticiantStatusEnum, Status,
-                                             const FDolbyIOParticipantInfo&,
-                                            ParticipantInfo);
+                                             const EDolbyIOParticipantStatus, Status,
+                                             const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackAddedDelegate, const FString&, ParticipantID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackRemovedDelegate, const FString&, ParticipantID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnActiveSpeakersChangedDelegate, const TArray<FString>&,

@@ -49,11 +49,11 @@ void UDolbyIOObserver::FwdOnDisconnected()
 {
 	BroadcastEvent(OnDisconnected);
 }
-void UDolbyIOObserver::FwdOnParticipantAdded(EParticiantStatusEnum Status, const FDolbyIOParticipantInfo& ParticipantInfo)
+void UDolbyIOObserver::FwdOnParticipantAdded(const EDolbyIOParticipantStatus Status, const FDolbyIOParticipantInfo& ParticipantInfo)
 {
 	BroadcastEvent(OnParticipantAdded, Status, ParticipantInfo);
 }
-void UDolbyIOObserver::FwdOnParticipantUpdated(EParticiantStatusEnum Status, const FDolbyIOParticipantInfo& ParticipantInfo)
+void UDolbyIOObserver::FwdOnParticipantUpdated(const EDolbyIOParticipantStatus Status, const FDolbyIOParticipantInfo& ParticipantInfo)
 {
 	BroadcastEvent(OnParticipantUpdated, Status, ParticipantInfo);
 }
@@ -78,4 +78,3 @@ template <class TDelegate, class... TArgs> void UDolbyIOObserver::BroadcastEvent
 {
 	AsyncTask(ENamedThreads::GameThread, [=] { Event.Broadcast(Args...); });
 }
-
