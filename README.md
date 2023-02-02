@@ -16,7 +16,7 @@ Before you start, make sure that you have:
 This guide explains how to enable and use the plugin in the Unreal Editor and hear the audio from other players rendered at their locations in a game.
 
 ### Enable the plugin
-Download and enable the plugin to be able to use it in the Unreal Editor. You can either [use the binary](#enable-the-plugin-using-the-binary) or [build the plugin from source](#build-the-plugin--from-source). On macOS, you need to additionally [obtain permissions](#obtaining-permissions) to use your microphone and camera.
+Download and enable the plugin to be able to use it in the Unreal Editor. You can either [use the binary](#enable-the-plugin-using-the-binary) or [build the plugin from source](#build-the-plugin-from-source). On macOS, you need to additionally [obtain permissions](#obtaining-permissions) to use your microphone and camera.
 
 #### Enable the plugin using the binary
 1. Make sure that your project contains a `Plugins` folder in the root of your game folder. If you do not have this folder, create it.
@@ -54,7 +54,7 @@ After enabling the plugin, you need to use the `Dolby.io Subsystem` node in Blue
 
 The following steps present how to create a sample application that uses the plugin:
 
-1. Open your Unreal Editor and locate the `Blueprints` folder in the `Content Browser` window. Double-click the folder and select the `FirstPersonCharacter` Blueprint. This step should open the Event Graph for the selected Blueprint.
+1. Open your Unreal Editor and locate the `Blueprints` folder in the `Content Browser` window. Open the folder and select the `FirstPersonCharacter` Blueprint. This step should open the Event Graph for the selected Blueprint.
 
 2. Right-click the empty space in the Blueprint to see a list of all nodes that can be added to the graph and select `Get DolbyIOSubsystem` from the list. After this step, you should have the `Dolby.io Subsystem` node in your editor.
 <img src="./Images/subsystem.png" width="350"/>
@@ -89,7 +89,7 @@ The following steps present how to create a sample application that uses the plu
     
     3. Connect `On Token Needed` with `Get Dolby.io Token`.
     
-    4. Connect `Get Dolby.io Token` with `Set Token` and connect their `Token` pins.
+    4. Connect the `Token Obtained` execution pin from `Get Dolby.io Token` to `Set Token` and connect their `Token` pins.
     <img src="./Images/appsecret.png"/>
     
     5. Provide your app key and app secret to the `Get Dolby.io Token` function.
@@ -101,7 +101,7 @@ The following steps present how to create a sample application that uses the plu
 9. Connect the `Target` pins of `Demo Conference` and `Dolby.io Subsystem`.
 ![example](./Images/all-token.png)
 
-10. Run the game. After this step, you should be able join a demo conference in your game and hear the audio from other players rendered at their locations in a game.
+10. Run the game. After this step, you should be able join a demo conference in your game and hear the audio from the demo conference participants in-game.
 
 ## Events
 The `Dolby.io Subsystem` node provides the following events:
