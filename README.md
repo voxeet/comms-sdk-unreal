@@ -2,9 +2,10 @@
 Plugin integrating [Dolby.io Communications APIs](https://dolby.io) with the Unreal Engine.
 
 ## Supported platforms
-The plugin is compatible with the following Unreal Engine versions:
-- 4.27.2
-- 5.0.3
+The plugin is compatible with the following operating systems:
+- Windows 10+
+- macOS 10.14+ if you use UE4
+- macOS 12+ if you use UE5
 
 ## Prerequisites
 Before you start, make sure that you have:
@@ -129,13 +130,20 @@ Triggered when the client is successfully connected to the conference after call
 Triggered when the client is disconnected from the conference by any means; in particular, by the [Disconnect](#disconnect) function.
 
 ### On Participant Added
-Triggered when a remote participant is added to the conference. Provides information about the participant in its argument.
+Triggered when a remote participant is added to the conference. Provides the participant status and participant info in its argument.
 
 Example:  
-![example](Images/on_participant_added.PNG)
+![example](Images/on_participant_added.png)
 
-### On Participant Left
-Triggered when a remote participant leaves the conference. Provides the participant ID in its argument.
+### On Participant Updated
+Triggered when a remote participant's status is updated. Provides the participant status and participant info in its argument.
+
+Example:  
+![example](Images/on_participant_updated.png)
+
+The following graphic shows possible status changes:
+
+![example](Images/participant_status_changes.png)
 
 ### On Video Track Added
 Triggered when a video track is added. Provides the participant ID in its argument.
