@@ -13,7 +13,7 @@ Before you start, make sure that you have:
 - A client access token or an app key and an app secret copied from the Communications & Media [Dolby.io Dashboard](https://dashboard.dolby.io/).
 
 ## Getting started
-This guide explains how to enable and use the plugin in the Unreal Editor and hear the audio from other players rendered at their locations in a game.
+This guide explains how to enable and use the plugin in the Unreal Editor and experience spatial audio in-game communication.
 
 ### Enable the plugin
 Download and enable the plugin to be able to use it in the Unreal Editor. You can either [use the binary](#enable-the-plugin-using-the-binary) or [build the plugin from source](#build-the-plugin-from-source). On macOS, you need to additionally [obtain permissions](#obtaining-permissions) to use your microphone and camera.
@@ -54,7 +54,7 @@ After enabling the plugin, you need to use the `Dolby.io Subsystem` node in Blue
 
 The following steps present how to create a sample application that uses the plugin:
 
-1. Open your Unreal Editor and locate the `Blueprints` folder in the `Content Browser` window. Open the folder and select the `FirstPersonCharacter` Blueprint. This step should open the Event Graph for the selected Blueprint.
+1. Open your Unreal Editor and locate the `Blueprints` folder in the `Content Browser` window. Open the folder and open the `FirstPersonCharacter` Blueprint. This step should open the Event Graph for the selected Blueprint.
 
 2. Right-click the empty space in the Blueprint to see a list of all nodes that can be added to the graph and select `Get DolbyIOSubsystem` from the list. After this step, you should have the `Dolby.io Subsystem` node in your editor.
 <img src="./Images/subsystem.png" width="350"/>
