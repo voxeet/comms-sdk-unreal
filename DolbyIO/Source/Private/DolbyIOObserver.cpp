@@ -23,7 +23,7 @@ void UDolbyIOObserver::InitializeComponent()
 		DolbyIOSubsystem->OnConnected.AddDynamic(this, &UDolbyIOObserver::FwdOnConnected);
 		DolbyIOSubsystem->OnDisconnected.AddDynamic(this, &UDolbyIOObserver::FwdOnDisconnected);
 		DolbyIOSubsystem->OnParticipantAdded.AddDynamic(this, &UDolbyIOObserver::FwdOnParticipantAdded);
-		DolbyIOSubsystem->OnParticipantLeft.AddDynamic(this, &UDolbyIOObserver::FwdOnParticipantLeft);
+		DolbyIOSubsystem->OnParticipantUpdated.AddDynamic(this, &UDolbyIOObserver::FwdOnParticipantUpdated);
 		DolbyIOSubsystem->OnVideoTrackAdded.AddDynamic(this, &UDolbyIOObserver::FwdOnVideoTrackAdded);
 		DolbyIOSubsystem->OnVideoTrackRemoved.AddDynamic(this, &UDolbyIOObserver::FwdOnVideoTrackRemoved);
 		DolbyIOSubsystem->OnActiveSpeakersChanged.AddDynamic(this, &UDolbyIOObserver::FwdOnActiveSpeakersChanged);
@@ -48,13 +48,15 @@ void UDolbyIOObserver::FwdOnDisconnected()
 {
 	BroadcastEvent(OnDisconnected);
 }
-void UDolbyIOObserver::FwdOnParticipantAdded(const FDolbyIOParticipantInfo& ParticipantInfo)
+void UDolbyIOObserver::FwdOnParticipantAdded(const EDolbyIOParticipantStatus Status,
+                                             const FDolbyIOParticipantInfo& ParticipantInfo)
 {
-	BroadcastEvent(OnParticipantAdded, ParticipantInfo);
+	BroadcastEvent(OnParticipantAdded, Status, ParticipantInfo);
 }
-void UDolbyIOObserver::FwdOnParticipantLeft(const FString& ParticipantID)
+void UDolbyIOObserver::FwdOnParticipantUpdated(const EDolbyIOParticipantStatus Status,
+                                               const FDolbyIOParticipantInfo& ParticipantInfo)
 {
-	BroadcastEvent(OnParticipantLeft, ParticipantID);
+	BroadcastEvent(OnParticipantUpdated, Status, ParticipantInfo);
 }
 void UDolbyIOObserver::FwdOnVideoTrackAdded(const FString& ParticipantID)
 {

@@ -12,8 +12,8 @@ runs:
   steps:
     - name: Sign Unreal Plugin
       run: |
-        export INPUT_SIGN_PATH=${{ inputs.path }}
-        export INPUT_PLATFORM=${{ inputs.platform }}
-        security unlock-keychain -p ${DOLBYIO_KEYCHAIN_PASSWORD} ~/Library/Keychains/dolbyio.keychain-db
-        python3 ./.github/actions/sign/sign.py
-      shell: bash
+        $env:INPUT_SIGN_PATH = "${{ inputs.path }}"
+        $env:INPUT_PLATFORM = "${{ inputs.platform }}"
+        $env:WINDOWS_CERTIFICATE_PASSWORD = "$env:WINDOWS_CERTIFICATE_PASSWORD"
+        python ./.github/actions/sign/sign.py
+      shell: powershell

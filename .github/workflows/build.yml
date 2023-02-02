@@ -48,7 +48,7 @@ jobs:
           -StrictIncludes
       - name: Sign DolbyIO Unreal Plugin
         env:
-          VOXEET_KEYCHAIN_PASSWORD: ${{ secrets.VOXEET_KEYCHAIN_PASSWORD }}
+          DOLBYIO_KEYCHAIN_PASSWORD: ${{ secrets.VOXEET_KEYCHAIN_PASSWORD }}
         uses: ./.github/actions/sign/mac
         with:
           path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
@@ -83,6 +83,13 @@ jobs:
           Write-Output "UE_${{ matrix.version }}"
           $UERunUAT = "C:\\Program Files\\Epic Games\\UE_${{ matrix.version }}\\Engine\\Build\\BatchFiles\\RunUAT.bat"
           & $UERunUAT BuildPlugin -Rocket -Plugin="$(pwd)\\DolbyIO\\DolbyIO.uplugin" -TargetPlatforms=Win64 -Package="$(pwd)\\Build\\DolbyIO" -StrictIncludes -VS2019 -NoTurnKeyVariables
+      - name: Sign DolbyIO Unreal Plugin
+        env:
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        uses: ./.github/actions/sign/win
+        with:
+          path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
+          platform: 'windows'
       - name: Archive DolbyIO Plugin
         uses: actions/upload-artifact@v3
         with:

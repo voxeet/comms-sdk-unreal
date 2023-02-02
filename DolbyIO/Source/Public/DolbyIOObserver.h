@@ -12,8 +12,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FObserverOnTokenNeededDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FObserverOnInitializedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnConnectedDelegate, const FString&, LocalParticipantID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FObserverOnDisconnectedDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnParticipantAddedDelegate, const FDolbyIOParticipantInfo&,
-                                            ParticipantInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnParticipantAddedDelegate, const EDolbyIOParticipantStatus,
+                                             Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnParticipantUpdatedDelegate, const EDolbyIOParticipantStatus,
+                                             Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnParticipantLeftDelegate, const FString&, ParticipantID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackAddedDelegate, const FString&, ParticipantID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackRemovedDelegate, const FString&, ParticipantID);
@@ -62,7 +64,7 @@ public:
 
 	/** Triggered when a remote participant leaves the conference. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
-	FObserverOnParticipantLeftDelegate OnParticipantLeft;
+	FObserverOnParticipantUpdatedDelegate OnParticipantUpdated;
 
 	/** Triggered when a video track is added. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
@@ -99,10 +101,11 @@ private:
 	void FwdOnDisconnected();
 
 	UFUNCTION()
-	void FwdOnParticipantAdded(const FDolbyIOParticipantInfo& ParticipantInfo);
+	void FwdOnParticipantAdded(const EDolbyIOParticipantStatus Status, const FDolbyIOParticipantInfo& ParticipantInfo);
 
 	UFUNCTION()
-	void FwdOnParticipantLeft(const FString& ParticipantID);
+	void FwdOnParticipantUpdated(const EDolbyIOParticipantStatus Status,
+	                             const FDolbyIOParticipantInfo& ParticipantInfo);
 
 	UFUNCTION()
 	void FwdOnVideoTrackAdded(const FString& ParticipantID);
