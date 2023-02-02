@@ -133,7 +133,7 @@ Triggered when the client is disconnected from the conference by any means; in p
 Triggered when a remote participant is added to the conference. Provides the participant status and participant info in its argument.
 
 Example:  
-![example](./Images/on_participant_added.png)
+![example](./Images/on_participant_added.PNG)
 
 ### On Participant Updated
 Triggered when a remote participant's status is updated. Provides the participant status and participant info in its argument.
