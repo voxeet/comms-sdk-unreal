@@ -273,6 +273,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	catch (...)
 	{
 		MAKE_DLB_ERROR_HANDLER(ConferenceStatus).HandleError();
+		return;
 	}
 
 	Sdk->conference()
