@@ -130,20 +130,20 @@ Triggered when the client is successfully connected to the conference after call
 Triggered when the client is disconnected from the conference by any means; in particular, by the [Disconnect](#disconnect) function.
 
 ### On Participant Added
-Triggered when a remote participant is added to the conference. Provides the participant status and participant info in its argument.
+Triggered when a remote participant is added to the conference. Provides the participant status and participant info in its arguments.
 
 Example:  
-![example](./Images/on_participant_added.PNG)
+![example](Images/on_participant_added.PNG)
 
 ### On Participant Updated
-Triggered when a remote participant's status is updated. Provides the participant status and participant info in its argument.
+Triggered when a remote participant's status is updated. Provides the participant status and participant info in its arguments.
 
 Example:  
 ![example](Images/on_participant_updated.png)
 
 The following graphic shows possible status changes:
 
-![example](./Images/participant_status-changes.png)
+![example](Images/participant_status-changes.png)
 
 ### On Video Track Added
 Triggered when a video track is added. Provides the participant ID in its argument.
