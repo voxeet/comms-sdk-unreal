@@ -4,31 +4,31 @@
 
 #include "DolbyIOParticipantInfo.generated.h"
 
-UENUM(BlueprintType)
+UENUM(BlueprintType, DisplayName = "Dolby.io Participant Status")
 enum class EDolbyIOParticipantStatus : uint8
 {
 	/** A participant is invited to a conference. */
-	Reserved UMETA(DisplayName = "Reserved"),
+	Reserved,
 	/** A participant received the conference invitation and is connecting to a conference. */
-	Connecting UMETA(DisplayName = "Connecting"),
+	Connecting,
 	/** A participant successfully connected to a conference. */
-	OnAir UMETA(DisplayName = "OnAir"),
+	OnAir,
 	/** An invited participant declined the conference invitation. Currently, the Web SDK does not offer the decline
 	 * method, although participants who use Web SDK can receive the Decline status from other application users who use
 	 * the Android or iOS SDK. The Web SDK does not receive the notification if the invited participant uses the decline
 	 * method after joining a conference. */
-	Decline UMETA(DisplayName = "Decline"),
+	Decline,
 	/** A participant left the conference. */
-	Left UMETA(DisplayName = "Left"),
+	Left,
 	/** A participant did not enable audio, video, or screen-share and, therefore, is not connected to any stream. */
-	Inactive UMETA(DisplayName = "Inactive"),
+	Inactive,
 	/** A participant experiences a peer connection problem, which may result in the Error or Connected status. */
-	Warning UMETA(DisplayName = "Warning"),
+	Warning,
 	/** A peer connection failed, and the participant cannot connect to a conference. */
-	Error UMETA(DisplayName = "Error"),
+	Error,
 	/** A participant was kicked from the conference. */
-	Kicked UMETA(DisplayName = "Kicked"),
-	Unknown UMETA(DisplayName = "Unknown"),
+	Kicked,
+	Unknown,
 };
 
 /** Contains the current status of a conference participant and information whether the participant's audio is enabled.

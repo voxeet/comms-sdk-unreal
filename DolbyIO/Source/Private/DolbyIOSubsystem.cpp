@@ -50,6 +50,7 @@ namespace
 	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<dolbyio::comms::participant_status> Status)
 	{
 		if (Status)
+		{
 			switch (*Status)
 			{
 				case dolbyio::comms::participant_status::reserved:
@@ -68,7 +69,8 @@ namespace
 					return EDolbyIOParticipantStatus::Warning;
 				case dolbyio::comms::participant_status::error:
 					return EDolbyIOParticipantStatus::Error;
-			};
+			}
+		}
 
 		return EDolbyIOParticipantStatus::Unknown;
 	}
@@ -285,8 +287,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		        return Sdk->conference().add_event_handler(
 		            [this](const dolbyio::comms::participant_added& Event)
 		            {
-			            if (!Event.participant.status ||
-			                LocalParticipantID == FString(Event.participant.user_id.c_str()))
+			            if (!Event.participant.status || Event.participant.user_id == ToStdString(LocalParticipantID))
 			            {
 				            return;
 			            }
@@ -303,12 +304,10 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		        return Sdk->conference().add_event_handler(
 		            [this](const dolbyio::comms::participant_updated& Event)
 		            {
-			            if (!Event.participant.status ||
-			                LocalParticipantID == FString(Event.participant.user_id.c_str()))
+			            if (!Event.participant.status || Event.participant.user_id == ToStdString(LocalParticipantID))
 			            {
 				            return;
 			            }
-
 			            const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
 			            DLB_UE_LOG("Participant status updated: UserID=%s Name=%s ExternalID=%s Status=%s",
 			                       *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
