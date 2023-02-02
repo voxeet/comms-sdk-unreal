@@ -60,6 +60,36 @@ namespace
 		Ret.bIsSendingAudio = Info.is_sending_audio.value_or(false);
 		Ret.bIsAudibleLocally = Info.audible_locally.value_or(false);
 
+        switch (*Info.status)
+        {
+            case dolbyio::comms::participant_status::reserved:
+                Ret.Status = EParticiantStatusEnum::Reserved;
+                break;
+            case dolbyio::comms::participant_status::connecting:
+                Ret.Status = EParticiantStatusEnum::Connecting;
+                break;
+            case dolbyio::comms::participant_status::on_air:
+                Ret.Status = EParticiantStatusEnum::OnAir;
+                break;
+            case dolbyio::comms::participant_status::decline:
+                Ret.Status = EParticiantStatusEnum::Decline;
+                break;
+            case dolbyio::comms::participant_status::inactive:
+                Ret.Status = EParticiantStatusEnum::Inactive;
+                break;
+            case dolbyio::comms::participant_status::left:
+                Ret.Status = EParticiantStatusEnum::Left;
+                break;
+            case dolbyio::comms::participant_status::warning:
+                Ret.Status = EParticiantStatusEnum::Warning;
+                break;
+            case dolbyio::comms::participant_status::error:
+                Ret.Status = EParticiantStatusEnum::Error;
+                break;
+            default:
+                Ret.Status = EParticiantStatusEnum::Unknown;
+        };
+
 		FString DecodedExternalID;
 		FBase64::Decode(Ret.ExternalID, DecodedExternalID);
 		if (DecodedExternalID.StartsWith("{\"init-pos\": {\"x\": "))
@@ -255,7 +285,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	        [this](dolbyio::comms::event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
-		            [this](const dolbyio::comms::participant_updated& Event)
+		            [this](const dolbyio::comms::participant_added& Event)
 		            {
 			            if (!Event.participant.status)
 			            {
@@ -263,23 +293,40 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            }
 
 			            const FDolbyIOParticipantInfo Info = ToUnrealParticipantInfo(Event.participant);
-			            DLB_UE_LOG("Participant status updated: UserID=%s Name=%s ExternalID=%s Status=%s",
+			            DLB_UE_LOG("Participant status added: UserID=%s Name=%s ExternalID=%s Status=%s",
 			                       *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
 
 			            if (Info.UserID == LocalParticipantID)
 			            {
 				            return;
 			            }
-
-			            switch (*Event.participant.status)
-			            {
-				            case dolbyio::comms::participant_status::on_air:
-					            return BroadcastEvent(OnParticipantAdded, Info);
-				            case dolbyio::comms::participant_status::left:
-					            return BroadcastEvent(OnParticipantLeft, Info.UserID);
-			            }
+                        
+                        return BroadcastEvent(OnParticipantAdded, Info.Status, Info);
 		            });
 	        })
+        .then(
+            [this](dolbyio::comms::event_handler_id)
+            {
+                return Sdk->conference().add_event_handler(
+                    [this](const dolbyio::comms::participant_updated& Event)
+                    {
+                        if (!Event.participant.status)
+                        {
+                            return;
+                        }
+
+                        const FDolbyIOParticipantInfo Info = ToUnrealParticipantInfo(Event.participant);
+                        DLB_UE_LOG("Participant status updated: UserID=%s Name=%s ExternalID=%s Status=%s",
+                                   *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
+
+                        if (Info.UserID == LocalParticipantID)
+                        {
+                            return;
+                        }
+                        
+                        return BroadcastEvent(OnParticipantUpdated, Info.Status, Info);
+                    });
+            })
 	    .then(
 	        [this](dolbyio::comms::event_handler_id)
 	        {
@@ -336,7 +383,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            {
 				            const FString ParticipantID = Event.peer_id.c_str();
 				            const FString StreamID = Event.stream_id.c_str();
-				            DLB_UE_LOG("Video track removed: ParticipantID=%s StreamID=%s", *ParticipantID, *StreamID);
+				                DLB_UE_LOG("Video track removed: ParticipantID=%s StreamID=%s", *ParticipantID, *StreamID);
 				            VideoSink->RemoveStream(ParticipantID, StreamID);
 				            BroadcastEvent(OnVideoTrackRemoved, ParticipantID);
 			            }
