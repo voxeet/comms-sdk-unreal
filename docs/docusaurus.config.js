@@ -18,9 +18,10 @@ const config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'Dolby.io', // Usually your GitHub org/user name.
+  organizationName: 'DolbyIO', // Usually your GitHub org/user name.
   projectName: 'comms-sdk-unreal', // Usually your repo name.
-
+  deploymentBranch: 'doc-github-page',
+  trailingSlash: false,
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 
