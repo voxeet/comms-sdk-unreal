@@ -1,6 +1,7 @@
 ---
 sidebar_position: 2
 sidebar_label: Obtain Permissions
+title: Obtain Permissions
 ---
 
 > MacOS only, ignore this section if you are developing on Windows

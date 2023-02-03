@@ -1,5 +1,6 @@
 ---
 sidebar_label: On Token Needed
+title: On Token Needed
 ---
 Triggered when an initial or refreshed client access token is needed, which happens when the game starts or when a refresh token is requested.
 

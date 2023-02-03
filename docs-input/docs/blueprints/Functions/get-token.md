@@ -1,5 +1,6 @@
 ---
 sidebar_label: Get Token
+title: Get Token
 ---
 For convenience during early development and prototyping, this function is provided to acquire the client access token directly from within the application. 
 

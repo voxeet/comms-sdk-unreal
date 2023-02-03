@@ -1,6 +1,7 @@
 ---
 sidebar_position: 1
 sidebar_label: Installation
+title: Installation
 ---
 
 Download and enable the plugin to be able to use it in the Unreal Editor. You can either [use the binary](#enable-the-plugin-using-the-binary) or [build the plugin from source](#build-the-plugin-from-source). On macOS, you need to additionally [obtain permissions](#obtaining-permissions) to use your microphone and camera.

@@ -1,5 +1,6 @@
 ---
 sidebar_label: Set Token
+title: Set Token
 ---
 Initializes or refreshes the client access token. The function takes the token as a parameter and initializes the plugin unless already initialized. Successful initialization triggers the [On Initialized](../Events/on-initialized) event.
 

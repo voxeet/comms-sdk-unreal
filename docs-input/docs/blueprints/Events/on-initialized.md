@@ -1,5 +1,6 @@
 ---
 sidebar_label: On Initialized
+title: On Initialized
 ---
 Triggered when the plugin is successfully initialized after calling the Set Token function.
 
