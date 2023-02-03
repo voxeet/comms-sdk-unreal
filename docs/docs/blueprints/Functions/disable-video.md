@@ -1,0 +1,1 @@
+Disables video streaming from the primary webcam.

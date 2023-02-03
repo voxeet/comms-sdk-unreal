@@ -1,0 +1,1 @@
+Enables video streaming from the primary webcam.
