@@ -1,3 +1,7 @@
+[![Build Unreal Plugin](https://github.com/DolbyIO/comms-sdk-unreal/actions/workflows/build.yml/badge.svg)](https://github.com/DolbyIO/comms-sdk-unreal/actions/workflows/build.yml)
+[![Documentation](https://github.com/DolbyIO/comms-sdk-unreal/actions/workflows/deploy-to-github-pages.yml/badge.svg)](https://github.com/DolbyIO/comms-sdk-unreal/actions/workflows/deploy-to-github-pages.yml)
+[![License](https://img.shields.io/github/license/DolbyIO/comms-sdk-unreal)](LICENSE)
+
 # Dolby.io Virtual World plugin for Unreal Engine
 Plugin integrating [Dolby.io Communications APIs](https://dolby.io) with the Unreal Engine.
 
