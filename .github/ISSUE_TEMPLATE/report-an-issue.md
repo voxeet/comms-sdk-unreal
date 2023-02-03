@@ -3,7 +3,7 @@ name: Bug Report
 about: Use this template to report an issue.
 title: ''
 labels: bug
-assignees: kubaau
+assignees: GaryMakinDolby
 ---
 
 **Describe the bug**
