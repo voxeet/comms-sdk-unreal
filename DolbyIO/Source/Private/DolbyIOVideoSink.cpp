@@ -7,6 +7,7 @@
 #endif
 #include <dolbyio/comms/media_engine/video_utils.h>
 
+#include "Async/Async.h"
 #include "Engine/Texture2D.h"
 #include "Launch/Resources/Version.h"
 
@@ -14,18 +15,21 @@ namespace DolbyIO
 {
 	void FVideoSink::AddStream(const FString& ParticipantID, const FString& StreamID)
 	{
+		FScopeLock Lock{&FrameLock};
 		StreamFrames.Emplace(StreamID, FFrame{});
 		ParticipantStreams.Emplace(ParticipantID, StreamID);
 	}
 
 	void FVideoSink::RemoveStream(const FString& ParticipantID, const FString& StreamID)
 	{
+		FScopeLock Lock{&FrameLock};
 		StreamFrames.Remove(StreamID);
 		ParticipantStreams.Remove(ParticipantID);
 	}
 
 	UTexture2D* FVideoSink::GetTexture(const FString& ParticipantID)
 	{
+		FScopeLock Lock{&FrameLock};
 		if (FString* StreamID = ParticipantStreams.Find(ParticipantID))
 		{
 			if (FFrame* Frame = StreamFrames.Find(*StreamID))
@@ -112,12 +116,17 @@ namespace DolbyIO
 	void FVideoSink::handle_frame(const std::string& StreamID, const std::string& TrackID,
 	                              std::unique_ptr<dolbyio::comms::video_frame> VideoFrame)
 	{
-		if (FFrame* Frame = StreamFrames.Find(StreamID.c_str()))
-		{
-			Frame->RecreateIfNeeded(VideoFrame->width(), VideoFrame->height());
-			Frame->Convert(*VideoFrame);
-			Frame->Texture->UpdateTextureRegions(0, 1, &Frame->Region, VideoFrame->width() * Stride, Stride,
-			                                     Frame->Buffer.GetData());
-		}
+		AsyncTask(ENamedThreads::GameThread,
+		          [=, VideoFrame = MoveTemp(VideoFrame)]
+		          {
+			          FScopeLock Lock{&FrameLock};
+			          if (FFrame* Frame = StreamFrames.Find(StreamID.c_str()))
+			          {
+				          Frame->RecreateIfNeeded(VideoFrame->width(), VideoFrame->height());
+				          Frame->Convert(*VideoFrame);
+				          Frame->Texture->UpdateTextureRegions(0, 1, &Frame->Region, VideoFrame->width() * Stride,
+				                                               Stride, Frame->Buffer.GetData());
+			          }
+		          });
 	}
 }

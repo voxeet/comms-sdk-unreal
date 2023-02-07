@@ -48,6 +48,7 @@ namespace DolbyIO
 		void handle_frame(const std::string&, const std::string&,
 		                  std::unique_ptr<dolbyio::comms::video_frame>) override;
 
+		FCriticalSection FrameLock;
 		TMap<FString, FFrame> StreamFrames;
 		TMap<FString, FString> ParticipantStreams;
 	};
