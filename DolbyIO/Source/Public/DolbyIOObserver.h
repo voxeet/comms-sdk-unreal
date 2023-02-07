@@ -62,7 +62,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnParticipantAddedDelegate OnParticipantAdded;
 
-	/** Triggered when a remote participant leaves the conference. */
+	/** Triggered when a remote participant's status is updated. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnParticipantUpdatedDelegate OnParticipantUpdated;
 
