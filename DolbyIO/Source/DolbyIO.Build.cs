@@ -31,7 +31,7 @@ public class DolbyIO : ModuleRules
 				Path.Combine(LibDir, "dolbyio_comms_sdk.lib"),
 			});
 
-			string[] Dlls = new string[] { "dvclient.dll", "dolbyio_comms_media.dll", "dolbyio_comms_sdk.dll" };
+			string[] Dlls = new string[] { "avutil-57.dll", "avcodec-59.dll", "dvclient.dll", "dolbyio_comms_media.dll", "dolbyio_comms_sdk.dll" };
 			PublicDelayLoadDLLs.AddRange(Dlls);
 
 			string BinDir = Path.Combine(SdkDir, "bin");

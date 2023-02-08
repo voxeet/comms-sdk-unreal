@@ -379,6 +379,14 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	        })
 	    .then([this](dolbyio::comms::event_handler_id)
 	          { return Sdk->video().remote().set_video_sink(VideoSink.Get()); })
+#if PLATFORM_WINDOWS
+	    .then(
+	        [this]
+	        {
+		        return Sdk->device_management().set_default_audio_device_policy(
+		            dolbyio::comms::default_audio_device_policy::output);
+	        })
+#endif
 	    .then(
 	        [this]
 	        {
