@@ -39,6 +39,7 @@ namespace DolbyIO
 		{
 			void RecreateIfNeeded(int Width, int Height);
 			void Convert(dolbyio::comms::video_frame&);
+			void Update();
 
 			UTexture2D* Texture{};
 			TArray<uint8> Buffer;

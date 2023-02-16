@@ -44,27 +44,22 @@ namespace DolbyIO
 
 	void FVideoSink::FFrame::RecreateIfNeeded(int Width, int Height)
 	{
-		FTexturePlatformData* FrameData = Texture ? Texture->
-#if ENGINE_MAJOR_VERSION == 4
-		                                            PlatformData
-#else
-		                                            GetPlatformData()
-#endif
-		                                          : nullptr;
-		if (FrameData && FrameData->SizeX == Width && FrameData->SizeY == Height)
+		if (Texture)
 		{
-			return;
+			if (Texture->GetSizeX() == Width && Texture->GetSizeY())
+			{
+				return;
+			}
+
+			Texture->RemoveFromRoot();
 		}
 
 		Region.Width = Width;
 		Region.Height = Height;
 		Buffer.SetNumUninitialized(Width * Height * Stride);
+
 		Texture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
-		Texture->Filter = TextureFilter::TF_Trilinear;
-#if WITH_EDITOR
-		Texture->MipGenSettings = TextureMipGenSettings::TMGS_NoMipmaps;
-#endif
-		Texture->SRGB = 1;
+		Texture->AddToRoot();
 		Texture->UpdateResource();
 	}
 
@@ -113,6 +108,11 @@ namespace DolbyIO
 #endif
 	}
 
+	void FVideoSink::FFrame::Update()
+	{
+		Texture->UpdateTextureRegions(0, 1, &Region, Region.Width * Stride, Stride, Buffer.GetData());
+	}
+
 	void FVideoSink::handle_frame(const std::string& StreamID, const std::string& TrackID,
 	                              std::unique_ptr<dolbyio::comms::video_frame> VideoFrame)
 	{
@@ -124,8 +124,7 @@ namespace DolbyIO
 			          {
 				          Frame->RecreateIfNeeded(VideoFrame->width(), VideoFrame->height());
 				          Frame->Convert(*VideoFrame);
-				          Frame->Texture->UpdateTextureRegions(0, 1, &Frame->Region, VideoFrame->width() * Stride,
-				                                               Stride, Frame->Buffer.GetData());
+				          Frame->Update();
 			          }
 		          });
 	}
