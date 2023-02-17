@@ -46,7 +46,7 @@ namespace DolbyIO
 	{
 		if (Texture)
 		{
-			if (Texture->GetSizeX() == Width && Texture->GetSizeY())
+			if (Texture->GetSizeX() == Width && Texture->GetSizeY() == Height)
 			{
 				return;
 			}
