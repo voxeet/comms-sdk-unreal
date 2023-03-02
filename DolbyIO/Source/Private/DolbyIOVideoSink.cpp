@@ -9,7 +9,6 @@
 
 #include "Async/Async.h"
 #include "Engine/Texture2D.h"
-#include "Launch/Resources/Version.h"
 
 namespace DolbyIO
 {
