@@ -276,9 +276,13 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		return;
 	}
 
-	Sdk->conference()
-	    .add_event_handler([this](const dolbyio::comms::conference_status_updated& Event)
-	                       { UpdateStatus(Event.status); })
+	Sdk->register_component_version("unreal_sdk", "1.1.0")
+	    .then(
+	        [this]
+	        {
+		        return Sdk->conference().add_event_handler(
+		            [this](const dolbyio::comms::conference_status_updated& Event) { UpdateStatus(Event.status); });
+	        })
 	    .then(
 	        [this](dolbyio::comms::event_handler_id)
 	        {
