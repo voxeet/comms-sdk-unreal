@@ -25,8 +25,6 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	ConferenceStatus = dolbyio::comms::conference_status::destroyed;
 
-	VideoSink = MakeShared<DolbyIO::FVideoSink>();
-
 	FTimerManager& TimerManager = GetGameInstance()->GetTimerManager();
 	TimerManager.SetTimer(LocationTimerHandle, this, &UDolbyIOSubsystem::SetLocationUsingFirstPlayer, 0.1, true);
 	TimerManager.SetTimer(RotationTimerHandle, this, &UDolbyIOSubsystem::SetRotationUsingFirstPlayer, 0.01, true);
@@ -351,12 +349,16 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		        return Sdk->conference().add_event_handler(
 		            [this](const dolbyio::comms::video_track_added& Event)
 		            {
-			            if (Event.remote)
+			            if (Event.track.remote)
 			            {
-				            const FString ParticipantID = Event.peer_id.c_str();
-				            const FString StreamID = Event.stream_id.c_str();
+				            const FString ParticipantID = Event.track.peer_id.c_str();
+				            const FString StreamID = Event.track.stream_id.c_str();
 				            DLB_UE_LOG("Video track added: ParticipantID=%s StreamID=%s", *ParticipantID, *StreamID);
-				            VideoSink->AddStream(ParticipantID, StreamID);
+				            VideoSinks.Emplace(ParticipantID, std::make_unique<DolbyIO::FVideoSink>());
+				            Sdk->video()
+				                .remote()
+				                .set_video_sink(Event.track, VideoSinks[ParticipantID])
+				                .on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
 				            BroadcastEvent(OnVideoTrackAdded, ParticipantID);
 			            }
 		            });
@@ -367,21 +369,19 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		        return Sdk->conference().add_event_handler(
 		            [this](const dolbyio::comms::video_track_removed& Event)
 		            {
-			            if (Event.remote)
+			            if (Event.track.remote)
 			            {
-				            const FString ParticipantID = Event.peer_id.c_str();
-				            const FString StreamID = Event.stream_id.c_str();
+				            const FString ParticipantID = Event.track.peer_id.c_str();
+				            const FString StreamID = Event.track.stream_id.c_str();
 				            DLB_UE_LOG("Video track removed: ParticipantID=%s StreamID=%s", *ParticipantID, *StreamID);
-				            VideoSink->RemoveStream(ParticipantID, StreamID);
+				            VideoSinks.Remove(ParticipantID);
 				            BroadcastEvent(OnVideoTrackRemoved, ParticipantID);
 			            }
 		            });
 	        })
-	    .then([this](dolbyio::comms::event_handler_id)
-	          { return Sdk->video().remote().set_video_sink(VideoSink.Get()); })
 #if PLATFORM_WINDOWS
 	    .then(
-	        [this]
+	        [this](dolbyio::comms::event_handler_id)
 	        {
 		        return Sdk->device_management().set_default_audio_device_policy(
 		            dolbyio::comms::default_audio_device_policy::output);
@@ -624,7 +624,11 @@ void UDolbyIOSubsystem::DisableVideo()
 
 UTexture2D* UDolbyIOSubsystem::GetTexture(const FString& ParticipantID)
 {
-	return VideoSink->GetTexture(ParticipantID);
+	if (const std::shared_ptr<DolbyIO::FVideoSink>* Sink = VideoSinks.Find(ParticipantID))
+	{
+		return (*Sink)->GetTexture();
+	}
+	return nullptr;
 }
 
 void UDolbyIOSubsystem::SetLocalPlayerLocation(const FVector& Location)

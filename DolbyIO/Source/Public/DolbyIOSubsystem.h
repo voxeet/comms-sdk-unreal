@@ -197,7 +197,7 @@ private:
 	dolbyio::comms::conference_status ConferenceStatus;
 	FString LocalParticipantID;
 
-	TSharedPtr<DolbyIO::FVideoSink> VideoSink;
+	TMap<FString, std::shared_ptr<DolbyIO::FVideoSink>> VideoSinks;
 	TSharedPtr<dolbyio::comms::sdk> Sdk;
 	TSharedPtr<dolbyio::comms::refresh_token> RefreshTokenCb;
 
