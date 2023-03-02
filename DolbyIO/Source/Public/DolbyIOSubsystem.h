@@ -6,6 +6,8 @@
 
 #include "DolbyIOParticipantInfo.h"
 
+#include <memory>
+
 #include "Engine/EngineTypes.h"
 
 #include "DolbyIOSubsystem.generated.h"

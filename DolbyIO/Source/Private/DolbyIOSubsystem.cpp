@@ -379,16 +379,16 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            }
 		            });
 	        })
-#if PLATFORM_WINDOWS
 	    .then(
 	        [this](dolbyio::comms::event_handler_id)
+#if PLATFORM_WINDOWS
 	        {
 		        return Sdk->device_management().set_default_audio_device_policy(
 		            dolbyio::comms::default_audio_device_policy::output);
 	        })
-#endif
 	    .then(
 	        [this]
+#endif
 	        {
 		        DLB_UE_LOG("Initialized");
 		        BroadcastEvent(OnInitialized);
