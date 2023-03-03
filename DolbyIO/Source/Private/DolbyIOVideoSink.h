@@ -20,7 +20,10 @@
 #pragma warning(pop)
 #endif
 
+#include <memory>
+
 #include "RHI.h"
+#include "RenderCommandFence.h"
 
 class UTexture2D;
 
