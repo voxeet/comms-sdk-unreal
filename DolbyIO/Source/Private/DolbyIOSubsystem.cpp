@@ -358,7 +358,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 				            const FString ParticipantID = Event.track.peer_id.c_str();
 				            const FString StreamID = Event.track.stream_id.c_str();
 				            DLB_UE_LOG("Video track added: ParticipantID=%s StreamID=%s", *ParticipantID, *StreamID);
-				            VideoSinks.Emplace(ParticipantID, std::make_unique<DolbyIO::FVideoSink>());
+				            VideoSinks.Emplace(ParticipantID, std::make_shared<DolbyIO::FVideoSink>());
 				            Sdk->video()
 				                .remote()
 				                .set_video_sink(Event.track, VideoSinks[ParticipantID])
@@ -460,7 +460,8 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 	    .then(
 	        [this](dolbyio::comms::conference_info&& ConferenceInfo)
 	        {
-		        DLB_UE_LOG("Connected to conference ID %s", *FString{ConferenceInfo.id.c_str()});
+		        DLB_UE_LOG("Connected to conference ID %s with user ID %s", *FString{ConferenceInfo.id.c_str()},
+		                   *LocalParticipantID);
 		        SetSpatialEnvironment();
 		        ToggleInputMute();
 		        ToggleOutputMute();
