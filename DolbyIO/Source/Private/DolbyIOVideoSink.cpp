@@ -96,7 +96,7 @@ namespace DolbyIO
 	void FVideoSink::handle_frame(std::unique_ptr<dolbyio::comms::video_frame> VideoFrame)
 	{
 		AsyncTask(ENamedThreads::GameThread,
-		          [WeakThis = std::weak_ptr<FVideoSink>(shared_from_this()), VideoFrame = MoveTemp(VideoFrame)]
+		          [WeakThis = weak_from_this(), VideoFrame = MoveTemp(VideoFrame)]
 		          {
 			          if (std::shared_ptr<FVideoSink> SharedThis = WeakThis.lock())
 			          {
