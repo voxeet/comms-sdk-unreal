@@ -29,27 +29,16 @@ namespace DolbyIO
 	class FVideoSink final : public dolbyio::comms::video_sink
 	{
 	public:
-		void AddStream(const FString& ParticipantID, const FString& StreamID);
-		void RemoveStream(const FString& ParticipantID, const FString& StreamID);
-
-		UTexture2D* GetTexture(const FString& ParticipantID);
+		UTexture2D* GetTexture();
 
 	private:
-		struct FFrame
-		{
-			void RecreateIfNeeded(int Width, int Height);
-			void Convert(dolbyio::comms::video_frame&);
+		void handle_frame(std::unique_ptr<dolbyio::comms::video_frame>) override;
 
-			UTexture2D* Texture{};
-			TArray<uint8> Buffer;
-			FUpdateTextureRegion2D Region{0, 0, 0, 0, 0, 0};
-		};
+		void RecreateIfNeeded(int Width, int Height);
+		void Convert(dolbyio::comms::video_frame&);
 
-		void handle_frame(const std::string&, const std::string&,
-		                  std::unique_ptr<dolbyio::comms::video_frame>) override;
-
-		FCriticalSection FrameLock;
-		TMap<FString, FFrame> StreamFrames;
-		TMap<FString, FString> ParticipantStreams;
+		UTexture2D* Texture{};
+		TArray<uint8> Buffer;
+		FUpdateTextureRegion2D Region{0, 0, 0, 0, 0, 0};
 	};
 }

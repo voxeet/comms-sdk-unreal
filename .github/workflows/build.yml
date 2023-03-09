@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  CPP_SDK_TAG: "2.3.1"
+  CPP_SDK_TAG: "2.4.0-beta.1"
   CPP_SDK_DESTINATION: "DolbyIO"
   CPP_SDK_URL: "https://github.com/DolbyIO/comms-sdk-cpp/releases/download"
   UNREAL_PLUGIN_OUTPUT: "Build/DolbyIO"
@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: ["4.27", "5.0"]
+        version: ["4.27", "5.0", "5.1"]
     runs-on: ["self-hosted", "X64", "macOS"]
     env:
       BUILD_PLATFORM: 'macos64'
@@ -64,7 +64,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: ["4.27", "5.0"]
+        version: ["4.27", "5.0", "5.1"]
     runs-on: ["self-hosted", "X64", "Windows"]
     env:
       BUILD_PLATFORM: 'windows64'
