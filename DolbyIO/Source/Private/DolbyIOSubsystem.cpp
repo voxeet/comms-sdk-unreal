@@ -418,7 +418,7 @@ void UDolbyIOSubsystem::UpdateStatus(dolbyio::comms::conference_status Status)
 }
 
 void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& UserName, const FString& ExternalID,
-                                const FString& AvatarURL)
+                                const FString& AvatarURL, EDolbyIOConnectionMode ConnMode)
 {
 	if (!CanConnect())
 	{
@@ -430,7 +430,11 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 		return;
 	}
 
-	DLB_UE_LOG("Connecting to conference %s as %s", *ConferenceName, *UserName);
+	ConnectionMode = ConnMode;
+	const FString ConnModeStr = ConnectionMode == EDolbyIOConnectionMode::Active            ? "active user"
+	                            : ConnectionMode == EDolbyIOConnectionMode::ListenerRegular ? "regular listener"
+	                                                                                        : "RTS listener";
+	DLB_UE_LOG("Connecting to conference %s as %s with name %s", *ConferenceName, *ConnModeStr, *UserName);
 
 	dolbyio::comms::services::session::user_info UserInfo{};
 	UserInfo.name = ToStdString(UserName);
@@ -452,10 +456,22 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 	    .then(
 	        [this](dolbyio::comms::conference_info&& ConferenceInfo)
 	        {
-		        dolbyio::comms::services::conference::join_options Options{};
-		        Options.constraints.audio = true;
-		        Options.connection.spatial_audio = true;
-		        return Sdk->conference().join(ConferenceInfo, Options);
+		        if (ConnectionMode == EDolbyIOConnectionMode::Active)
+		        {
+			        dolbyio::comms::services::conference::join_options Options{};
+			        Options.constraints.audio = true;
+			        Options.connection.spatial_audio = true;
+			        return Sdk->conference().join(ConferenceInfo, Options);
+		        }
+		        else
+		        {
+			        dolbyio::comms::services::conference::listen_options Options{};
+			        Options.connection.spatial_audio = true;
+			        Options.type = ConnectionMode == EDolbyIOConnectionMode::ListenerRegular
+			                           ? dolbyio::comms::listen_mode::regular
+			                           : dolbyio::comms::listen_mode::rts_mixed;
+			        return Sdk->conference().listen(ConferenceInfo, Options);
+		        }
 	        })
 	    .then(
 	        [this](dolbyio::comms::conference_info&& ConferenceInfo)
@@ -493,8 +509,18 @@ bool UDolbyIOSubsystem::IsConnected() const
 	return ConferenceStatus == dolbyio::comms::conference_status::joined;
 }
 
+bool UDolbyIOSubsystem::IsConnectedAsActive() const
+{
+	return IsConnected() && ConnectionMode == EDolbyIOConnectionMode::Active;
+}
+
 void UDolbyIOSubsystem::SetSpatialEnvironment()
 {
+	if (!IsConnectedAsActive())
+	{
+		return;
+	}
+
 	// The SDK spatial settings expect meters as the default unit of length.
 	// Unreal uses centimeters for scale, so the plugin's scale of "1" is a scale of "100" for the SDK.
 	const float SdkScale = SpatialEnvironmentScale * ScaleCenti;
@@ -509,7 +535,7 @@ void UDolbyIOSubsystem::SetSpatialEnvironment()
 
 void UDolbyIOSubsystem::ToggleInputMute()
 {
-	if (IsConnected())
+	if (IsConnectedAsActive())
 	{
 		Sdk->conference().mute(bIsInputMuted).on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
 	}
@@ -517,7 +543,7 @@ void UDolbyIOSubsystem::ToggleInputMute()
 
 void UDolbyIOSubsystem::ToggleOutputMute()
 {
-	if (IsConnected())
+	if (IsConnected() && ConnectionMode != EDolbyIOConnectionMode::ListenerRTS)
 	{
 		Sdk->conference().mute_output(bIsOutputMuted).on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
 	}
@@ -525,7 +551,7 @@ void UDolbyIOSubsystem::ToggleOutputMute()
 
 void UDolbyIOSubsystem::ToggleVideo()
 {
-	if (IsConnected())
+	if (IsConnectedAsActive())
 	{
 		bIsVideoEnabled ? Sdk->video().local().start().on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus))
 		                : Sdk->video().local().stop().on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
@@ -578,10 +604,7 @@ void UDolbyIOSubsystem::SetSpatialEnvironmentScale(float Scale)
 {
 	DLB_UE_LOG("Setting spatial environment scale: %f", Scale);
 	SpatialEnvironmentScale = Scale;
-	if (IsConnected())
-	{
-		SetSpatialEnvironment();
-	}
+	SetSpatialEnvironment();
 }
 
 void UDolbyIOSubsystem::MuteInput()
@@ -647,7 +670,7 @@ void UDolbyIOSubsystem::SetLocalPlayerLocation(const FVector& Location)
 
 void UDolbyIOSubsystem::SetLocalPlayerLocationImpl(const FVector& Location)
 {
-	if (!IsConnected())
+	if (!IsConnectedAsActive())
 	{
 		return;
 	}
@@ -669,7 +692,7 @@ void UDolbyIOSubsystem::SetLocalPlayerRotation(const FRotator& Rotation)
 
 void UDolbyIOSubsystem::SetLocalPlayerRotationImpl(const FRotator& Rotation)
 {
-	if (!IsConnected())
+	if (!IsConnectedAsActive())
 	{
 		return;
 	}
