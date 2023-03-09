@@ -37,12 +37,14 @@ namespace DolbyIO
 		{
 			DLB_UE_LOG("Recreating texture: old %dx%d new %dx%d", Texture->GetSizeX(), Texture->GetSizeY(), Width,
 			           Height);
+			Texture->RemoveFromRoot();
 		}
 
 		Region.Width = Width;
 		Region.Height = Height;
 		Buffer.SetNumUninitialized(Width * Height * Stride);
 		Texture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
+		Texture->AddToRoot();
 		Texture->UpdateResource();
 	}
 
