@@ -23,21 +23,23 @@ namespace DolbyIO
 
 	void FVideoSink::RecreateIfNeeded(int Width, int Height)
 	{
-		if (Texture && Texture->GetSizeX() == Width && Texture->GetSizeY() == Height)
+		if (Texture)
 		{
-			return;
-		}
-
-		if (!Texture)
-		{
-			DLB_UE_LOG("Creating texture: %dx%d", Width, Height);
-			Fence.BeginFence();
+			if (Texture->GetSizeX() == Width && Texture->GetSizeY() == Height)
+			{
+				return;
+			}
+			else
+			{
+				DLB_UE_LOG("Recreating texture: old %dx%d new %dx%d", Texture->GetSizeX(), Texture->GetSizeY(), Width,
+				           Height);
+				Texture->RemoveFromRoot();
+			}
 		}
 		else
 		{
-			DLB_UE_LOG("Recreating texture: old %dx%d new %dx%d", Texture->GetSizeX(), Texture->GetSizeY(), Width,
-			           Height);
-			Texture->RemoveFromRoot();
+			DLB_UE_LOG("Creating texture: %dx%d", Width, Height);
+			Fence.BeginFence();
 		}
 
 		Region.Width = Width;
