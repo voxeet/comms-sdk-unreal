@@ -546,6 +546,28 @@ void UDolbyIOSubsystem::UnmuteOutput()
 	ToggleOutputMute();
 }
 
+void UDolbyIOSubsystem::MuteParticipant(const FString& ParticipantID)
+{
+	if (!IsConnected() || ParticipantID == LocalParticipantID)
+	{
+		return;
+	}
+
+	DLB_UE_LOG("Muting participant ID %s", *ParticipantID);
+	Sdk->audio().remote().stop(ToStdString(ParticipantID)).on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::UnmuteParticipant(const FString& ParticipantID)
+{
+	if (!IsConnected() || ParticipantID == LocalParticipantID)
+	{
+		return;
+	}
+
+	DLB_UE_LOG("Unmuting participant ID %s", *ParticipantID);
+	Sdk->audio().remote().start(ToStdString(ParticipantID)).on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
 void UDolbyIOSubsystem::EnableVideo()
 {
 	DLB_UE_LOG("Enabling video");
