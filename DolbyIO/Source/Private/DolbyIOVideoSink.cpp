@@ -2,6 +2,8 @@
 
 #include "DolbyIOVideoSink.h"
 
+#include "DolbyIOLogging.h"
+
 #if PLATFORM_MAC
 #include <dolbyio/comms/media_engine/video_frame_macos.h>
 #endif
@@ -24,6 +26,17 @@ namespace DolbyIO
 		if (Texture && Texture->GetSizeX() == Width && Texture->GetSizeY() == Height)
 		{
 			return;
+		}
+
+		if (!Texture)
+		{
+			DLB_UE_LOG("Creating texture: %dx%d", Width, Height);
+			Fence.BeginFence();
+		}
+		else
+		{
+			DLB_UE_LOG("Recreating texture: old %dx%d new %dx%d", Texture->GetSizeX(), Texture->GetSizeY(), Width,
+			           Height);
 		}
 
 		Region.Width = Width;
@@ -81,12 +94,18 @@ namespace DolbyIO
 	void FVideoSink::handle_frame(std::unique_ptr<dolbyio::comms::video_frame> VideoFrame)
 	{
 		AsyncTask(ENamedThreads::GameThread,
-		          [=, VideoFrame = MoveTemp(VideoFrame)]
+		          [WeakThis = std::weak_ptr<FVideoSink>(shared_from_this()), VideoFrame = MoveTemp(VideoFrame)]
 		          {
-			          RecreateIfNeeded(VideoFrame->width(), VideoFrame->height());
-			          Convert(*VideoFrame);
-			          Texture->UpdateTextureRegions(0, 1, &Region, VideoFrame->width() * Stride, Stride,
-			                                        Buffer.GetData());
+			          if (std::shared_ptr<FVideoSink> SharedThis = WeakThis.lock())
+			          {
+				          SharedThis->RecreateIfNeeded(VideoFrame->width(), VideoFrame->height());
+				          SharedThis->Convert(*VideoFrame);
+				          SharedThis->Fence.Wait();
+				          SharedThis->Texture->UpdateTextureRegions(0, 1, &SharedThis->Region,
+				                                                    VideoFrame->width() * Stride, Stride,
+				                                                    SharedThis->Buffer.GetData());
+				          SharedThis->Fence.Wait();
+			          }
 		          });
 	}
 }
