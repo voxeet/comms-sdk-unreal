@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.0",
+	"VersionName": "1.0.1",
 	"FriendlyName": "Dolby.io Virtual World",
 	"Description": "Plugin integrating Dolby.io Communications.",
 	"Category": "Communications",
