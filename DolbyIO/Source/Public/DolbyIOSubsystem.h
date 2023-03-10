@@ -211,4 +211,20 @@ private:
 
 	FTimerHandle LocationTimerHandle;
 	FTimerHandle RotationTimerHandle;
+
+	class FErrorHandler final
+	{
+	public:
+		FErrorHandler(UDolbyIOSubsystem& DolbyIOSubsystem, int Line);
+
+		void operator()(std::exception_ptr&& ExcPtr) const;
+		void HandleError() const;
+
+	private:
+		void HandleError(TFunction<void()> Callee) const;
+		void LogException(const FString& Type, const FString& What) const;
+
+		UDolbyIOSubsystem& DolbyIOSubsystem;
+		int Line;
+	};
 };

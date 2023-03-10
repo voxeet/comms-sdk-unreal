@@ -20,13 +20,16 @@
 #pragma warning(pop)
 #endif
 
+#include <memory>
+
 #include "RHI.h"
+#include "RenderCommandFence.h"
 
 class UTexture2D;
 
 namespace DolbyIO
 {
-	class FVideoSink final : public dolbyio::comms::video_sink
+	class FVideoSink final : public dolbyio::comms::video_sink, public std::enable_shared_from_this<FVideoSink>
 	{
 	public:
 		UTexture2D* GetTexture();
@@ -40,5 +43,6 @@ namespace DolbyIO
 		UTexture2D* Texture{};
 		TArray<uint8> Buffer;
 		FUpdateTextureRegion2D Region{0, 0, 0, 0, 0, 0};
+		FRenderCommandFence Fence;
 	};
 }
