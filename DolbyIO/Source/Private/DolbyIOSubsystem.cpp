@@ -44,6 +44,10 @@ namespace
 	{
 		return TCHAR_TO_UTF8(*String);
 	}
+	FText ToFText(const std::string& String)
+	{
+		return FText::FromString(UTF8_TO_TCHAR(String.c_str()));
+	}
 
 	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<dolbyio::comms::participant_status> Status)
 	{
@@ -567,6 +571,94 @@ UTexture2D* UDolbyIOSubsystem::GetTexture(const FString& ParticipantID)
 		return (*Sink)->GetTexture();
 	}
 	return nullptr;
+}
+
+void UDolbyIOSubsystem::GetScreenshareSources()
+{
+	if (!Sdk)
+	{
+		DLB_UE_WARN("Cannot get screenshare sources - not initialized");
+		return;
+	}
+
+	DLB_UE_LOG("Getting screenshare sources");
+	Sdk->device_management()
+	    .get_screen_share_sources()
+	    .then(
+	        [this](const std::vector<dolbyio::comms::screen_share_source>& ScreenShareSource)
+	        {
+		        TArray<FDolbyIOScreenshareSource> Sources;
+		        for (const dolbyio::comms::screen_share_source& Source : ScreenShareSource)
+		        {
+			        Sources.Add(FDolbyIOScreenshareSource{
+			            Source.id, Source.type == dolbyio::comms::screen_share_source::type::screen,
+			            Source.title.empty() ? FText::FromString(FString{"Screen "} + FString::FromInt(Source.id + 1))
+			                                 : ToFText(Source.title)});
+		        }
+		        BroadcastEvent(OnScreenshareSourcesReceived, Sources);
+	        })
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+namespace
+{
+	dolbyio::comms::screen_share_content_type ToSdkContentType(EDolbyIOScreenshareContentType Type)
+	{
+		switch (Type)
+		{
+			case EDolbyIOScreenshareContentType::Detailed:
+				return dolbyio::comms::screen_share_content_type::detailed;
+			case EDolbyIOScreenshareContentType::Text:
+				return dolbyio::comms::screen_share_content_type::text;
+			case EDolbyIOScreenshareContentType::Fluid:
+				return dolbyio::comms::screen_share_content_type::fluid;
+			default:
+				return dolbyio::comms::screen_share_content_type::unspecified;
+		}
+	}
+}
+
+void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source,
+                                         EDolbyIOScreenshareContentType ContentType)
+{
+	if (!IsConnected())
+	{
+		DLB_UE_WARN("Cannot start screenshare - not connected");
+		return;
+	}
+
+	DLB_UE_LOG("Starting screenshare using source: ID=%d IsScreen=%d Title=%s ContentType=%d", Source.ID,
+	           Source.bIsScreen, *Source.Title.ToString(), ContentType);
+	constexpr auto NullFrameHandler = nullptr;
+	Sdk->conference()
+	    .start_screen_share(
+	        dolbyio::comms::screen_share_source{ToStdString(Source.Title.ToString()), Source.ID,
+	                                            Source.bIsScreen ? dolbyio::comms::screen_share_source::type::screen
+	                                                             : dolbyio::comms::screen_share_source::type::window},
+	        NullFrameHandler, ToSdkContentType(ContentType))
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::StopScreenshare()
+{
+	if (!Sdk)
+	{
+		return;
+	}
+
+	DLB_UE_LOG("Stopping screenshare");
+	Sdk->conference().stop_screen_share().on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::ChangeScreenshareContentType(EDolbyIOScreenshareContentType ContentType)
+{
+	if (!IsConnected())
+	{
+		return;
+	}
+
+	DLB_UE_LOG("Changing screenshare content type to %d", ContentType);
+	Sdk->conference().screen_share_content_type(ToSdkContentType(ContentType)).on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
 void UDolbyIOSubsystem::SetLocalPlayerLocation(const FVector& Location)

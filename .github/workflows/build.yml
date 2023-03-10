@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  CPP_SDK_TAG: "2.4.0-beta.3"
+  CPP_SDK_TAG: "2.4.0-beta.4"
   CPP_SDK_DESTINATION: "DolbyIO"
   CPP_SDK_URL: "https://github.com/DolbyIO/comms-sdk-cpp/releases/download"
   UNREAL_PLUGIN_OUTPUT: "Build/DolbyIO"

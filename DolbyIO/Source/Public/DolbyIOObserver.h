@@ -5,6 +5,7 @@
 #include "Components/ActorComponent.h"
 
 #include "DolbyIOParticipantInfo.h"
+#include "DolbyIOScreenshareSource.h"
 
 #include "DolbyIOObserver.generated.h"
 
@@ -22,6 +23,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnActiveSpeakersChangedDele
                                             ActiveSpeakers);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnAudioLevelsChangedDelegate, const TArray<FString>&,
                                              ActiveSpeakers, const TArray<float>&, AudioLevels);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnScreenshareSourcesReceivedDelegate,
+                                            const TArray<FDolbyIOScreenshareSource>&, Sources);
 
 UCLASS(ClassGroup = "Dolby.io Comms",
        Meta = (BlueprintSpawnableComponent, DisplayName = "Dolby.io Observer",
@@ -84,6 +87,10 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnAudioLevelsChangedDelegate OnAudioLevelsChanged;
 
+	/** Triggered when screenshare sources are received as a result of calling Get Screenshare Sources. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnScreenshareSourcesReceivedDelegate OnScreenshareSourcesReceived;
+
 private:
 	void InitializeComponent() override;
 
@@ -117,6 +124,9 @@ private:
 
 	UFUNCTION()
 	void FwdOnAudioLevelsChanged(const TArray<FString>& ActiveSpeakers, const TArray<float>& AudioLevels);
+
+	UFUNCTION()
+	void FwdOnScreenshareSourcesReceived(const TArray<FDolbyIOScreenshareSource>& Sources);
 
 	template <class TDelegate, class... TArgs> void BroadcastEvent(TDelegate&, TArgs&&...);
 };
