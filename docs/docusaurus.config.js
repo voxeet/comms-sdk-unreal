@@ -7,7 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Dolby.io Communications API',
-  tagline: 'Virtual World Plugin for Unreal Engine',
+  tagline: 'Virtual Worlds Plugin for Unreal Engine',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here

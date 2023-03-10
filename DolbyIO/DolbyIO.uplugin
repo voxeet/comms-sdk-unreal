@@ -2,7 +2,7 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.1.0-beta.1",
-	"FriendlyName": "Dolby.io Virtual World",
+	"FriendlyName": "Dolby.io Virtual Worlds",
 	"Description": "Plugin integrating Dolby.io Communications.",
 	"Category": "Communications",
 	"CreatedBy": "Dolby Laboratories",
