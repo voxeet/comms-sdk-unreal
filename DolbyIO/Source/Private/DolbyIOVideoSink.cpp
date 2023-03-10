@@ -11,12 +11,28 @@
 
 #include "Async/Async.h"
 #include "Engine/Texture2D.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 namespace DolbyIO
 {
 	UTexture2D* FVideoSink::GetTexture()
 	{
 		return Texture;
+	}
+
+	void FVideoSink::BindMaterial(UMaterialInstanceDynamic* Material)
+	{
+		Materials.Add(Material);
+		UpdateMaterial(Material);
+	}
+
+	void FVideoSink::UnbindMaterial(UMaterialInstanceDynamic* Material)
+	{
+		Materials.Remove(Material);
+		if (IsValid(Material))
+		{
+			Material->SetTextureParameterValue("DolbyIO Frame", UTexture2D::CreateTransient(1, 1, PF_B8G8R8A8));
+		}
 	}
 
 	constexpr int Stride = 4;
@@ -48,6 +64,11 @@ namespace DolbyIO
 		Texture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
 		Texture->AddToRoot();
 		Texture->UpdateResource();
+
+		for (UMaterialInstanceDynamic* Material : Materials)
+		{
+			UpdateMaterial(Material);
+		}
 	}
 
 	void FVideoSink::Convert(dolbyio::comms::video_frame& VideoFrame)
@@ -111,5 +132,13 @@ namespace DolbyIO
 				          SharedThis->Fence.Wait();
 			          }
 		          });
+	}
+
+	void FVideoSink::UpdateMaterial(UMaterialInstanceDynamic* Material)
+	{
+		if (IsValid(Material))
+		{
+			Material->SetTextureParameterValue("DolbyIO Frame", Texture);
+		}
 	}
 }

@@ -25,6 +25,7 @@
 #include "RHI.h"
 #include "RenderCommandFence.h"
 
+class UMaterialInstanceDynamic;
 class UTexture2D;
 
 namespace DolbyIO
@@ -33,6 +34,8 @@ namespace DolbyIO
 	{
 	public:
 		UTexture2D* GetTexture();
+		void BindMaterial(UMaterialInstanceDynamic* Material);
+		void UnbindMaterial(UMaterialInstanceDynamic* Material);
 
 	private:
 		void handle_frame(std::unique_ptr<dolbyio::comms::video_frame>) override;
@@ -40,9 +43,12 @@ namespace DolbyIO
 		void RecreateIfNeeded(int Width, int Height);
 		void Convert(dolbyio::comms::video_frame&);
 
+		void UpdateMaterial(UMaterialInstanceDynamic* Material);
+
 		UTexture2D* Texture{};
 		TArray<uint8> Buffer;
 		FUpdateTextureRegion2D Region{0, 0, 0, 0, 0, 0};
 		FRenderCommandFence Fence;
+		TSet<UMaterialInstanceDynamic*> Materials;
 	};
 }

@@ -127,6 +127,27 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void DisableVideo();
 
+	/** Binds a dynamic material instance to hold a participant's video frames. The plugin will update the material's
+	 * texture parameter named "DolbyIO Frame" with the necessary data, therefore the material should have such a
+	 * parameter to be usable. It is possible to bind multiple materials to a participant. Has no effect if there is no
+	 * video from the participant at the moment the function is called, therefore it should usually be called as a
+	 * response to the "On Video Track Added" event.
+	 *
+	 * @param Material - The dynamic material instance to bind.
+	 * @param ParticipantID - The participant's ID.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void BindMaterial(UMaterialInstanceDynamic* Material, const FString& ParticipantID);
+
+	/** Unbinds a dynamic material instance to no longer hold a participant's video frames. The plugin will no longer
+	 * update the material's texture parameter named "DolbyIO Frame" with the necessary data.
+	 *
+	 * @param Material - The dynamic material instance to unbind.
+	 * @param ParticipantID - The participant's ID.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void UnbindMaterial(UMaterialInstanceDynamic* Material, const FString& ParticipantID);
+
 	/** Gets the texture to which video from a given participant is being rendered.
 	 *
 	 * @param ParticipantID - The participant's ID.
