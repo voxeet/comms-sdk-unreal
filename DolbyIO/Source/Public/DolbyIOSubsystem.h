@@ -119,6 +119,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteOutput();
 
+	/** Mutes a given participant for the local user. */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void MuteParticipant(const FString& ParticipantID);
+
+	/** Unmutes a given participant for the local user. */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void UnmuteParticipant(const FString& ParticipantID);
+
 	/** Enables video streaming from the primary webcam. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void EnableVideo();
