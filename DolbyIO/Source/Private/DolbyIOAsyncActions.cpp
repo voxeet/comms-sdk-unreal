@@ -103,9 +103,170 @@ void UDolbyIODisconnect::OnDisconnectedImpl()
 	OnDisconnected.Broadcast();
 }
 
+UDolbyIOGetScreenshareSources* UDolbyIOGetScreenshareSources::DolbyIOGetScreenshareSources(
+    const UObject* WorldContextObject)
+{
+	UDolbyIOGetScreenshareSources* Self = NewObject<UDolbyIOGetScreenshareSources>();
+	Self->WorldContextObject = WorldContextObject;
+	return Self;
+}
+
+void UDolbyIOGetScreenshareSources::Activate()
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnScreenshareSourcesReceived.AddDynamic(
+		    this, &UDolbyIOGetScreenshareSources::OnScreenshareSourcesReceivedImpl);
+		DolbyIOSubsystem->Disconnect();
+	}
+}
+
+void UDolbyIOGetScreenshareSources::OnScreenshareSourcesReceivedImpl(const TArray<FDolbyIOScreenshareSource>& Sources)
+{
+	OnScreenshareSourcesReceived.Broadcast(Sources);
+}
+
 UDolbyIODisconnect* UDolbyIODisconnect::DolbyIODisconnect(const UObject* WorldContextObject)
 {
 	UDolbyIODisconnect* Self = NewObject<UDolbyIODisconnect>();
 	Self->WorldContextObject = WorldContextObject;
 	return Self;
+}
+
+void UDolbyIOBlueprintFunctionLibrary::SetSpatialEnvironmentScale(const UObject* WorldContextObject,
+                                                                  float SpatialEnvironmentScale)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->SetSpatialEnvironmentScale(SpatialEnvironmentScale);
+	}
+}
+void UDolbyIOBlueprintFunctionLibrary::MuteInput(const UObject* WorldContextObject)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->MuteInput();
+	}
+}
+void UDolbyIOBlueprintFunctionLibrary::UnmuteInput(const UObject* WorldContextObject)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->UnmuteInput();
+	}
+}
+void UDolbyIOBlueprintFunctionLibrary::MuteOutput(const UObject* WorldContextObject)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->MuteOutput();
+	}
+}
+void UDolbyIOBlueprintFunctionLibrary::UnmuteOutput(const UObject* WorldContextObject)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->UnmuteOutput();
+	}
+}
+void UDolbyIOBlueprintFunctionLibrary::MuteParticipant(const UObject* WorldContextObject, const FString& ParticipantID)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->MuteParticipant(ParticipantID);
+	}
+}
+void UDolbyIOBlueprintFunctionLibrary::UnmuteParticipant(const UObject* WorldContextObject,
+                                                         const FString& ParticipantID)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->UnmuteParticipant(ParticipantID);
+	}
+}
+void UDolbyIOBlueprintFunctionLibrary::EnableVideo(const UObject* WorldContextObject)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->EnableVideo();
+	}
+}
+void UDolbyIOBlueprintFunctionLibrary::DisableVideo(const UObject* WorldContextObject)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->DisableVideo();
+	}
+}
+void UDolbyIOBlueprintFunctionLibrary::BindMaterial(const UObject* WorldContextObject,
+                                                    UMaterialInstanceDynamic* Material, const FString& ParticipantID)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->BindMaterial(Material, ParticipantID);
+	}
+}
+void UDolbyIOBlueprintFunctionLibrary::UnbindMaterial(const UObject* WorldContextObject,
+                                                      UMaterialInstanceDynamic* Material, const FString& ParticipantID)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->UnbindMaterial(Material, ParticipantID);
+	}
+}
+UTexture2D* UDolbyIOBlueprintFunctionLibrary::GetTexture(const UObject* WorldContextObject,
+                                                         const FString& ParticipantID)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		return DolbyIOSubsystem->GetTexture(ParticipantID);
+	}
+	return nullptr;
+}
+void UDolbyIOBlueprintFunctionLibrary::StartScreenshare(const UObject* WorldContextObject,
+                                                        const FDolbyIOScreenshareSource& Source,
+                                                        EDolbyIOScreenshareContentType ContentType)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->StartScreenshare(Source, ContentType);
+	}
+}
+void UDolbyIOBlueprintFunctionLibrary::StopScreenshare(const UObject* WorldContextObject)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->StopScreenshare();
+	}
+}
+void UDolbyIOBlueprintFunctionLibrary::ChangeScreenshareContentType(const UObject* WorldContextObject,
+                                                                    EDolbyIOScreenshareContentType ContentType)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->ChangeScreenshareContentType(ContentType);
+	}
+}
+void UDolbyIOBlueprintFunctionLibrary::SetAudioOutputDevice(const UObject* WorldContextObject, const FString& DeviceID)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->SetAudioOutputDevice(DeviceID);
+	}
+}
+void UDolbyIOBlueprintFunctionLibrary::SetLocalPlayerLocation(const UObject* WorldContextObject,
+                                                              const FVector& Location)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->SetLocalPlayerLocation(Location);
+	}
+}
+void UDolbyIOBlueprintFunctionLibrary::SetLocalPlayerRotation(const UObject* WorldContextObject,
+                                                              const FRotator& Rotation)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->SetLocalPlayerRotation(Rotation);
+	}
 }
