@@ -6,6 +6,7 @@
 
 #include "DolbyIOConnectionMode.h"
 #include "DolbyIOParticipantInfo.h"
+#include "DolbyIOScreenshareSource.h"
 
 #include <memory>
 
@@ -27,6 +28,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnActiveSpeakersChangedDel
                                             ActiveSpeakers);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnAudioLevelsChangedDelegate, const TArray<FString>&,
                                              ActiveSpeakers, const TArray<float>&, AudioLevels);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnScreenshareSourcesReceivedDelegate,
+                                            const TArray<FDolbyIOScreenshareSource>&, Sources);
 
 namespace dolbyio::comms
 {
@@ -133,6 +136,24 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	class UTexture2D* GetTexture(const FString& ParticipantID);
 
+	/** Gets a list of all possible screen sharing sources. These can be entire screens or specific application windows.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void GetScreenshareSources();
+
+	/** Starts screen sharing using a given source and content type. */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void StartScreenshare(const FDolbyIOScreenshareSource& Source,
+	                      EDolbyIOScreenshareContentType ContentType = EDolbyIOScreenshareContentType::Unspecified);
+
+	/** Stops screen sharing. */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void StopScreenshare();
+
+	/** Changes the screenshare content type if already sharing screen. */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void ChangeScreenshareContentType(EDolbyIOScreenshareContentType ContentType);
+
 	/** Updates the location of the listener for spatial audio purposes.
 	 *
 	 * Calling this function even once disables the default behavior, which is to automatically use the location of the
@@ -173,6 +194,8 @@ public:
 	FSubsystemOnActiveSpeakersChangedDelegate OnActiveSpeakersChanged;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnAudioLevelsChangedDelegate OnAudioLevelsChanged;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnScreenshareSourcesReceivedDelegate OnScreenshareSourcesReceived;
 
 private:
 	void Initialize(FSubsystemCollectionBase&) override;
@@ -214,4 +237,20 @@ private:
 
 	FTimerHandle LocationTimerHandle;
 	FTimerHandle RotationTimerHandle;
+
+	class FErrorHandler final
+	{
+	public:
+		FErrorHandler(UDolbyIOSubsystem& DolbyIOSubsystem, int Line);
+
+		void operator()(std::exception_ptr&& ExcPtr) const;
+		void HandleError() const;
+
+	private:
+		void HandleError(TFunction<void()> Callee) const;
+		void LogException(const FString& Type, const FString& What) const;
+
+		UDolbyIOSubsystem& DolbyIOSubsystem;
+		int Line;
+	};
 };

@@ -28,6 +28,8 @@ void UDolbyIOObserver::InitializeComponent()
 		DolbyIOSubsystem->OnVideoTrackRemoved.AddDynamic(this, &UDolbyIOObserver::FwdOnVideoTrackRemoved);
 		DolbyIOSubsystem->OnActiveSpeakersChanged.AddDynamic(this, &UDolbyIOObserver::FwdOnActiveSpeakersChanged);
 		DolbyIOSubsystem->OnAudioLevelsChanged.AddDynamic(this, &UDolbyIOObserver::FwdOnAudioLevelsChanged);
+		DolbyIOSubsystem->OnScreenshareSourcesReceived.AddDynamic(this,
+		                                                          &UDolbyIOObserver::FwdOnScreenshareSourcesReceived);
 		FwdOnTokenNeeded();
 	}
 }
@@ -73,6 +75,10 @@ void UDolbyIOObserver::FwdOnActiveSpeakersChanged(const TArray<FString>& ActiveS
 void UDolbyIOObserver::FwdOnAudioLevelsChanged(const TArray<FString>& ActiveSpeakers, const TArray<float>& AudioLevels)
 {
 	BroadcastEvent(OnAudioLevelsChanged, ActiveSpeakers, AudioLevels);
+}
+void UDolbyIOObserver::FwdOnScreenshareSourcesReceived(const TArray<FDolbyIOScreenshareSource>& Sources)
+{
+	BroadcastEvent(OnScreenshareSourcesReceived, Sources);
 }
 
 template <class TDelegate, class... TArgs> void UDolbyIOObserver::BroadcastEvent(TDelegate& Event, TArgs&&... Args)

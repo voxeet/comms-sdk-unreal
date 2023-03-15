@@ -15,9 +15,9 @@ The mentioned permissions manager is not endorsed by Dolby in any way and may be
 
 ```
 <key>NSMicrophoneUsageDescription</key>
-<string>Dolby.io Virtual World</string>
+<string>Dolby.io Virtual Worlds</string>
 <key>NSCameraUsageDescription</key>
-<string>Dolby.io Virtual World</string>
+<string>Dolby.io Virtual Worlds</string>
 ```
 
 We recommend the latter solution if it does not conflict with your setup because the `Info.plist` file is overwritten each time the game is packaged.
