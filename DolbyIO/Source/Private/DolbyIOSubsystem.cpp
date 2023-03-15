@@ -359,8 +359,25 @@ void UDolbyIOSubsystem::UpdateStatus(dolbyio::comms::conference_status Status)
 	}
 }
 
+namespace
+{
+	dolbyio::comms::spatial_audio_style ToSdkSpatialAudioStyle(EDolbyIOSpatialAudioStyle SpatialAudioStyle)
+	{
+		switch (SpatialAudioStyle)
+		{
+			case EDolbyIOSpatialAudioStyle::Individual:
+				return dolbyio::comms::spatial_audio_style::individual;
+			case EDolbyIOSpatialAudioStyle::Shared:
+				return dolbyio::comms::spatial_audio_style::shared;
+			default:
+				return dolbyio::comms::spatial_audio_style::disabled;
+		}
+	}
+}
+
 void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& UserName, const FString& ExternalID,
-                                const FString& AvatarURL, EDolbyIOConnectionMode ConnMode)
+                                const FString& AvatarURL, EDolbyIOConnectionMode ConnMode,
+                                EDolbyIOSpatialAudioStyle SpatialStyle)
 {
 	if (!CanConnect())
 	{
@@ -373,10 +390,15 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 	}
 
 	ConnectionMode = ConnMode;
+	SpatialAudioStyle = SpatialStyle;
 	const FString ConnModeStr = ConnectionMode == EDolbyIOConnectionMode::Active            ? "active user"
 	                            : ConnectionMode == EDolbyIOConnectionMode::ListenerRegular ? "regular listener"
 	                                                                                        : "RTS listener";
-	DLB_UE_LOG("Connecting to conference %s as %s with name %s", *ConferenceName, *ConnModeStr, *UserName);
+	const FString SpatialStyleStr = SpatialAudioStyle == EDolbyIOSpatialAudioStyle::Disabled     ? "disabled"
+	                                : SpatialAudioStyle == EDolbyIOSpatialAudioStyle::Individual ? "individual"
+	                                                                                             : "shared";
+	DLB_UE_LOG("Connecting to conference %s as %s with name %s with %s spatial audio", *ConferenceName, *ConnModeStr,
+	           *UserName, *SpatialStyleStr);
 
 	dolbyio::comms::services::session::user_info UserInfo{};
 	UserInfo.name = ToStdString(UserName);
@@ -392,7 +414,7 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 
 		        dolbyio::comms::services::conference::conference_options Options{};
 		        Options.alias = ConferenceName;
-		        Options.params.spatial_audio_style = dolbyio::comms::spatial_audio_style::shared;
+		        Options.params.spatial_audio_style = ToSdkSpatialAudioStyle(SpatialAudioStyle);
 		        return Sdk->conference().create(Options);
 	        })
 	    .then(
@@ -402,13 +424,13 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 		        {
 			        dolbyio::comms::services::conference::join_options Options{};
 			        Options.constraints.audio = true;
-			        Options.connection.spatial_audio = true;
+			        Options.connection.spatial_audio = IsSpatialAudio();
 			        return Sdk->conference().join(ConferenceInfo, Options);
 		        }
 		        else
 		        {
 			        dolbyio::comms::services::conference::listen_options Options{};
-			        Options.connection.spatial_audio = true;
+			        Options.connection.spatial_audio = IsSpatialAudio();
 			        Options.type = ConnectionMode == EDolbyIOConnectionMode::ListenerRegular
 			                           ? dolbyio::comms::listen_mode::regular
 			                           : dolbyio::comms::listen_mode::rts_mixed;
@@ -457,9 +479,14 @@ bool UDolbyIOSubsystem::IsConnectedAsActive() const
 	return IsConnected() && ConnectionMode == EDolbyIOConnectionMode::Active;
 }
 
+bool UDolbyIOSubsystem::IsSpatialAudio() const
+{
+	return SpatialAudioStyle != EDolbyIOSpatialAudioStyle::Disabled;
+}
+
 void UDolbyIOSubsystem::SetSpatialEnvironment()
 {
-	if (!IsConnectedAsActive())
+	if (!IsConnectedAsActive() || !IsSpatialAudio())
 	{
 		return;
 	}
@@ -644,9 +671,9 @@ namespace
 void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source,
                                          EDolbyIOScreenshareContentType ContentType)
 {
-	if (!IsConnected())
+	if (!IsConnectedAsActive())
 	{
-		DLB_UE_WARN("Cannot start screenshare - not connected");
+		DLB_UE_WARN("Cannot start screenshare - not connected as active user");
 		return;
 	}
 
@@ -675,7 +702,7 @@ void UDolbyIOSubsystem::StopScreenshare()
 
 void UDolbyIOSubsystem::ChangeScreenshareContentType(EDolbyIOScreenshareContentType ContentType)
 {
-	if (!IsConnected())
+	if (!IsConnectedAsActive())
 	{
 		return;
 	}
@@ -696,7 +723,7 @@ void UDolbyIOSubsystem::SetLocalPlayerLocation(const FVector& Location)
 
 void UDolbyIOSubsystem::SetLocalPlayerLocationImpl(const FVector& Location)
 {
-	if (!IsConnectedAsActive())
+	if (!IsConnectedAsActive() || !IsSpatialAudio())
 	{
 		return;
 	}
@@ -718,7 +745,7 @@ void UDolbyIOSubsystem::SetLocalPlayerRotation(const FRotator& Rotation)
 
 void UDolbyIOSubsystem::SetLocalPlayerRotationImpl(const FRotator& Rotation)
 {
-	if (!IsConnectedAsActive())
+	if (!IsConnectedAsActive() || !IsSpatialAudio())
 	{
 		return;
 	}
