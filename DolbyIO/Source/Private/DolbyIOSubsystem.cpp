@@ -242,7 +242,7 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 	DLB_UE_LOG("Connecting to conference %s as %s with name %s with %s spatial audio", *ConferenceName,
 	           *ToString(ConnectionMode), *UserName, *ToString(SpatialAudioStyle));
 
-	session::user_info UserInfo{};
+	services::session::user_info UserInfo{};
 	UserInfo.name = ToStdString(UserName);
 	UserInfo.externalId = ToStdString(ExternalID);
 	UserInfo.avatarUrl = ToStdString(AvatarURL);
@@ -250,7 +250,7 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 	Sdk->session()
 	    .open(MoveTemp(UserInfo))
 	    .then(
-	        [this, ConferenceName = ToStdString(ConferenceName)](session::user_info&& User)
+	        [this, ConferenceName = ToStdString(ConferenceName)](services::session::user_info&& User)
 	        {
 		        LocalParticipantID = ToFString(User.participant_id.value_or(""));
 
