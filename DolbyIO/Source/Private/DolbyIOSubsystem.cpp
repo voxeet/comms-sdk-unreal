@@ -683,6 +683,29 @@ void UDolbyIOSubsystem::ChangeScreenshareContentType(EDolbyIOScreenshareContentT
 	Sdk->conference().screen_share_content_type(ToSdkContentType(ContentType)).on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
+void UDolbyIOSubsystem::BindMaterial(UMaterialInstanceDynamic* Material, const FString& ParticipantID)
+{
+	for (const auto& Sink : VideoSinks)
+	{
+		if (Sink.Key == ParticipantID)
+		{
+			Sink.Value->BindMaterial(Material);
+		}
+		else
+		{
+			Sink.Value->UnbindMaterial(Material);
+		}
+	}
+}
+
+void UDolbyIOSubsystem::UnbindMaterial(UMaterialInstanceDynamic* Material, const FString& ParticipantID)
+{
+	if (const std::shared_ptr<DolbyIO::FVideoSink>* Sink = VideoSinks.Find(ParticipantID))
+	{
+		(*Sink)->UnbindMaterial(Material);
+	}
+}
+
 void UDolbyIOSubsystem::SetLocalPlayerLocation(const FVector& Location)
 {
 	if (LocationTimerHandle.IsValid())
