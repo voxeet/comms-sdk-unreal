@@ -37,7 +37,7 @@ void AFooCharacter::BeginPlay()
 		if (DolbyIOSubsystem)
 		{
 			DolbyIOSubsystem->OnInitialized.AddDynamic(this, &AFooCharacter::OnDolbyIOInitialized);
-			DolbyIOSubsystem->SetToken("---> paste token here <--->");
+			DolbyIOSubsystem->SetToken("paste token here");
 		}
 	}
 }
