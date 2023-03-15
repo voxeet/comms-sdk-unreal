@@ -3,11 +3,10 @@
 #pragma once
 
 #include "DolbyIOConnectionMode.h"
+#include "DolbyIOCppSdk.h"
 #include "DolbyIOParticipantInfo.h"
 #include "DolbyIOScreenshareSource.h"
 #include "DolbyIOSpatialAudioStyle.h"
-
-#include <dolbyio/comms/sdk.h>
 
 namespace DolbyIO
 {
