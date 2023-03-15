@@ -4,8 +4,10 @@
 
 #include "Subsystems/GameInstanceSubsystem.h"
 
+#include "DolbyIOConnectionMode.h"
 #include "DolbyIOParticipantInfo.h"
 #include "DolbyIOScreenshareSource.h"
+#include "DolbyIOSpatialAudioStyle.h"
 
 #include <memory>
 
@@ -73,7 +75,8 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void Connect(const FString& ConferenceName = "unreal", const FString& UserName = "", const FString& ExternalID = "",
-	             const FString& AvatarURL = "");
+	             const FString& AvatarURL = "", EDolbyIOConnectionMode ConnectionMode = EDolbyIOConnectionMode::Active,
+	             EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared);
 
 	/** Connects to a demo conference.
 	 *
@@ -232,6 +235,8 @@ private:
 
 	bool CanConnect() const;
 	bool IsConnected() const;
+	bool IsConnectedAsActive() const;
+	bool IsSpatialAudio() const;
 
 	void Initialize(const FString& Token);
 	void UpdateStatus(dolbyio::comms::conference_status);
@@ -251,6 +256,8 @@ private:
 
 	dolbyio::comms::conference_status ConferenceStatus;
 	FString LocalParticipantID;
+	EDolbyIOConnectionMode ConnectionMode;
+	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
 
 	TMap<FString, std::shared_ptr<DolbyIO::FVideoSink>> VideoSinks;
 	TSharedPtr<dolbyio::comms::sdk> Sdk;
