@@ -663,9 +663,16 @@ void UDolbyIOSubsystem::ChangeScreenshareContentType(EDolbyIOScreenshareContentT
 
 void UDolbyIOSubsystem::BindMaterial(UMaterialInstanceDynamic* Material, const FString& ParticipantID)
 {
-	if (const std::shared_ptr<DolbyIO::FVideoSink>* Sink = VideoSinks.Find(ParticipantID))
+	for (const auto& Sink : VideoSinks)
 	{
-		(*Sink)->BindMaterial(Material);
+		if (Sink.Key == ParticipantID)
+		{
+			Sink.Value->BindMaterial(Material);
+		}
+		else
+		{
+			Sink.Value->UnbindMaterial(Material);
+		}
 	}
 }
 
