@@ -7,7 +7,7 @@
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
-#include "DolbyIOAsyncActions.generated.h"
+#include "DolbyIOFunctions.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDolbyIOSetTokenOutputPin);
 
