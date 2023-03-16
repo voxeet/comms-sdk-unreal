@@ -1,0 +1,29 @@
+// Copyright 2023 Dolby Laboratories
+
+#pragma once
+
+#include "DolbyIOConnectionMode.h"
+#include "DolbyIOCppSdk.h"
+#include "DolbyIOParticipantInfo.h"
+#include "DolbyIOScreenshareSource.h"
+#include "DolbyIOSpatialAudioStyle.h"
+
+namespace DolbyIO
+{
+	constexpr int ScaleCenti = 100;
+
+	std::string ToStdString(const FString& String);
+	FString ToFString(const std::string& String);
+	FText ToFText(const std::string& String);
+
+	FString ToString(dolbyio::comms::conference_status Status);
+	FString ToString(dolbyio::comms::participant_status Status);
+	FString ToString(EDolbyIOConnectionMode ConnectionMode);
+	FString ToString(EDolbyIOSpatialAudioStyle SpatialAudioStyle);
+
+	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<dolbyio::comms::participant_status> Status);
+	FDolbyIOParticipantInfo ToFDolbyIOParticipantInfo(const dolbyio::comms::participant_info& Info);
+
+	dolbyio::comms::spatial_audio_style ToSdkSpatialAudioStyle(EDolbyIOSpatialAudioStyle SpatialAudioStyle);
+	dolbyio::comms::screen_share_content_type ToSdkContentType(EDolbyIOScreenshareContentType Type);
+}

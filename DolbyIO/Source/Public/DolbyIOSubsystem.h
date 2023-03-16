@@ -4,7 +4,12 @@
 
 #include "Subsystems/GameInstanceSubsystem.h"
 
+#include "DolbyIOConnectionMode.h"
 #include "DolbyIOParticipantInfo.h"
+#include "DolbyIOScreenshareSource.h"
+#include "DolbyIOSpatialAudioStyle.h"
+
+#include <memory>
 
 #include "Engine/EngineTypes.h"
 
@@ -24,6 +29,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnActiveSpeakersChangedDel
                                             ActiveSpeakers);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnAudioLevelsChangedDelegate, const TArray<FString>&,
                                              ActiveSpeakers, const TArray<float>&, AudioLevels);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnScreenshareSourcesReceivedDelegate,
+                                            const TArray<FDolbyIOScreenshareSource>&, Sources);
 
 namespace dolbyio::comms
 {
@@ -68,7 +75,8 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void Connect(const FString& ConferenceName = "unreal", const FString& UserName = "", const FString& ExternalID = "",
-	             const FString& AvatarURL = "");
+	             const FString& AvatarURL = "", EDolbyIOConnectionMode ConnectionMode = EDolbyIOConnectionMode::Active,
+	             EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared);
 
 	/** Connects to a demo conference.
 	 *
@@ -114,6 +122,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteOutput();
 
+	/** Mutes a given participant for the local user. */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void MuteParticipant(const FString& ParticipantID);
+
+	/** Unmutes a given participant for the local user. */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void UnmuteParticipant(const FString& ParticipantID);
+
 	/** Enables video streaming from the primary webcam. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void EnableVideo();
@@ -122,6 +138,28 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void DisableVideo();
 
+	/** Binds a dynamic material instance to hold a participant's video frames. The plugin will update the material's
+	 * texture parameter named "DolbyIO Frame" with the necessary data, therefore the material should have such a
+	 * parameter to be usable. Automatically unbinds the material from all other participants, but it is possible to
+	 * bind multiple materials to the same participant. Has no effect if there is no video from the participant at the
+	 * moment the function is called, therefore it should usually be called as a response to the "On Video Track Added"
+	 * event.
+	 *
+	 * @param Material - The dynamic material instance to bind.
+	 * @param ParticipantID - The participant's ID.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void BindMaterial(UMaterialInstanceDynamic* Material, const FString& ParticipantID);
+
+	/** Unbinds a dynamic material instance to no longer hold a participant's video frames. The plugin will no longer
+	 * update the material's texture parameter named "DolbyIO Frame" with the necessary data.
+	 *
+	 * @param Material - The dynamic material instance to unbind.
+	 * @param ParticipantID - The participant's ID.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void UnbindMaterial(UMaterialInstanceDynamic* Material, const FString& ParticipantID);
+
 	/** Gets the texture to which video from a given participant is being rendered.
 	 *
 	 * @param ParticipantID - The participant's ID.
@@ -129,6 +167,24 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	class UTexture2D* GetTexture(const FString& ParticipantID);
+
+	/** Gets a list of all possible screen sharing sources. These can be entire screens or specific application windows.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void GetScreenshareSources();
+
+	/** Starts screen sharing using a given source and content type. */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void StartScreenshare(const FDolbyIOScreenshareSource& Source,
+	                      EDolbyIOScreenshareContentType ContentType = EDolbyIOScreenshareContentType::Unspecified);
+
+	/** Stops screen sharing. */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void StopScreenshare();
+
+	/** Changes the screenshare content type if already sharing screen. */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void ChangeScreenshareContentType(EDolbyIOScreenshareContentType ContentType);
 
 	/** Updates the location of the listener for spatial audio purposes.
 	 *
@@ -170,6 +226,8 @@ public:
 	FSubsystemOnActiveSpeakersChangedDelegate OnActiveSpeakersChanged;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnAudioLevelsChangedDelegate OnAudioLevelsChanged;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnScreenshareSourcesReceivedDelegate OnScreenshareSourcesReceived;
 
 private:
 	void Initialize(FSubsystemCollectionBase&) override;
@@ -177,6 +235,8 @@ private:
 
 	bool CanConnect() const;
 	bool IsConnected() const;
+	bool IsConnectedAsActive() const;
+	bool IsSpatialAudio() const;
 
 	void Initialize(const FString& Token);
 	void UpdateStatus(dolbyio::comms::conference_status);
@@ -196,8 +256,10 @@ private:
 
 	dolbyio::comms::conference_status ConferenceStatus;
 	FString LocalParticipantID;
+	EDolbyIOConnectionMode ConnectionMode;
+	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
 
-	TSharedPtr<DolbyIO::FVideoSink> VideoSink;
+	TMap<FString, std::shared_ptr<DolbyIO::FVideoSink>> VideoSinks;
 	TSharedPtr<dolbyio::comms::sdk> Sdk;
 	TSharedPtr<dolbyio::comms::refresh_token> RefreshTokenCb;
 
@@ -209,4 +271,20 @@ private:
 
 	FTimerHandle LocationTimerHandle;
 	FTimerHandle RotationTimerHandle;
+
+	class FErrorHandler final
+	{
+	public:
+		FErrorHandler(UDolbyIOSubsystem& DolbyIOSubsystem, int Line);
+
+		void operator()(std::exception_ptr&& ExcPtr) const;
+		void HandleError() const;
+
+	private:
+		void HandleError(TFunction<void()> Callee) const;
+		void LogException(const FString& Type, const FString& What) const;
+
+		UDolbyIOSubsystem& DolbyIOSubsystem;
+		int Line;
+	};
 };

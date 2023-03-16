@@ -2,6 +2,8 @@
 
 #include "DolbyIOVideoSink.h"
 
+#include "DolbyIOLogging.h"
+
 #if PLATFORM_MAC
 #include <dolbyio/comms/media_engine/video_frame_macos.h>
 #endif
@@ -9,66 +11,66 @@
 
 #include "Async/Async.h"
 #include "Engine/Texture2D.h"
-#include "Launch/Resources/Version.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 namespace DolbyIO
 {
-	void FVideoSink::AddStream(const FString& ParticipantID, const FString& StreamID)
+	UTexture2D* FVideoSink::GetTexture()
 	{
-		FScopeLock Lock{&FrameLock};
-		StreamFrames.Emplace(StreamID, FFrame{});
-		ParticipantStreams.Emplace(ParticipantID, StreamID);
+		return Texture;
 	}
 
-	void FVideoSink::RemoveStream(const FString& ParticipantID, const FString& StreamID)
+	void FVideoSink::BindMaterial(UMaterialInstanceDynamic* Material)
 	{
-		FScopeLock Lock{&FrameLock};
-		StreamFrames.Remove(StreamID);
-		ParticipantStreams.Remove(ParticipantID);
+		Materials.Add(Material);
+		UpdateMaterial(Material);
 	}
 
-	UTexture2D* FVideoSink::GetTexture(const FString& ParticipantID)
+	void FVideoSink::UnbindMaterial(UMaterialInstanceDynamic* Material)
 	{
-		FScopeLock Lock{&FrameLock};
-		if (FString* StreamID = ParticipantStreams.Find(ParticipantID))
+		if (Materials.Remove(Material) && IsValid(Material))
 		{
-			if (FFrame* Frame = StreamFrames.Find(*StreamID))
-			{
-				return Frame->Texture;
-			}
+			Material->SetTextureParameterValue("DolbyIO Frame", UTexture2D::CreateTransient(1, 1, PF_B8G8R8A8));
 		}
-		return nullptr;
 	}
 
 	constexpr int Stride = 4;
 
-	void FVideoSink::FFrame::RecreateIfNeeded(int Width, int Height)
+	void FVideoSink::RecreateIfNeeded(int Width, int Height)
 	{
-		FTexturePlatformData* FrameData = Texture ? Texture->
-#if ENGINE_MAJOR_VERSION == 4
-		                                            PlatformData
-#else
-		                                            GetPlatformData()
-#endif
-		                                          : nullptr;
-		if (FrameData && FrameData->SizeX == Width && FrameData->SizeY == Height)
+		if (Texture)
 		{
-			return;
+			if (Texture->GetSizeX() == Width && Texture->GetSizeY() == Height)
+			{
+				return;
+			}
+			else
+			{
+				DLB_UE_LOG("Recreating texture: old %dx%d new %dx%d", Texture->GetSizeX(), Texture->GetSizeY(), Width,
+				           Height);
+				Texture->RemoveFromRoot();
+			}
+		}
+		else
+		{
+			DLB_UE_LOG("Creating texture: %dx%d", Width, Height);
+			Fence.BeginFence();
 		}
 
 		Region.Width = Width;
 		Region.Height = Height;
 		Buffer.SetNumUninitialized(Width * Height * Stride);
 		Texture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
-		Texture->Filter = TextureFilter::TF_Trilinear;
-#if WITH_EDITOR
-		Texture->MipGenSettings = TextureMipGenSettings::TMGS_NoMipmaps;
-#endif
-		Texture->SRGB = 1;
+		Texture->AddToRoot();
 		Texture->UpdateResource();
+
+		for (UMaterialInstanceDynamic* Material : Materials)
+		{
+			UpdateMaterial(Material);
+		}
 	}
 
-	void FVideoSink::FFrame::Convert(dolbyio::comms::video_frame& VideoFrame)
+	void FVideoSink::Convert(dolbyio::comms::video_frame& VideoFrame)
 	{
 #if PLATFORM_WINDOWS
 		if (dolbyio::comms::video_frame_i420* FrameI420 = VideoFrame.get_i420_frame())
@@ -113,20 +115,29 @@ namespace DolbyIO
 #endif
 	}
 
-	void FVideoSink::handle_frame(const std::string& StreamID, const std::string& TrackID,
-	                              std::unique_ptr<dolbyio::comms::video_frame> VideoFrame)
+	void FVideoSink::handle_frame(std::unique_ptr<dolbyio::comms::video_frame> VideoFrame)
 	{
 		AsyncTask(ENamedThreads::GameThread,
-		          [=, VideoFrame = MoveTemp(VideoFrame)]
+		          [WeakThis = weak_from_this(), VideoFrame = MoveTemp(VideoFrame)]
 		          {
-			          FScopeLock Lock{&FrameLock};
-			          if (FFrame* Frame = StreamFrames.Find(StreamID.c_str()))
+			          if (std::shared_ptr<FVideoSink> SharedThis = WeakThis.lock())
 			          {
-				          Frame->RecreateIfNeeded(VideoFrame->width(), VideoFrame->height());
-				          Frame->Convert(*VideoFrame);
-				          Frame->Texture->UpdateTextureRegions(0, 1, &Frame->Region, VideoFrame->width() * Stride,
-				                                               Stride, Frame->Buffer.GetData());
+				          SharedThis->RecreateIfNeeded(VideoFrame->width(), VideoFrame->height());
+				          SharedThis->Convert(*VideoFrame);
+				          SharedThis->Fence.Wait();
+				          SharedThis->Texture->UpdateTextureRegions(0, 1, &SharedThis->Region,
+				                                                    VideoFrame->width() * Stride, Stride,
+				                                                    SharedThis->Buffer.GetData());
+				          SharedThis->Fence.Wait();
 			          }
 		          });
+	}
+
+	void FVideoSink::UpdateMaterial(UMaterialInstanceDynamic* Material)
+	{
+		if (IsValid(Material))
+		{
+			Material->SetTextureParameterValue("DolbyIO Frame", Texture);
+		}
 	}
 }

@@ -2,30 +2,31 @@
 
 #include "DolbyIOSubsystem.h"
 
+#include "DolbyIOConversions.h"
 #include "DolbyIOLogging.h"
 #include "DolbyIOVideoSink.h"
 
 #include "Async/Async.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
-#include "Misc/Base64.h"
 #include "TimerManager.h"
+
+using namespace dolbyio::comms;
+using namespace DolbyIO;
 
 void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
 #if PLATFORM_WINDOWS
-	dolbyio::comms::sdk::set_app_allocator(
+	sdk::set_app_allocator(
 	    {::operator new,
 	     [](std::size_t Count, std::size_t Al) { return ::operator new(Count, static_cast<std::align_val_t>(Al)); },
 	     ::operator delete,
 	     [](void* Ptr, std::size_t Al) { ::operator delete(Ptr, static_cast<std::align_val_t>(Al)); }});
 #endif
 
-	ConferenceStatus = dolbyio::comms::conference_status::destroyed;
-
-	VideoSink = MakeShared<DolbyIO::FVideoSink>();
+	ConferenceStatus = conference_status::destroyed;
 
 	FTimerManager& TimerManager = GetGameInstance()->GetTimerManager();
 	TimerManager.SetTimer(LocationTimerHandle, this, &UDolbyIOSubsystem::SetLocationUsingFirstPlayer, 0.1, true);
@@ -40,200 +41,7 @@ void UDolbyIOSubsystem::Deinitialize()
 	Super::Deinitialize();
 }
 
-namespace
-{
-	std::string ToStdString(const FString& String)
-	{
-		return TCHAR_TO_UTF8(*String);
-	}
-
-	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<dolbyio::comms::participant_status> Status)
-	{
-		if (Status)
-		{
-			switch (*Status)
-			{
-				case dolbyio::comms::participant_status::reserved:
-					return EDolbyIOParticipantStatus::Reserved;
-				case dolbyio::comms::participant_status::connecting:
-					return EDolbyIOParticipantStatus::Connecting;
-				case dolbyio::comms::participant_status::on_air:
-					return EDolbyIOParticipantStatus::OnAir;
-				case dolbyio::comms::participant_status::decline:
-					return EDolbyIOParticipantStatus::Decline;
-				case dolbyio::comms::participant_status::inactive:
-					return EDolbyIOParticipantStatus::Inactive;
-				case dolbyio::comms::participant_status::left:
-					return EDolbyIOParticipantStatus::Left;
-				case dolbyio::comms::participant_status::warning:
-					return EDolbyIOParticipantStatus::Warning;
-				case dolbyio::comms::participant_status::error:
-					return EDolbyIOParticipantStatus::Error;
-			}
-		}
-
-		return EDolbyIOParticipantStatus::Unknown;
-	}
-
-	constexpr int ScaleCenti = 100;
-
-	FDolbyIOParticipantInfo ToFDolbyIOParticipantInfo(const dolbyio::comms::participant_info& Info)
-	{
-		FDolbyIOParticipantInfo Ret{};
-		Ret.UserID = Info.user_id.c_str();
-		Ret.Name = Info.info.name.value_or("").c_str();
-		Ret.ExternalID = Info.info.external_id.value_or("").c_str();
-		Ret.AvatarURL = Info.info.avatar_url.value_or("").c_str();
-		Ret.bIsListener = Info.type && *Info.type == dolbyio::comms::participant_type::listener;
-		Ret.bIsSendingAudio = Info.is_sending_audio.value_or(false);
-		Ret.bIsAudibleLocally = Info.audible_locally.value_or(false);
-		Ret.Status = ToEDolbyIOParticipantStatus(Info.status);
-
-		FString DecodedExternalID;
-		FBase64::Decode(Ret.ExternalID, DecodedExternalID);
-		if (DecodedExternalID.StartsWith("{\"init-pos\": {\"x\": "))
-		{
-			Ret.bIsInjectedBot = true;
-
-			FString Left;
-			FString Right;
-
-			DecodedExternalID.Split("\"x\": ", &Left, &Right);
-			Right.Split(",", &Left, &Right);
-			Ret.Location.Y = FCString::Atof(*Left) * ScaleCenti;
-
-			Right.Split("\"y\": ", &Left, &Right);
-			Right.Split(",", &Left, &Right);
-			Ret.Location.Z = FCString::Atof(*Left) * ScaleCenti;
-
-			Right.Split("\"z\": ", &Left, &Right);
-			Right.Split(",", &Left, &Right);
-			Ret.Location.X = -FCString::Atof(*Left) * ScaleCenti;
-
-			Right.Split("\"r\": ", &Left, &Right);
-			Right.Split(",", &Left, &Right);
-			Ret.Rotation.Yaw = FCString::Atof(*Left);
-
-			Ret.Rotation.Roll = 0;
-			Ret.Rotation.Pitch = 0;
-		}
-		return Ret;
-	}
-
-	FString ToString(dolbyio::comms::conference_status Status)
-	{
-		switch (Status)
-		{
-			case dolbyio::comms::conference_status::creating:
-				return "creating";
-			case dolbyio::comms::conference_status::created:
-				return "created";
-			case dolbyio::comms::conference_status::joining:
-				return "joining";
-			case dolbyio::comms::conference_status::joined:
-				return "joined";
-			case dolbyio::comms::conference_status::leaving:
-				return "leaving";
-			case dolbyio::comms::conference_status::left:
-				return "left";
-			case dolbyio::comms::conference_status::destroyed:
-				return "destroyed";
-			case dolbyio::comms::conference_status::error:
-				return "error";
-			default:
-				return "unknown";
-		};
-	}
-
-	FString ToString(dolbyio::comms::participant_status Status)
-	{
-		switch (Status)
-		{
-			case dolbyio::comms::participant_status::reserved:
-				return "reserved";
-			case dolbyio::comms::participant_status::connecting:
-				return "connecting";
-			case dolbyio::comms::participant_status::on_air:
-				return "on_air";
-			case dolbyio::comms::participant_status::decline:
-				return "decline";
-			case dolbyio::comms::participant_status::inactive:
-				return "inactive";
-			case dolbyio::comms::participant_status::left:
-				return "left";
-			case dolbyio::comms::participant_status::warning:
-				return "warning";
-			case dolbyio::comms::participant_status::error:
-				return "error";
-			default:
-				return "unknown";
-		};
-	}
-
-#define MAKE_DLB_ERROR_HANDLER(ConferenceStatus) FErrorHandler(ConferenceStatus, __LINE__)
-	class FErrorHandler final
-	{
-	public:
-		FErrorHandler(const dolbyio::comms::conference_status& ConferenceStatus, int Line)
-		    : ConferenceStatus(ConferenceStatus), Line(Line)
-		{
-		}
-
-		void operator()(std::exception_ptr&& ExcPtr) const
-		{
-			HandleError([ExcP = MoveTemp(ExcPtr)] { std::rethrow_exception(ExcP); });
-		}
-
-		void HandleError() const
-		{
-			HandleError([] { throw; });
-		}
-
-	private:
-		void HandleError(TFunction<void()> Callee) const
-		try
-		{
-			Callee();
-		}
-		catch (const dolbyio::comms::conference_state_exception& Ex)
-		{
-			LogException("dolbyio::comms::conference_state_exception", Ex.what());
-		}
-		catch (const dolbyio::comms::invalid_token_exception& Ex)
-		{
-			LogException("dolbyio::comms::invalid_token_exception", Ex.what());
-		}
-		catch (const dolbyio::comms::dvc_error_exception& Ex)
-		{
-			LogException("dolbyio::comms::dvc_error_exception", Ex.what());
-		}
-		catch (const dolbyio::comms::peer_connection_failed_exception& Ex)
-		{
-			LogException("dolbyio::comms::peer_connection_failed_exception", Ex.what());
-		}
-		catch (const dolbyio::comms::exception& Ex)
-		{
-			LogException("dolbyio::comms::exception", Ex.what());
-		}
-		catch (const std::exception& Ex)
-		{
-			LogException("std::exception", Ex.what());
-		}
-		catch (...)
-		{
-			LogException("unknown exception");
-		}
-
-		void LogException(const FString& Type, const FString& What = "") const
-		{
-			DLB_UE_ERROR("Caught %s: %s (conference status: %s, line: %d)", *Type, *What, *ToString(ConferenceStatus),
-			             Line);
-		}
-
-		const dolbyio::comms::conference_status& ConferenceStatus;
-		int Line;
-	};
-}
+#define MAKE_DLB_ERROR_HANDLER FErrorHandler(*this, __LINE__)
 
 void UDolbyIOSubsystem::SetToken(const FString& Token)
 {
@@ -251,7 +59,7 @@ void UDolbyIOSubsystem::SetToken(const FString& Token)
 		}
 		catch (...)
 		{
-			MAKE_DLB_ERROR_HANDLER(ConferenceStatus).HandleError();
+			MAKE_DLB_ERROR_HANDLER.HandleError();
 		}
 		RefreshTokenCb.Reset(); // RefreshToken callback can only be called once
 	}
@@ -261,31 +69,33 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 {
 	try
 	{
-		Sdk = TSharedPtr<dolbyio::comms::sdk>(
-		    dolbyio::comms::sdk::create(ToStdString(Token),
-		                                [this](std::unique_ptr<dolbyio::comms::refresh_token>&& RefreshCb)
-		                                {
-			                                DLB_UE_LOG("Refresh token requested");
-			                                RefreshTokenCb =
-			                                    TSharedPtr<dolbyio::comms::refresh_token>(RefreshCb.release());
-			                                BroadcastEvent(OnTokenNeeded);
-		                                })
-		        .release());
+		Sdk = TSharedPtr<sdk>(sdk::create(ToStdString(Token),
+		                                  [this](std::unique_ptr<refresh_token>&& RefreshCb)
+		                                  {
+			                                  DLB_UE_LOG("Refresh token requested");
+			                                  RefreshTokenCb = TSharedPtr<refresh_token>(RefreshCb.release());
+			                                  BroadcastEvent(OnTokenNeeded);
+		                                  })
+		                          .release());
 	}
 	catch (...)
 	{
-		MAKE_DLB_ERROR_HANDLER(ConferenceStatus).HandleError();
+		MAKE_DLB_ERROR_HANDLER.HandleError();
 		return;
 	}
 
-	Sdk->conference()
-	    .add_event_handler([this](const dolbyio::comms::conference_status_updated& Event)
-	                       { UpdateStatus(Event.status); })
+	Sdk->register_component_version("unreal_sdk", "1.1.0-beta.1")
 	    .then(
-	        [this](dolbyio::comms::event_handler_id)
+	        [this]
+	        {
+		        return Sdk->conference().add_event_handler([this](const conference_status_updated& Event)
+		                                                   { UpdateStatus(Event.status); });
+	        })
+	    .then(
+	        [this](event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
-		            [this](const dolbyio::comms::participant_added& Event)
+		            [this](const participant_added& Event)
 		            {
 			            if (!Event.participant.status || Event.participant.user_id == ToStdString(LocalParticipantID))
 			            {
@@ -299,10 +109,10 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		            });
 	        })
 	    .then(
-	        [this](dolbyio::comms::event_handler_id)
+	        [this](event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
-		            [this](const dolbyio::comms::participant_updated& Event)
+		            [this](const participant_updated& Event)
 		            {
 			            if (!Event.participant.status || Event.participant.user_id == ToStdString(LocalParticipantID))
 			            {
@@ -316,106 +126,107 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		            });
 	        })
 	    .then(
-	        [this](dolbyio::comms::event_handler_id)
+	        [this](event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
-		            [this](const dolbyio::comms::active_speaker_changed& Event)
+		            [this](const active_speaker_changed& Event)
 		            {
 			            TArray<FString> ActiveSpeakers;
 			            for (const std::string& Speaker : Event.active_speakers)
 			            {
-				            ActiveSpeakers.Add(Speaker.c_str());
+				            ActiveSpeakers.Add(ToFString(Speaker));
 			            }
 			            BroadcastEvent(OnActiveSpeakersChanged, ActiveSpeakers);
 		            });
 	        })
 	    .then(
-	        [this](dolbyio::comms::event_handler_id)
+	        [this](event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
-		            [this](const dolbyio::comms::audio_levels& Event)
+		            [this](const audio_levels& Event)
 		            {
 			            TArray<FString> ActiveSpeakers;
 			            TArray<float> AudioLevels;
-			            for (const dolbyio::comms::audio_level& Level : Event.levels)
+			            for (const audio_level& Level : Event.levels)
 			            {
-				            ActiveSpeakers.Add(Level.participant_id.c_str());
+				            ActiveSpeakers.Add(ToFString(Level.participant_id));
 				            AudioLevels.Add(Level.level);
 			            }
 			            BroadcastEvent(OnAudioLevelsChanged, ActiveSpeakers, AudioLevels);
 		            });
 	        })
 	    .then(
-	        [this](dolbyio::comms::event_handler_id)
+	        [this](event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
-		            [this](const dolbyio::comms::video_track_added& Event)
+		            [this](const video_track_added& Event)
 		            {
-			            if (Event.remote)
+			            if (Event.track.remote)
 			            {
-				            const FString ParticipantID = Event.peer_id.c_str();
-				            const FString StreamID = Event.stream_id.c_str();
+				            const FString ParticipantID = ToFString(Event.track.peer_id);
+				            const FString StreamID = ToFString(Event.track.stream_id);
 				            DLB_UE_LOG("Video track added: ParticipantID=%s StreamID=%s", *ParticipantID, *StreamID);
-				            VideoSink->AddStream(ParticipantID, StreamID);
+				            VideoSinks.Emplace(ParticipantID, std::make_shared<FVideoSink>());
+				            Sdk->video()
+				                .remote()
+				                .set_video_sink(Event.track, VideoSinks[ParticipantID])
+				                .on_error(MAKE_DLB_ERROR_HANDLER);
 				            BroadcastEvent(OnVideoTrackAdded, ParticipantID);
 			            }
 		            });
 	        })
 	    .then(
-	        [this](dolbyio::comms::event_handler_id)
+	        [this](event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
-		            [this](const dolbyio::comms::video_track_removed& Event)
+		            [this](const video_track_removed& Event)
 		            {
-			            if (Event.remote)
+			            if (Event.track.remote)
 			            {
-				            const FString ParticipantID = Event.peer_id.c_str();
-				            const FString StreamID = Event.stream_id.c_str();
+				            const FString ParticipantID = ToFString(Event.track.peer_id);
+				            const FString StreamID = ToFString(Event.track.stream_id);
 				            DLB_UE_LOG("Video track removed: ParticipantID=%s StreamID=%s", *ParticipantID, *StreamID);
-				            VideoSink->RemoveStream(ParticipantID, StreamID);
+				            VideoSinks.Remove(ParticipantID);
 				            BroadcastEvent(OnVideoTrackRemoved, ParticipantID);
 			            }
 		            });
 	        })
-	    .then([this](dolbyio::comms::event_handler_id)
-	          { return Sdk->video().remote().set_video_sink(VideoSink.Get()); })
+	    .then([this](event_handler_id)
 #if PLATFORM_WINDOWS
+	          { return Sdk->device_management().set_default_audio_device_policy(default_audio_device_policy::output); })
 	    .then(
 	        [this]
-	        {
-		        return Sdk->device_management().set_default_audio_device_policy(
-		            dolbyio::comms::default_audio_device_policy::output);
-	        })
 #endif
-	    .then(
-	        [this]
 	        {
 		        DLB_UE_LOG("Initialized");
 		        BroadcastEvent(OnInitialized);
 	        })
-	    .on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
-void UDolbyIOSubsystem::UpdateStatus(dolbyio::comms::conference_status Status)
+void UDolbyIOSubsystem::UpdateStatus(conference_status Status)
 {
 	ConferenceStatus = Status;
 	DLB_UE_LOG("Conference status: %s", *ToString(ConferenceStatus));
 
 	switch (ConferenceStatus)
 	{
-		case dolbyio::comms::conference_status::joined:
+		case conference_status::joined:
 			BroadcastEvent(OnConnected, LocalParticipantID);
 			break;
-		case dolbyio::comms::conference_status::left:
-		case dolbyio::comms::conference_status::error:
+		case conference_status::left:
+		case conference_status::error:
 			BroadcastEvent(OnDisconnected);
 			break;
 	}
 }
 
 void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& UserName, const FString& ExternalID,
-                                const FString& AvatarURL)
+                                const FString& AvatarURL, EDolbyIOConnectionMode ConnMode,
+                                EDolbyIOSpatialAudioStyle SpatialStyle)
 {
+	using namespace dolbyio::comms::services;
+
 	if (!CanConnect())
 	{
 		return;
@@ -426,9 +237,12 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 		return;
 	}
 
-	DLB_UE_LOG("Connecting to conference %s as %s", *ConferenceName, *UserName);
+	ConnectionMode = ConnMode;
+	SpatialAudioStyle = SpatialStyle;
+	DLB_UE_LOG("Connecting to conference %s as %s with name %s with %s spatial audio", *ConferenceName,
+	           *ToString(ConnectionMode), *UserName, *ToString(SpatialAudioStyle));
 
-	dolbyio::comms::services::session::user_info UserInfo{};
+	services::session::user_info UserInfo{};
 	UserInfo.name = ToStdString(UserName);
 	UserInfo.externalId = ToStdString(ExternalID);
 	UserInfo.avatarUrl = ToStdString(AvatarURL);
@@ -436,37 +250,49 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 	Sdk->session()
 	    .open(MoveTemp(UserInfo))
 	    .then(
-	        [this, ConferenceName = ToStdString(ConferenceName)](dolbyio::comms::services::session::user_info&& User)
+	        [this, ConferenceName = ToStdString(ConferenceName)](services::session::user_info&& User)
 	        {
-		        LocalParticipantID = User.participant_id.value_or("").c_str();
+		        LocalParticipantID = ToFString(User.participant_id.value_or(""));
 
-		        dolbyio::comms::services::conference::conference_options Options{};
+		        conference::conference_options Options{};
 		        Options.alias = ConferenceName;
-		        Options.params.spatial_audio_style = dolbyio::comms::spatial_audio_style::shared;
+		        Options.params.spatial_audio_style = ToSdkSpatialAudioStyle(SpatialAudioStyle);
 		        return Sdk->conference().create(Options);
 	        })
 	    .then(
-	        [this](dolbyio::comms::conference_info&& ConferenceInfo)
+	        [this](conference_info&& ConferenceInfo)
 	        {
-		        dolbyio::comms::services::conference::join_options Options{};
-		        Options.constraints.audio = true;
-		        Options.connection.spatial_audio = true;
-		        return Sdk->conference().join(ConferenceInfo, Options);
+		        if (ConnectionMode == EDolbyIOConnectionMode::Active)
+		        {
+			        conference::join_options Options{};
+			        Options.constraints.audio = true;
+			        Options.connection.spatial_audio = IsSpatialAudio();
+			        return Sdk->conference().join(ConferenceInfo, Options);
+		        }
+		        else
+		        {
+			        conference::listen_options Options{};
+			        Options.connection.spatial_audio = IsSpatialAudio();
+			        Options.type = ConnectionMode == EDolbyIOConnectionMode::ListenerRegular ? listen_mode::regular
+			                                                                                 : listen_mode::rts_mixed;
+			        return Sdk->conference().listen(ConferenceInfo, Options);
+		        }
 	        })
 	    .then(
-	        [this](dolbyio::comms::conference_info&& ConferenceInfo)
+	        [this](conference_info&& ConferenceInfo)
 	        {
-		        DLB_UE_LOG("Connected to conference ID %s", *FString{ConferenceInfo.id.c_str()});
+		        DLB_UE_LOG("Connected to conference ID %s with user ID %s", *ToFString(ConferenceInfo.id),
+		                   *LocalParticipantID);
 		        SetSpatialEnvironment();
 		        ToggleInputMute();
 		        ToggleOutputMute();
 
 		        if (bIsVideoEnabled)
 		        {
-			        Sdk->video().local().start().on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
+			        Sdk->video().local().start().on_error(MAKE_DLB_ERROR_HANDLER);
 		        }
 	        })
-	    .on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
 bool UDolbyIOSubsystem::CanConnect() const
@@ -486,45 +312,58 @@ bool UDolbyIOSubsystem::CanConnect() const
 
 bool UDolbyIOSubsystem::IsConnected() const
 {
-	return ConferenceStatus == dolbyio::comms::conference_status::joined;
+	return ConferenceStatus == conference_status::joined;
+}
+
+bool UDolbyIOSubsystem::IsConnectedAsActive() const
+{
+	return IsConnected() && ConnectionMode == EDolbyIOConnectionMode::Active;
+}
+
+bool UDolbyIOSubsystem::IsSpatialAudio() const
+{
+	return SpatialAudioStyle != EDolbyIOSpatialAudioStyle::Disabled;
 }
 
 void UDolbyIOSubsystem::SetSpatialEnvironment()
 {
+	if (!IsConnectedAsActive() || !IsSpatialAudio())
+	{
+		return;
+	}
+
 	// The SDK spatial settings expect meters as the default unit of length.
 	// Unreal uses centimeters for scale, so the plugin's scale of "1" is a scale of "100" for the SDK.
 	const float SdkScale = SpatialEnvironmentScale * ScaleCenti;
-	const dolbyio::comms::spatial_scale Scale{SdkScale, SdkScale, SdkScale};
-	const dolbyio::comms::spatial_position Forward{1, 0, 0};
-	const dolbyio::comms::spatial_position Up{0, 0, 1};
-	const dolbyio::comms::spatial_position Right{0, 1, 0};
-	Sdk->conference()
-	    .set_spatial_environment(Scale, Forward, Up, Right)
-	    .on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
+	const spatial_scale Scale{SdkScale, SdkScale, SdkScale};
+	const spatial_position Forward{1, 0, 0};
+	const spatial_position Up{0, 0, 1};
+	const spatial_position Right{0, 1, 0};
+	Sdk->conference().set_spatial_environment(Scale, Forward, Up, Right).on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
 void UDolbyIOSubsystem::ToggleInputMute()
 {
-	if (IsConnected())
+	if (IsConnectedAsActive())
 	{
-		Sdk->conference().mute(bIsInputMuted).on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
+		Sdk->conference().mute(bIsInputMuted).on_error(MAKE_DLB_ERROR_HANDLER);
 	}
 }
 
 void UDolbyIOSubsystem::ToggleOutputMute()
 {
-	if (IsConnected())
+	if (IsConnected() && ConnectionMode != EDolbyIOConnectionMode::ListenerRTS)
 	{
-		Sdk->conference().mute_output(bIsOutputMuted).on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
+		Sdk->conference().mute_output(bIsOutputMuted).on_error(MAKE_DLB_ERROR_HANDLER);
 	}
 }
 
 void UDolbyIOSubsystem::ToggleVideo()
 {
-	if (IsConnected())
+	if (IsConnectedAsActive())
 	{
-		bIsVideoEnabled ? Sdk->video().local().start().on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus))
-		                : Sdk->video().local().stop().on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
+		bIsVideoEnabled ? Sdk->video().local().start().on_error(MAKE_DLB_ERROR_HANDLER)
+		                : Sdk->video().local().stop().on_error(MAKE_DLB_ERROR_HANDLER);
 	}
 }
 
@@ -540,20 +379,20 @@ void UDolbyIOSubsystem::DemoConference()
 	Sdk->session()
 	    .open({})
 	    .then(
-	        [this](dolbyio::comms::services::session::user_info&& User)
+	        [this](services::session::user_info&& User)
 	        {
-		        LocalParticipantID = User.participant_id.value_or("").c_str();
-		        return Sdk->conference().demo(dolbyio::comms::spatial_audio_style::shared);
+		        LocalParticipantID = ToFString(User.participant_id.value_or(""));
+		        return Sdk->conference().demo(spatial_audio_style::shared);
 	        })
 	    .then(
-	        [this](dolbyio::comms::conference_info&& ConferenceInfo)
+	        [this](conference_info&& ConferenceInfo)
 	        {
-		        DLB_UE_LOG("Connected to conference ID %s", *FString{ConferenceInfo.id.c_str()});
+		        DLB_UE_LOG("Connected to conference ID %s", *ToFString(ConferenceInfo.id));
 		        SetSpatialEnvironment();
 		        ToggleInputMute();
 		        ToggleOutputMute();
 	        })
-	    .on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
 void UDolbyIOSubsystem::Disconnect()
@@ -564,20 +403,14 @@ void UDolbyIOSubsystem::Disconnect()
 	}
 
 	DLB_UE_LOG("Disconnecting");
-	Sdk->conference()
-	    .leave()
-	    .then([this]() { return Sdk->session().close(); })
-	    .on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
+	Sdk->conference().leave().then([this]() { return Sdk->session().close(); }).on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
 void UDolbyIOSubsystem::SetSpatialEnvironmentScale(float Scale)
 {
 	DLB_UE_LOG("Setting spatial environment scale: %f", Scale);
 	SpatialEnvironmentScale = Scale;
-	if (IsConnected())
-	{
-		SetSpatialEnvironment();
-	}
+	SetSpatialEnvironment();
 }
 
 void UDolbyIOSubsystem::MuteInput()
@@ -608,6 +441,28 @@ void UDolbyIOSubsystem::UnmuteOutput()
 	ToggleOutputMute();
 }
 
+void UDolbyIOSubsystem::MuteParticipant(const FString& ParticipantID)
+{
+	if (!IsConnected() || ParticipantID == LocalParticipantID)
+	{
+		return;
+	}
+
+	DLB_UE_LOG("Muting participant ID %s", *ParticipantID);
+	Sdk->audio().remote().stop(ToStdString(ParticipantID)).on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::UnmuteParticipant(const FString& ParticipantID)
+{
+	if (!IsConnected() || ParticipantID == LocalParticipantID)
+	{
+		return;
+	}
+
+	DLB_UE_LOG("Unmuting participant ID %s", *ParticipantID);
+	Sdk->audio().remote().start(ToStdString(ParticipantID)).on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
 void UDolbyIOSubsystem::EnableVideo()
 {
 	DLB_UE_LOG("Enabling video");
@@ -624,7 +479,103 @@ void UDolbyIOSubsystem::DisableVideo()
 
 UTexture2D* UDolbyIOSubsystem::GetTexture(const FString& ParticipantID)
 {
-	return VideoSink->GetTexture(ParticipantID);
+	if (const std::shared_ptr<FVideoSink>* Sink = VideoSinks.Find(ParticipantID))
+	{
+		return (*Sink)->GetTexture();
+	}
+	return nullptr;
+}
+
+void UDolbyIOSubsystem::GetScreenshareSources()
+{
+	if (!Sdk)
+	{
+		DLB_UE_WARN("Cannot get screenshare sources - not initialized");
+		return;
+	}
+
+	DLB_UE_LOG("Getting screenshare sources");
+	Sdk->device_management()
+	    .get_screen_share_sources()
+	    .then(
+	        [this](const std::vector<screen_share_source>& ScreenShareSource)
+	        {
+		        TArray<FDolbyIOScreenshareSource> Sources;
+		        for (const screen_share_source& Source : ScreenShareSource)
+		        {
+			        Sources.Add(FDolbyIOScreenshareSource{
+			            Source.id, Source.type == screen_share_source::type::screen,
+			            Source.title.empty() ? FText::FromString(FString{"Screen "} + FString::FromInt(Source.id + 1))
+			                                 : ToFText(Source.title)});
+		        }
+		        BroadcastEvent(OnScreenshareSourcesReceived, Sources);
+	        })
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source,
+                                         EDolbyIOScreenshareContentType ContentType)
+{
+	if (!IsConnectedAsActive())
+	{
+		DLB_UE_WARN("Cannot start screenshare - not connected as active user");
+		return;
+	}
+
+	DLB_UE_LOG("Starting screenshare using source: ID=%d IsScreen=%d Title=%s ContentType=%d", Source.ID,
+	           Source.bIsScreen, *Source.Title.ToString(), ContentType);
+	constexpr auto NullFrameHandler = nullptr;
+	Sdk->conference()
+	    .start_screen_share(screen_share_source{ToStdString(Source.Title.ToString()), Source.ID,
+	                                            Source.bIsScreen ? screen_share_source::type::screen
+	                                                             : screen_share_source::type::window},
+	                        NullFrameHandler, ToSdkContentType(ContentType))
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::StopScreenshare()
+{
+	if (!Sdk)
+	{
+		return;
+	}
+
+	DLB_UE_LOG("Stopping screenshare");
+	Sdk->conference().stop_screen_share().on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::ChangeScreenshareContentType(EDolbyIOScreenshareContentType ContentType)
+{
+	if (!IsConnectedAsActive())
+	{
+		return;
+	}
+
+	DLB_UE_LOG("Changing screenshare content type to %d", ContentType);
+	Sdk->conference().screen_share_content_type(ToSdkContentType(ContentType)).on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::BindMaterial(UMaterialInstanceDynamic* Material, const FString& ParticipantID)
+{
+	for (const auto& Sink : VideoSinks)
+	{
+		if (Sink.Key == ParticipantID)
+		{
+			Sink.Value->BindMaterial(Material);
+		}
+		else
+		{
+			Sink.Value->UnbindMaterial(Material);
+		}
+	}
+}
+
+void UDolbyIOSubsystem::UnbindMaterial(UMaterialInstanceDynamic* Material, const FString& ParticipantID)
+{
+	if (const std::shared_ptr<DolbyIO::FVideoSink>* Sink = VideoSinks.Find(ParticipantID))
+	{
+		(*Sink)->UnbindMaterial(Material);
+	}
 }
 
 void UDolbyIOSubsystem::SetLocalPlayerLocation(const FVector& Location)
@@ -639,14 +590,14 @@ void UDolbyIOSubsystem::SetLocalPlayerLocation(const FVector& Location)
 
 void UDolbyIOSubsystem::SetLocalPlayerLocationImpl(const FVector& Location)
 {
-	if (!IsConnected())
+	if (!IsConnectedAsActive() || !IsSpatialAudio())
 	{
 		return;
 	}
 
 	Sdk->conference()
 	    .set_spatial_position(ToStdString(LocalParticipantID), {Location.X, Location.Y, Location.Z})
-	    .on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
 void UDolbyIOSubsystem::SetLocalPlayerRotation(const FRotator& Rotation)
@@ -661,7 +612,7 @@ void UDolbyIOSubsystem::SetLocalPlayerRotation(const FRotator& Rotation)
 
 void UDolbyIOSubsystem::SetLocalPlayerRotationImpl(const FRotator& Rotation)
 {
-	if (!IsConnected())
+	if (!IsConnectedAsActive() || !IsSpatialAudio())
 	{
 		return;
 	}
@@ -670,7 +621,7 @@ void UDolbyIOSubsystem::SetLocalPlayerRotationImpl(const FRotator& Rotation)
 	// environment. In Unreal, rotation around x is roll (because x is forward), y is pitch and z is yaw.
 	Sdk->conference()
 	    .set_spatial_direction({Rotation.Roll, Rotation.Pitch, Rotation.Yaw})
-	    .on_error(MAKE_DLB_ERROR_HANDLER(ConferenceStatus));
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
 void UDolbyIOSubsystem::SetLocationUsingFirstPlayer()
@@ -707,4 +658,60 @@ template <class TDelegate, class... TArgs> void UDolbyIOSubsystem::BroadcastEven
 	{
 		AsyncTask(ENamedThreads::GameThread, [=] { Event.Broadcast(Args...); });
 	}
+}
+
+UDolbyIOSubsystem::FErrorHandler::FErrorHandler(UDolbyIOSubsystem& DolbyIOSubsystem, int Line)
+    : DolbyIOSubsystem(DolbyIOSubsystem), Line(Line)
+{
+}
+
+void UDolbyIOSubsystem::FErrorHandler::operator()(std::exception_ptr&& ExcPtr) const
+{
+	HandleError([ExcP = MoveTemp(ExcPtr)] { std::rethrow_exception(ExcP); });
+}
+
+void UDolbyIOSubsystem::FErrorHandler::HandleError() const
+{
+	HandleError([] { throw; });
+}
+
+void UDolbyIOSubsystem::FErrorHandler::HandleError(TFunction<void()> Callee) const
+try
+{
+	Callee();
+}
+catch (const conference_state_exception& Ex)
+{
+	LogException("dolbyio::comms::conference_state_exception", Ex.what());
+}
+catch (const invalid_token_exception& Ex)
+{
+	LogException("dolbyio::comms::invalid_token_exception", Ex.what());
+	DolbyIOSubsystem.Sdk.Reset();
+}
+catch (const dvc_error_exception& Ex)
+{
+	LogException("dolbyio::comms::dvc_error_exception", Ex.what());
+}
+catch (const peer_connection_failed_exception& Ex)
+{
+	LogException("dolbyio::comms::peer_connection_failed_exception", Ex.what());
+}
+catch (const dolbyio::comms::exception& Ex)
+{
+	LogException("dolbyio::comms::exception", Ex.what());
+}
+catch (const std::exception& Ex)
+{
+	LogException("std::exception", Ex.what());
+}
+catch (...)
+{
+	LogException("unknown exception", "");
+}
+
+void UDolbyIOSubsystem::FErrorHandler::LogException(const FString& Type, const FString& What) const
+{
+	DLB_UE_ERROR("Caught %s: %s (conference status: %s, line: %d)", *Type, *What,
+	             *ToString(DolbyIOSubsystem.ConferenceStatus), Line);
 }
