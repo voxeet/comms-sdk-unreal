@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "DolbyIOConnectionMode.h"
 #include "DolbyIOScreenshareSource.h"
 #include "DolbyIOSpatialAudioStyle.h"
 
