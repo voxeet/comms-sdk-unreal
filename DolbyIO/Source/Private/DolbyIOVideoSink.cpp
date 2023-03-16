@@ -28,8 +28,7 @@ namespace DolbyIO
 
 	void FVideoSink::UnbindMaterial(UMaterialInstanceDynamic* Material)
 	{
-		Materials.Remove(Material);
-		if (IsValid(Material))
+		if (Materials.Remove(Material) && IsValid(Material))
 		{
 			Material->SetTextureParameterValue("DolbyIO Frame", UTexture2D::CreateTransient(1, 1, PF_B8G8R8A8));
 		}
