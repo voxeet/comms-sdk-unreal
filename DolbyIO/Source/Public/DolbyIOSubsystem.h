@@ -186,6 +186,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void ChangeScreenshareContentType(EDolbyIOScreenshareContentType ContentType);
 
+	/** Sets the audio output device according to its native ID. Available on Windows only. Does nothing on macOS. */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void SetAudioOutputDevice(const FString& DeviceID);
+
 	/** Updates the location of the listener for spatial audio purposes.
 	 *
 	 * Calling this function even once disables the default behavior, which is to automatically use the location of the

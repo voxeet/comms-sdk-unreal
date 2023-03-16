@@ -257,6 +257,11 @@ public:
 	static void ChangeScreenshareContentType(const UObject* WorldContextObject,
 	                                         EDolbyIOScreenshareContentType ContentType);
 
+	/** Sets the audio output device according to its native ID. Available on Windows only. Does nothing on macOS. */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Audio Output Device"))
+	static void SetAudioOutputDevice(const UObject* WorldContextObject, const FString& DeviceID);
+
 	/** Updates the location of the listener for spatial audio purposes.
 	 *
 	 * Calling this function even once disables the default behavior, which is to automatically use the location of the

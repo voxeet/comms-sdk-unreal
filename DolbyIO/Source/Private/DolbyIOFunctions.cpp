@@ -250,6 +250,13 @@ void UDolbyIOBlueprintFunctionLibrary::ChangeScreenshareContentType(const UObjec
 		DolbyIOSubsystem->ChangeScreenshareContentType(ContentType);
 	}
 }
+void UDolbyIOBlueprintFunctionLibrary::SetAudioOutputDevice(const UObject* WorldContextObject, const FString& DeviceID)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->SetAudioOutputDevice(DeviceID);
+	}
+}
 void UDolbyIOBlueprintFunctionLibrary::SetLocalPlayerLocation(const UObject* WorldContextObject,
                                                               const FVector& Location)
 {

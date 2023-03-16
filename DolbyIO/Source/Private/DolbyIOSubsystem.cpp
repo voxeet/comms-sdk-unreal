@@ -578,6 +578,35 @@ void UDolbyIOSubsystem::UnbindMaterial(UMaterialInstanceDynamic* Material, const
 	}
 }
 
+void UDolbyIOSubsystem::SetAudioOutputDevice(const FString& DeviceID)
+{
+#if PLATFORM_WINDOWS
+	if (!Sdk)
+	{
+		return;
+	}
+
+	Sdk->device_management()
+	    .get_audio_devices()
+	    .then(
+	        [this, DeviceID](const std::vector<dolbyio::comms::audio_device>& Devices)
+	        {
+		        for (const dolbyio::comms::audio_device& Device : Devices)
+		        {
+			        if (Device.direction() & dolbyio::comms::audio_device::direction::output &&
+			            FString{Device.native_id().c_str()} == DeviceID)
+			        {
+				        DLB_UE_LOG("Setting preferred output audio device to %s, ID %s",
+				                   *ToFText(Device.name()).ToString(), *FString{Device.native_id().c_str()});
+				        return Sdk->device_management().set_preferred_output_audio_device(Device).on_error(
+				            MAKE_DLB_ERROR_HANDLER);
+			        }
+		        }
+	        })
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
+#endif
+}
+
 void UDolbyIOSubsystem::SetLocalPlayerLocation(const FVector& Location)
 {
 	if (LocationTimerHandle.IsValid())
