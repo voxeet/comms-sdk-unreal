@@ -57,7 +57,8 @@ void UDolbyIOConnect::OnConnectedImpl(const FString& LocalParticipantID)
 
 UDolbyIOConnect* UDolbyIOConnect::DolbyIOConnect(const UObject* WorldContextObject, const FString& ConferenceName,
                                                  const FString& UserName, const FString& ExternalID,
-                                                 const FString& AvatarURL)
+                                                 const FString& AvatarURL, EDolbyIOConnectionMode ConnectionMode,
+                                                 EDolbyIOSpatialAudioStyle SpatialAudioStyle)
 {
 	UDolbyIOConnect* Self = NewObject<UDolbyIOConnect>();
 	Self->WorldContextObject = WorldContextObject;
@@ -65,6 +66,8 @@ UDolbyIOConnect* UDolbyIOConnect::DolbyIOConnect(const UObject* WorldContextObje
 	Self->UserName = UserName;
 	Self->ExternalID = ExternalID;
 	Self->AvatarURL = AvatarURL;
+	Self->ConnectionMode = ConnectionMode;
+	Self->SpatialAudioStyle = SpatialAudioStyle;
 	return Self;
 }
 
@@ -117,7 +120,7 @@ void UDolbyIOGetScreenshareSources::Activate()
 	{
 		DolbyIOSubsystem->OnScreenshareSourcesReceived.AddDynamic(
 		    this, &UDolbyIOGetScreenshareSources::OnScreenshareSourcesReceivedImpl);
-		DolbyIOSubsystem->Disconnect();
+		DolbyIOSubsystem->GetScreenshareSources();
 	}
 }
 
