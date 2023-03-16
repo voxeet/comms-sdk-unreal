@@ -11,7 +11,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FObserverOnTokenNeededDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FObserverOnInitializedDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnConnectedDelegate, const FString&, LocalParticipantID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnConnectedDelegate, const FString&, LocalParticipantID, const FString&, ConferenceID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FObserverOnDisconnectedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnParticipantAddedDelegate, const EDolbyIOParticipantStatus,
                                              Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
@@ -101,7 +101,7 @@ private:
 	void FwdOnInitialized();
 
 	UFUNCTION()
-	void FwdOnConnected(const FString& LocalParticipantID);
+	void FwdOnConnected(const FString& LocalParticipantID, const FString& ConferenceID);
 
 	UFUNCTION()
 	void FwdOnDisconnected();

@@ -17,7 +17,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSubsystemOnTokenNeededDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSubsystemOnInitializedDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnConnectedDelegate, const FString&, LocalParticipantID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnConnectedDelegate, const FString&, LocalParticipantID, const FString&, ConferenceID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSubsystemOnDisconnectedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnParticipantAddedDelegate, const EDolbyIOParticipantStatus,
                                              Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
@@ -256,6 +256,7 @@ private:
 
 	dolbyio::comms::conference_status ConferenceStatus;
 	FString LocalParticipantID;
+	FString ConferenceID;
 	EDolbyIOConnectionMode ConnectionMode;
 	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
 

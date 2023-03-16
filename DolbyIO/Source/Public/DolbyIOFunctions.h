@@ -37,7 +37,7 @@ private:
 	FString Token;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOConnectOutputPin, const FString&, LocalParticipantID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOConnectOutputPin, const FString&, LocalParticipantID, const FString&, ConferenceID);
 
 UCLASS()
 class DOLBYIO_API UDolbyIOConnect : public UBlueprintAsyncActionBase
@@ -61,7 +61,7 @@ private:
 	void Activate() override;
 
 	UFUNCTION()
-	void OnConnectedImpl(const FString& LocalParticipantID);
+	void OnConnectedImpl(const FString& LocalParticipantID, const FString& ConferenceID);
 
 	const UObject* WorldContextObject;
 	FString ConferenceName;
@@ -90,7 +90,7 @@ private:
 	void Activate() override;
 
 	UFUNCTION()
-	void OnConnectedImpl(const FString& LocalParticipantID);
+	void OnConnectedImpl(const FString& LocalParticipantID, const FString& ConferenceID);
 
 	const UObject* WorldContextObject;
 };

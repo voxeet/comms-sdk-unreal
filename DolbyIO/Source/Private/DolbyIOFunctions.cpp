@@ -50,9 +50,9 @@ void UDolbyIOConnect::Activate()
 	}
 }
 
-void UDolbyIOConnect::OnConnectedImpl(const FString& LocalParticipantID)
+void UDolbyIOConnect::OnConnectedImpl(const FString& LocalParticipantID, const FString& ConferenceID)
 {
-	OnConnected.Broadcast(LocalParticipantID);
+	OnConnected.Broadcast(LocalParticipantID, ConferenceID);
 }
 
 UDolbyIOConnect* UDolbyIOConnect::DolbyIOConnect(const UObject* WorldContextObject, const FString& ConferenceName,
@@ -80,9 +80,9 @@ void UDolbyIODemoConference::Activate()
 	}
 }
 
-void UDolbyIODemoConference::OnConnectedImpl(const FString& LocalParticipantID)
+void UDolbyIODemoConference::OnConnectedImpl(const FString& LocalParticipantID, const FString& ConferenceID)
 {
-	OnConnected.Broadcast(LocalParticipantID);
+	OnConnected.Broadcast(LocalParticipantID, ConferenceID);
 }
 
 UDolbyIODemoConference* UDolbyIODemoConference::DolbyIODemoConference(const UObject* WorldContextObject)
