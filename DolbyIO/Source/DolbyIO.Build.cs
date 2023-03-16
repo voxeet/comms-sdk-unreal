@@ -13,7 +13,7 @@ public class DolbyIO : ModuleRules
 		bEnableExceptions = true;
 
 		PublicDependencyModuleNames.AddRange(
-		    new string[] { "Core", "CoreUObject", "Engine", "HTTP", "Json", "Projects", "RenderCore" });
+		    new string[] { "AudioMixer", "Core", "CoreUObject", "Engine", "HTTP", "Json", "Projects", "RenderCore" });
 
 		string ReleaseDir = "sdk-release";
 		if (Target.Platform == UnrealTargetPlatform.Mac)

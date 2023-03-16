@@ -6,6 +6,11 @@
 #include "DolbyIOLogging.h"
 #include "DolbyIOVideoSink.h"
 
+#include "Launch/Resources/Version.h"
+#if ENGINE_MAJOR_VERSION == 5
+#include "AudioDeviceNotificationSubsystem.h"
+#endif
+
 #include "Async/Async.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
@@ -31,6 +36,11 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	FTimerManager& TimerManager = GetGameInstance()->GetTimerManager();
 	TimerManager.SetTimer(LocationTimerHandle, this, &UDolbyIOSubsystem::SetLocationUsingFirstPlayer, 0.1, true);
 	TimerManager.SetTimer(RotationTimerHandle, this, &UDolbyIOSubsystem::SetRotationUsingFirstPlayer, 0.01, true);
+
+#if ENGINE_MAJOR_VERSION == 5
+	UAudioDeviceNotificationSubsystem::Get()->DefaultRenderDeviceChanged.AddDynamic(
+	    this, &UDolbyIOSubsystem::OnDefaultAudioRenderDeviceChanged);
+#endif
 
 	OnTokenNeeded.Broadcast();
 }
@@ -687,6 +697,18 @@ template <class TDelegate, class... TArgs> void UDolbyIOSubsystem::BroadcastEven
 	{
 		AsyncTask(ENamedThreads::GameThread, [=] { Event.Broadcast(Args...); });
 	}
+}
+
+void UDolbyIOSubsystem::OnDefaultAudioRenderDeviceChanged(EAudioDeviceChangedRole AudioDeviceRole, FString DeviceID)
+{
+#if ENGINE_MAJOR_VERSION == 5
+	if (!Sdk || AudioDeviceRole != EAudioDeviceChangedRole::Multimedia)
+	{
+		return;
+	}
+
+	SetAudioOutputDevice(DeviceID);
+#endif
 }
 
 UDolbyIOSubsystem::FErrorHandler::FErrorHandler(UDolbyIOSubsystem& DolbyIOSubsystem, int Line)

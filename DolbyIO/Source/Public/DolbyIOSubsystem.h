@@ -32,6 +32,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnAudioLevelsChangedDeleg
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnScreenshareSourcesReceivedDelegate,
                                             const TArray<FDolbyIOScreenshareSource>&, Sources);
 
+enum class EAudioDeviceChangedRole : uint8;
+
 namespace dolbyio::comms
 {
 	enum class conference_status;
@@ -257,6 +259,9 @@ private:
 	void SetLocalPlayerRotationImpl(const FRotator& Rotation);
 
 	template <class TDelegate, class... TArgs> void BroadcastEvent(TDelegate&, TArgs&&...);
+
+	UFUNCTION()
+	void OnDefaultAudioRenderDeviceChanged(EAudioDeviceChangedRole AudioDeviceRole, FString DeviceID);
 
 	dolbyio::comms::conference_status ConferenceStatus;
 	FString LocalParticipantID;
