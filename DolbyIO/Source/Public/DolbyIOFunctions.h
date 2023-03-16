@@ -2,7 +2,9 @@
 
 #pragma once
 
+#include "DolbyIOConnectionMode.h"
 #include "DolbyIOScreenshareSource.h"
+#include "DolbyIOSpatialAudioStyle.h"
 
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
@@ -46,9 +48,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
 	                  DisplayName = "Dolby.io Connect"))
-	static UDolbyIOConnect* DolbyIOConnect(const UObject* WorldContextObject, const FString& ConferenceName = "unreal",
-	                                       const FString& UserName = "", const FString& ExternalID = "",
-	                                       const FString& AvatarURL = "");
+	static UDolbyIOConnect* DolbyIOConnect(
+	    const UObject* WorldContextObject, const FString& ConferenceName = "unreal", const FString& UserName = "",
+	    const FString& ExternalID = "", const FString& AvatarURL = "",
+	    EDolbyIOConnectionMode ConnectionMode = EDolbyIOConnectionMode::Active,
+	    EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared);
 
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIOConnectOutputPin OnConnected;
@@ -64,6 +68,8 @@ private:
 	FString UserName;
 	FString ExternalID;
 	FString AvatarURL;
+	EDolbyIOConnectionMode ConnectionMode;
+	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
 };
 
 UCLASS()
