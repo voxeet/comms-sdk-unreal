@@ -38,8 +38,8 @@ public:
 
 	/** Triggered when an initial or refreshed client access token
 	 * (https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) is needed, which
-	 * happens when the game starts or when a refresh token is requested. After receiving this event, obtain a token for
-	 * your Dolby.io application and call the Dolby.io Subsystem's Set Token function.
+	 * happens when the Dolby.io Subsystem is initialized or when a refresh token is requested. After receiving this
+	 * event, obtain a token for your Dolby.io application and call the Dolby.io Subsystem's Set Token function.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnTokenNeededDelegate OnTokenNeeded;
