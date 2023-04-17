@@ -4,6 +4,7 @@
 
 #include "DolbyIOConversions.h"
 #include "DolbyIOLogging.h"
+#include "DolbyIOVideoFrameHandler.h"
 #include "DolbyIOVideoSink.h"
 
 #include "Async/Async.h"
@@ -27,6 +28,9 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 #endif
 
 	ConferenceStatus = conference_status::destroyed;
+
+	LocalVideoFrameHandler = std::make_shared<FVideoFrameHandler>();
+	LocalScreenshareFrameHandler = std::make_shared<FVideoFrameHandler>();
 
 	FTimerManager& TimerManager = GetGameInstance()->GetTimerManager();
 	TimerManager.SetTimer(LocationTimerHandle, this, &UDolbyIOSubsystem::SetLocationUsingFirstPlayer, 0.1, true);
@@ -226,6 +230,8 @@ void UDolbyIOSubsystem::UpdateStatus(conference_status Status)
 	}
 }
 
+static const camera_device DefaultCamera{};
+
 void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& UserName, const FString& ExternalID,
                                 const FString& AvatarURL, EDolbyIOConnectionMode ConnMode,
                                 EDolbyIOSpatialAudioStyle SpatialStyle)
@@ -294,7 +300,7 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 
 		        if (bIsVideoEnabled)
 		        {
-			        Sdk->video().local().start().on_error(MAKE_DLB_ERROR_HANDLER);
+			        Sdk->video().local().start(DefaultCamera, LocalVideoFrameHandler).on_error(MAKE_DLB_ERROR_HANDLER);
 		        }
 	        })
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
@@ -367,8 +373,9 @@ void UDolbyIOSubsystem::ToggleVideo()
 {
 	if (IsConnectedAsActive())
 	{
-		bIsVideoEnabled ? Sdk->video().local().start().on_error(MAKE_DLB_ERROR_HANDLER)
-		                : Sdk->video().local().stop().on_error(MAKE_DLB_ERROR_HANDLER);
+		bIsVideoEnabled
+		    ? Sdk->video().local().start(DefaultCamera, LocalVideoFrameHandler).on_error(MAKE_DLB_ERROR_HANDLER)
+		    : Sdk->video().local().stop().on_error(MAKE_DLB_ERROR_HANDLER);
 	}
 }
 
@@ -529,12 +536,11 @@ void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source
 
 	DLB_UE_LOG("Starting screenshare using source: ID=%d IsScreen=%d Title=%s ContentType=%d", Source.ID,
 	           Source.bIsScreen, *Source.Title.ToString(), ContentType);
-	constexpr auto NullFrameHandler = nullptr;
 	Sdk->conference()
 	    .start_screen_share(screen_share_source{ToStdString(Source.Title.ToString()), Source.ID,
 	                                            Source.bIsScreen ? screen_share_source::type::screen
 	                                                             : screen_share_source::type::window},
-	                        NullFrameHandler, ToSdkContentType(ContentType))
+	                        LocalScreenshareFrameHandler, ToSdkContentType(ContentType))
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 

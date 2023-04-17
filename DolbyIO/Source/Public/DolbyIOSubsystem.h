@@ -43,6 +43,7 @@ namespace dolbyio::comms
 
 namespace DolbyIO
 {
+	class FVideoFrameHandler;
 	class FVideoSink;
 }
 
@@ -262,6 +263,8 @@ private:
 	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
 
 	TMap<FString, std::shared_ptr<DolbyIO::FVideoSink>> VideoSinks;
+	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalVideoFrameHandler;
+	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalScreenshareFrameHandler;
 	TSharedPtr<dolbyio::comms::sdk> Sdk;
 	TSharedPtr<dolbyio::comms::refresh_token> RefreshTokenCb;
 
