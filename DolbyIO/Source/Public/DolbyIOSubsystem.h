@@ -167,7 +167,7 @@ public:
 	 * @return The texture holding the participant's video frame or NULL if no such texture exists.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	class UTexture2D* GetTexture(const FString& ParticipantID);
+	class UTexture2D* GetTexture(const FString& ParticipantID) const;
 
 	/** Gets a list of all possible screen sharing sources. These can be entire screens or specific application windows.
 	 */

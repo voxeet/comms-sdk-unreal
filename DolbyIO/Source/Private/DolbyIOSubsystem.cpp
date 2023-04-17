@@ -477,7 +477,7 @@ void UDolbyIOSubsystem::DisableVideo()
 	ToggleVideo();
 }
 
-UTexture2D* UDolbyIOSubsystem::GetTexture(const FString& ParticipantID)
+UTexture2D* UDolbyIOSubsystem::GetTexture(const FString& ParticipantID) const
 {
 	if (const std::shared_ptr<FVideoSink>* Sink = VideoSinks.Find(ParticipantID))
 	{
