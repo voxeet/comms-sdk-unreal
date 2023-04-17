@@ -161,17 +161,21 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		        return Sdk->conference().add_event_handler(
 		            [this](const video_track_added& Event)
 		            {
+			            FDolbyIOVideoTrack VideoTrack;
+			            VideoTrack.TrackID = ToFString(Event.track.track_id);
+			            VideoTrack.ParticipantID = ToFString(Event.track.peer_id);
+			            VideoTrack.bIsScreenshare = Event.track.is_screenshare;
+			            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s StreamID=%s", *VideoTrack.TrackID,
+			                       *VideoTrack.ParticipantID, *ToFString(Event.track.stream_id));
+
 			            if (Event.track.remote)
 			            {
-				            const FString ParticipantID = ToFString(Event.track.peer_id);
-				            const FString StreamID = ToFString(Event.track.stream_id);
-				            DLB_UE_LOG("Video track added: ParticipantID=%s StreamID=%s", *ParticipantID, *StreamID);
-				            VideoSinks.Emplace(ParticipantID, std::make_shared<FVideoSink>());
+				            VideoSinks.Emplace(VideoTrack.TrackID, std::make_shared<FVideoSink>());
 				            Sdk->video()
 				                .remote()
-				                .set_video_sink(Event.track, VideoSinks[ParticipantID])
+				                .set_video_sink(Event.track, VideoSinks[VideoTrack.TrackID])
 				                .on_error(MAKE_DLB_ERROR_HANDLER);
-				            BroadcastEvent(OnVideoTrackAdded, ParticipantID);
+				            BroadcastEvent(OnVideoTrackAdded, VideoTrack);
 			            }
 		            });
 	        })
@@ -181,13 +185,14 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		        return Sdk->conference().add_event_handler(
 		            [this](const video_track_removed& Event)
 		            {
+			            const FString TrackID = ToFString(Event.track.track_id);
+			            DLB_UE_LOG("Video track removed: TrackID=%s ParticipantID=%s StreamID=%s", *TrackID,
+			                       *ToFString(Event.track.peer_id), *ToFString(Event.track.stream_id));
+
 			            if (Event.track.remote)
 			            {
-				            const FString ParticipantID = ToFString(Event.track.peer_id);
-				            const FString StreamID = ToFString(Event.track.stream_id);
-				            DLB_UE_LOG("Video track removed: ParticipantID=%s StreamID=%s", *ParticipantID, *StreamID);
-				            VideoSinks.Remove(ParticipantID);
-				            BroadcastEvent(OnVideoTrackRemoved, ParticipantID);
+				            VideoSinks.Remove(TrackID);
+				            BroadcastEvent(OnVideoTrackRemoved, TrackID);
 			            }
 		            });
 	        })
@@ -477,9 +482,9 @@ void UDolbyIOSubsystem::DisableVideo()
 	ToggleVideo();
 }
 
-UTexture2D* UDolbyIOSubsystem::GetTexture(const FString& ParticipantID) const
+UTexture2D* UDolbyIOSubsystem::GetTexture(const FString& VideoTrackID) const
 {
-	if (const std::shared_ptr<FVideoSink>* Sink = VideoSinks.Find(ParticipantID))
+	if (const std::shared_ptr<FVideoSink>* Sink = VideoSinks.Find(VideoTrackID))
 	{
 		return (*Sink)->GetTexture();
 	}
@@ -555,11 +560,11 @@ void UDolbyIOSubsystem::ChangeScreenshareContentType(EDolbyIOScreenshareContentT
 	Sdk->conference().screen_share_content_type(ToSdkContentType(ContentType)).on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
-void UDolbyIOSubsystem::BindMaterial(UMaterialInstanceDynamic* Material, const FString& ParticipantID)
+void UDolbyIOSubsystem::BindMaterial(UMaterialInstanceDynamic* Material, const FString& VideoTrackID)
 {
 	for (const auto& Sink : VideoSinks)
 	{
-		if (Sink.Key == ParticipantID)
+		if (Sink.Key == VideoTrackID)
 		{
 			Sink.Value->BindMaterial(Material);
 		}
@@ -570,9 +575,9 @@ void UDolbyIOSubsystem::BindMaterial(UMaterialInstanceDynamic* Material, const F
 	}
 }
 
-void UDolbyIOSubsystem::UnbindMaterial(UMaterialInstanceDynamic* Material, const FString& ParticipantID)
+void UDolbyIOSubsystem::UnbindMaterial(UMaterialInstanceDynamic* Material, const FString& VideoTrackID)
 {
-	if (const std::shared_ptr<DolbyIO::FVideoSink>* Sink = VideoSinks.Find(ParticipantID))
+	if (const std::shared_ptr<DolbyIO::FVideoSink>* Sink = VideoSinks.Find(VideoTrackID))
 	{
 		(*Sink)->UnbindMaterial(Material);
 	}

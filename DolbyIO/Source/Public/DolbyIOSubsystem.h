@@ -8,6 +8,7 @@
 #include "DolbyIOParticipantInfo.h"
 #include "DolbyIOScreenshareSource.h"
 #include "DolbyIOSpatialAudioStyle.h"
+#include "DolbyIOVideoTrack.h"
 
 #include <memory>
 
@@ -24,8 +25,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnParticipantAddedDelegat
                                              Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnParticipantUpdatedDelegate, const EDolbyIOParticipantStatus,
                                              Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackAddedDelegate, const FString&, ParticipantID);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackRemovedDelegate, const FString&, ParticipantID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackAddedDelegate, const FDolbyIOVideoTrack&, VideoTrack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackRemovedDelegate, const FString&, VideoTrackID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnActiveSpeakersChangedDelegate, const TArray<FString>&,
                                             ActiveSpeakers);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnAudioLevelsChangedDelegate, const TArray<FString>&,
@@ -139,35 +140,34 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void DisableVideo();
 
-	/** Binds a dynamic material instance to hold a participant's video frames. The plugin will update the material's
-	 * texture parameter named "DolbyIO Frame" with the necessary data, therefore the material should have such a
-	 * parameter to be usable. Automatically unbinds the material from all other participants, but it is possible to
-	 * bind multiple materials to the same participant. Has no effect if there is no video from the participant at the
-	 * moment the function is called, therefore it should usually be called as a response to the "On Video Track Added"
-	 * event.
+	/** Binds a dynamic material instance to hold the frames of the given video track. The plugin will update the
+	 * material's texture parameter named "DolbyIO Frame" with the necessary data, therefore the material should have
+	 * such a parameter to be usable. Automatically unbinds the material from all other tracks, but it is possible to
+	 * bind multiple materials to the same track. Has no effect if the track does not exist at the moment the function
+	 * is called, therefore it should usually be called as a response to the "On Video Track Added" event.
 	 *
 	 * @param Material - The dynamic material instance to bind.
-	 * @param ParticipantID - The participant's ID.
+	 * @param VideoTrackID - The ID of the video track.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void BindMaterial(UMaterialInstanceDynamic* Material, const FString& ParticipantID);
+	void BindMaterial(UMaterialInstanceDynamic* Material, const FString& VideoTrackID);
 
-	/** Unbinds a dynamic material instance to no longer hold a participant's video frames. The plugin will no longer
-	 * update the material's texture parameter named "DolbyIO Frame" with the necessary data.
+	/** Unbinds a dynamic material instance to no longer hold the video frames of the given video track. The plugin will
+	 * no longer update the material's texture parameter named "DolbyIO Frame" with the necessary data.
 	 *
 	 * @param Material - The dynamic material instance to unbind.
-	 * @param ParticipantID - The participant's ID.
+	 * @param VideoTrackID - The ID of the video track.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void UnbindMaterial(UMaterialInstanceDynamic* Material, const FString& ParticipantID);
+	void UnbindMaterial(UMaterialInstanceDynamic* Material, const FString& VideoTrackID);
 
-	/** Gets the texture to which video from a given participant is being rendered.
+	/** Gets the texture to which video from a given track is being rendered.
 	 *
-	 * @param ParticipantID - The participant's ID.
-	 * @return The texture holding the participant's video frame or NULL if no such texture exists.
+	 * @param VideoTrackID - The ID of the video track.
+	 * @return The texture holding the video tracks's frame or NULL if no such texture exists.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	class UTexture2D* GetTexture(const FString& ParticipantID) const;
+	class UTexture2D* GetTexture(const FString& VideoTrackID) const;
 
 	/** Gets a list of all possible screen sharing sources. These can be entire screens or specific application windows.
 	 */

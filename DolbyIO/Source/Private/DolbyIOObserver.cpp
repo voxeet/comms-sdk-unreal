@@ -60,13 +60,13 @@ void UDolbyIOObserver::FwdOnParticipantUpdated(const EDolbyIOParticipantStatus S
 {
 	BroadcastEvent(OnParticipantUpdated, Status, ParticipantInfo);
 }
-void UDolbyIOObserver::FwdOnVideoTrackAdded(const FString& ParticipantID)
+void UDolbyIOObserver::FwdOnVideoTrackAdded(const FDolbyIOVideoTrack& VideoTrack)
 {
-	BroadcastEvent(OnVideoTrackAdded, ParticipantID);
+	BroadcastEvent(OnVideoTrackAdded, VideoTrack);
 }
-void UDolbyIOObserver::FwdOnVideoTrackRemoved(const FString& ParticipantID)
+void UDolbyIOObserver::FwdOnVideoTrackRemoved(const FString& VideoTrackID)
 {
-	BroadcastEvent(OnVideoTrackRemoved, ParticipantID);
+	BroadcastEvent(OnVideoTrackRemoved, VideoTrackID);
 }
 void UDolbyIOObserver::FwdOnActiveSpeakersChanged(const TArray<FString>& ActiveSpeakers)
 {
