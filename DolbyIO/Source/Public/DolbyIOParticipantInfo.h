@@ -60,30 +60,30 @@ struct DOLBYIO_API FDolbyIOParticipantInfo
 	 * video streams, but cannot send any stream to a conference. False means this is a participant who can send and
 	 * receive an audio and video stream during a conference.*/
 	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
-	bool bIsListener;
+	bool bIsListener{};
 
 	/** A boolean that informs whether the participant is sending audio into conference. */
 	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
-	bool bIsSendingAudio;
+	bool bIsSendingAudio{};
 
 	/** Indicates whether a remote participant is audible locally. This will always be false for the local participant.
 	 */
 	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
-	bool bIsAudibleLocally;
+	bool bIsAudibleLocally{};
 
 	/** A boolean that informs whether the participant is an injected bot. */
 	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
-	bool bIsInjectedBot;
+	bool bIsInjectedBot{};
 
 	/** The initial location of the participant. Meaningless unless the participant is an injected bot. */
 	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
-	FVector Location;
+	FVector Location{0, 0, 0};
 
 	/** The initial rotation of the participant. Meaningless unless the participant is an injected bot. */
 	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
-	FRotator Rotation;
+	FRotator Rotation{0, 0, 0};
 
 	/** The conference status of the remote participant. */
 	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
-	EDolbyIOParticipantStatus Status;
+	EDolbyIOParticipantStatus Status{};
 };
