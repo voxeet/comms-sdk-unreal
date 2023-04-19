@@ -26,7 +26,12 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnParticipantAddedDelegat
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnParticipantUpdatedDelegate, const EDolbyIOParticipantStatus,
                                              Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackAddedDelegate, const FDolbyIOVideoTrack&, VideoTrack);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackRemovedDelegate, const FString&, VideoTrackID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackRemovedDelegate, const FDolbyIOVideoTrack&,
+                                            VideoTrack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoEnabledDelegate, const FString&, VideoTrackID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoDisabledDelegate, const FString&, VideoTrackID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnScreenshareStartedDelegate, const FString&, VideoTrackID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnScreenshareStoppedDelegate, const FString&, VideoTrackID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnActiveSpeakersChangedDelegate, const TArray<FString>&,
                                             ActiveSpeakers);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnAudioLevelsChangedDelegate, const TArray<FString>&,
@@ -225,6 +230,14 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnVideoTrackRemovedDelegate OnVideoTrackRemoved;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnVideoEnabledDelegate OnVideoEnabled;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnVideoDisabledDelegate OnVideoDisabled;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnScreenshareStartedDelegate OnScreenshareStarted;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnScreenshareStoppedDelegate OnScreenshareStopped;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnActiveSpeakersChangedDelegate OnActiveSpeakersChanged;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnAudioLevelsChangedDelegate OnAudioLevelsChanged;
@@ -247,7 +260,6 @@ private:
 
 	void ToggleInputMute();
 	void ToggleOutputMute();
-	void ToggleVideo();
 
 	void SetLocationUsingFirstPlayer();
 	void SetLocalPlayerLocationImpl(const FVector& Location);
@@ -263,7 +275,7 @@ private:
 	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
 
 	TMap<FString, std::shared_ptr<DolbyIO::FVideoSink>> VideoSinks;
-	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalVideoFrameHandler;
+	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalCameraFrameHandler;
 	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalScreenshareFrameHandler;
 	TSharedPtr<dolbyio::comms::sdk> Sdk;
 	TSharedPtr<dolbyio::comms::refresh_token> RefreshTokenCb;

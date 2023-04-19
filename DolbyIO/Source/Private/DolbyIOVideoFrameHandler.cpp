@@ -6,5 +6,5 @@
 
 namespace DolbyIO
 {
-	FVideoFrameHandler::FVideoFrameHandler() : Sink(std::make_shared<FVideoSink>()) {}
+	FVideoFrameHandler::FVideoFrameHandler(std::shared_ptr<dolbyio::comms::video_sink> Sink) : Sink(MoveTemp(Sink)) {}
 }

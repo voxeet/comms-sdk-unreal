@@ -15,6 +15,9 @@
 using namespace dolbyio::comms;
 using namespace DolbyIO;
 
+constexpr auto LocalCameraTrackID = "local-camera";
+constexpr auto LocalScreenshareTrackID = "local-screenshare";
+
 void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
@@ -29,8 +32,10 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	ConferenceStatus = conference_status::destroyed;
 
-	LocalVideoFrameHandler = std::make_shared<FVideoFrameHandler>();
-	LocalScreenshareFrameHandler = std::make_shared<FVideoFrameHandler>();
+	VideoSinks.Emplace(LocalCameraTrackID, std::make_shared<FVideoSink>());
+	VideoSinks.Emplace(LocalScreenshareTrackID, std::make_shared<FVideoSink>());
+	LocalCameraFrameHandler = std::make_shared<FVideoFrameHandler>(VideoSinks[LocalCameraTrackID]);
+	LocalScreenshareFrameHandler = std::make_shared<FVideoFrameHandler>(VideoSinks[LocalScreenshareTrackID]);
 
 	FTimerManager& TimerManager = GetGameInstance()->GetTimerManager();
 	TimerManager.SetTimer(LocationTimerHandle, this, &UDolbyIOSubsystem::SetLocationUsingFirstPlayer, 0.1, true);
@@ -165,22 +170,21 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		        return Sdk->conference().add_event_handler(
 		            [this](const video_track_added& Event)
 		            {
-			            FDolbyIOVideoTrack VideoTrack;
-			            VideoTrack.TrackID = ToFString(Event.track.track_id);
-			            VideoTrack.ParticipantID = ToFString(Event.track.peer_id);
-			            VideoTrack.bIsScreenshare = Event.track.is_screenshare;
-			            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s StreamID=%s", *VideoTrack.TrackID,
+			            if (!Event.track.remote)
+			            {
+				            return;
+			            }
+
+			            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
+			            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s StreamID=%", *VideoTrack.TrackID,
 			                       *VideoTrack.ParticipantID, *ToFString(Event.track.stream_id));
 
-			            if (Event.track.remote)
-			            {
-				            VideoSinks.Emplace(VideoTrack.TrackID, std::make_shared<FVideoSink>());
-				            Sdk->video()
-				                .remote()
-				                .set_video_sink(Event.track, VideoSinks[VideoTrack.TrackID])
-				                .on_error(MAKE_DLB_ERROR_HANDLER);
-				            BroadcastEvent(OnVideoTrackAdded, VideoTrack);
-			            }
+			            VideoSinks.Emplace(VideoTrack.TrackID, std::make_shared<FVideoSink>());
+			            Sdk->video()
+			                .remote()
+			                .set_video_sink(Event.track, VideoSinks[VideoTrack.TrackID])
+			                .on_error(MAKE_DLB_ERROR_HANDLER);
+			            BroadcastEvent(OnVideoTrackAdded, VideoTrack);
 		            });
 	        })
 	    .then(
@@ -189,15 +193,17 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		        return Sdk->conference().add_event_handler(
 		            [this](const video_track_removed& Event)
 		            {
-			            const FString TrackID = ToFString(Event.track.track_id);
-			            DLB_UE_LOG("Video track removed: TrackID=%s ParticipantID=%s StreamID=%s", *TrackID,
-			                       *ToFString(Event.track.peer_id), *ToFString(Event.track.stream_id));
-
-			            if (Event.track.remote)
+			            if (!Event.track.remote)
 			            {
-				            VideoSinks.Remove(TrackID);
-				            BroadcastEvent(OnVideoTrackRemoved, TrackID);
+				            return;
 			            }
+
+			            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
+			            DLB_UE_LOG("Video track removed: TrackID=%s ParticipantID=%s StreamID=%s", *VideoTrack.TrackID,
+			                       *VideoTrack.ParticipantID, *ToFString(Event.track.stream_id));
+
+			            VideoSinks.Remove(VideoTrack.TrackID);
+			            BroadcastEvent(OnVideoTrackRemoved, VideoTrack);
 		            });
 	        })
 	    .then([this](event_handler_id)
@@ -229,8 +235,6 @@ void UDolbyIOSubsystem::UpdateStatus(conference_status Status)
 			break;
 	}
 }
-
-static const camera_device DefaultCamera{};
 
 void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& UserName, const FString& ExternalID,
                                 const FString& AvatarURL, EDolbyIOConnectionMode ConnMode,
@@ -278,6 +282,7 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 		        {
 			        conference::join_options Options{};
 			        Options.constraints.audio = true;
+			        Options.constraints.video = bIsVideoEnabled;
 			        Options.connection.spatial_audio = IsSpatialAudio();
 			        return Sdk->conference().join(ConferenceInfo, Options);
 		        }
@@ -297,11 +302,6 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 		        SetSpatialEnvironment();
 		        ToggleInputMute();
 		        ToggleOutputMute();
-
-		        if (bIsVideoEnabled)
-		        {
-			        Sdk->video().local().start(DefaultCamera, LocalVideoFrameHandler).on_error(MAKE_DLB_ERROR_HANDLER);
-		        }
 	        })
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
@@ -366,16 +366,6 @@ void UDolbyIOSubsystem::ToggleOutputMute()
 	if (IsConnected() && ConnectionMode != EDolbyIOConnectionMode::ListenerRTS)
 	{
 		Sdk->conference().mute_output(bIsOutputMuted).on_error(MAKE_DLB_ERROR_HANDLER);
-	}
-}
-
-void UDolbyIOSubsystem::ToggleVideo()
-{
-	if (IsConnectedAsActive())
-	{
-		bIsVideoEnabled
-		    ? Sdk->video().local().start(DefaultCamera, LocalVideoFrameHandler).on_error(MAKE_DLB_ERROR_HANDLER)
-		    : Sdk->video().local().stop().on_error(MAKE_DLB_ERROR_HANDLER);
 	}
 }
 
@@ -477,16 +467,44 @@ void UDolbyIOSubsystem::UnmuteParticipant(const FString& ParticipantID)
 
 void UDolbyIOSubsystem::EnableVideo()
 {
+	if (!Sdk)
+	{
+		DLB_UE_WARN("Cannot enable video - not initialized");
+		return;
+	}
+
 	DLB_UE_LOG("Enabling video");
-	bIsVideoEnabled = true;
-	ToggleVideo();
+	static const camera_device DefaultCamera{};
+	Sdk->video()
+	    .local()
+	    .start(DefaultCamera, LocalCameraFrameHandler)
+	    .then(
+	        [this]
+	        {
+		        bIsVideoEnabled = true;
+		        OnVideoEnabled.Broadcast(LocalCameraTrackID);
+	        })
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
 void UDolbyIOSubsystem::DisableVideo()
 {
+	if (!Sdk)
+	{
+		return;
+	}
+
 	DLB_UE_LOG("Disabling video");
-	bIsVideoEnabled = false;
-	ToggleVideo();
+	Sdk->video()
+	    .local()
+	    .stop()
+	    .then(
+	        [this]
+	        {
+		        bIsVideoEnabled = false;
+		        OnVideoDisabled.Broadcast(LocalCameraTrackID);
+	        })
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
 UTexture2D* UDolbyIOSubsystem::GetTexture(const FString& VideoTrackID) const
@@ -541,6 +559,7 @@ void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source
 	                                            Source.bIsScreen ? screen_share_source::type::screen
 	                                                             : screen_share_source::type::window},
 	                        LocalScreenshareFrameHandler, ToSdkContentType(ContentType))
+	    .then([this] { OnScreenshareStarted.Broadcast(LocalScreenshareTrackID); })
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
@@ -552,7 +571,10 @@ void UDolbyIOSubsystem::StopScreenshare()
 	}
 
 	DLB_UE_LOG("Stopping screenshare");
-	Sdk->conference().stop_screen_share().on_error(MAKE_DLB_ERROR_HANDLER);
+	Sdk->conference()
+	    .stop_screen_share()
+	    .then([this] { OnScreenshareStopped.Broadcast(LocalScreenshareTrackID); })
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
 void UDolbyIOSubsystem::ChangeScreenshareContentType(EDolbyIOScreenshareContentType ContentType)
