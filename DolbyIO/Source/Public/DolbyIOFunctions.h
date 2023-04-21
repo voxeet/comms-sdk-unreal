@@ -37,7 +37,8 @@ private:
 	FString Token;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOConnectOutputPin, const FString&, LocalParticipantID, const FString&, ConferenceID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOConnectOutputPin, const FString&, LocalParticipantID,
+                                             const FString&, ConferenceID);
 
 UCLASS()
 class DOLBYIO_API UDolbyIOConnect : public UBlueprintAsyncActionBase
