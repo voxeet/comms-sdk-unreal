@@ -42,9 +42,9 @@ void UDolbyIOObserver::FwdOnInitialized()
 {
 	BroadcastEvent(OnInitialized);
 }
-void UDolbyIOObserver::FwdOnConnected(const FString& LocalParticipantID)
+void UDolbyIOObserver::FwdOnConnected(const FString& LocalParticipantID, const FString& ConferenceID)
 {
-	BroadcastEvent(OnConnected, LocalParticipantID);
+	BroadcastEvent(OnConnected, LocalParticipantID, ConferenceID);
 }
 void UDolbyIOObserver::FwdOnDisconnected()
 {

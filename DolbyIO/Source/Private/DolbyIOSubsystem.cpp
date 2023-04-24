@@ -212,7 +212,7 @@ void UDolbyIOSubsystem::UpdateStatus(conference_status Status)
 	switch (ConferenceStatus)
 	{
 		case conference_status::joined:
-			BroadcastEvent(OnConnected, LocalParticipantID);
+			BroadcastEvent(OnConnected, LocalParticipantID, ConferenceID);
 			break;
 		case conference_status::left:
 		case conference_status::error:
@@ -262,6 +262,7 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 	    .then(
 	        [this](conference_info&& ConferenceInfo)
 	        {
+		        ConferenceID = ToFString(ConferenceInfo.id);
 		        if (ConnectionMode == EDolbyIOConnectionMode::Active)
 		        {
 			        conference::join_options Options{};
@@ -281,8 +282,7 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 	    .then(
 	        [this](conference_info&& ConferenceInfo)
 	        {
-		        DLB_UE_LOG("Connected to conference ID %s with user ID %s", *ToFString(ConferenceInfo.id),
-		                   *LocalParticipantID);
+		        DLB_UE_LOG("Connected to conference ID %s with user ID %s", *ConferenceID, *LocalParticipantID);
 		        SetSpatialEnvironment();
 		        ToggleInputMute();
 		        ToggleOutputMute();
