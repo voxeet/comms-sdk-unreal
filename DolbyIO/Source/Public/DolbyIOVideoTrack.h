@@ -20,5 +20,5 @@ struct DOLBYIO_API FDolbyIOVideoTrack
 
 	/** Indicates whether this is a screenshare video track (true) or a camera video track (false). */
 	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
-	bool bIsScreenshare;
+	bool bIsScreenshare{};
 };
