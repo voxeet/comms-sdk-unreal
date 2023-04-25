@@ -9,7 +9,7 @@ namespace DolbyIO
 	class FVideoFrameHandler final : public dolbyio::comms::video_frame_handler
 	{
 	public:
-		FVideoFrameHandler(std::shared_ptr<dolbyio::comms::video_sink> Sink);
+		FVideoFrameHandler(std::shared_ptr<dolbyio::comms::video_sink> Sink) : Sink(std::move(Sink)) {}
 
 	private:
 		std::shared_ptr<dolbyio::comms::video_sink> sink() override
