@@ -507,7 +507,7 @@ void UDolbyIOSubsystem::DisableVideo()
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
-UTexture2D* UDolbyIOSubsystem::GetTexture(const FString& VideoTrackID) const
+UTexture2D* UDolbyIOSubsystem::GetTexture(const FString& VideoTrackID)
 {
 	if (const std::shared_ptr<FVideoSink>* Sink = VideoSinks.Find(VideoTrackID))
 	{

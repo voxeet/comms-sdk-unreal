@@ -16,7 +16,7 @@
 
 namespace DolbyIO
 {
-	UTexture2D* FVideoSink::GetTexture() const
+	UTexture2D* FVideoSink::GetTexture()
 	{
 		return Texture;
 	}
