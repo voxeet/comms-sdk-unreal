@@ -202,27 +202,26 @@ void UDolbyIOBlueprintFunctionLibrary::DisableVideo(const UObject* WorldContextO
 	}
 }
 void UDolbyIOBlueprintFunctionLibrary::BindMaterial(const UObject* WorldContextObject,
-                                                    UMaterialInstanceDynamic* Material, const FString& ParticipantID)
+                                                    UMaterialInstanceDynamic* Material, const FString& VideoTrackID)
 {
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
-		DolbyIOSubsystem->BindMaterial(Material, ParticipantID);
+		DolbyIOSubsystem->BindMaterial(Material, VideoTrackID);
 	}
 }
 void UDolbyIOBlueprintFunctionLibrary::UnbindMaterial(const UObject* WorldContextObject,
-                                                      UMaterialInstanceDynamic* Material, const FString& ParticipantID)
+                                                      UMaterialInstanceDynamic* Material, const FString& VideoTrackID)
 {
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
-		DolbyIOSubsystem->UnbindMaterial(Material, ParticipantID);
+		DolbyIOSubsystem->UnbindMaterial(Material, VideoTrackID);
 	}
 }
-UTexture2D* UDolbyIOBlueprintFunctionLibrary::GetTexture(const UObject* WorldContextObject,
-                                                         const FString& ParticipantID)
+UTexture2D* UDolbyIOBlueprintFunctionLibrary::GetTexture(const UObject* WorldContextObject, const FString& VideoTrackID)
 {
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
-		return DolbyIOSubsystem->GetTexture(ParticipantID);
+		return DolbyIOSubsystem->GetTexture(VideoTrackID);
 	}
 	return nullptr;
 }

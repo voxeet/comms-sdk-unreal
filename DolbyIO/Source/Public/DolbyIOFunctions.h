@@ -5,6 +5,7 @@
 #include "DolbyIOConnectionMode.h"
 #include "DolbyIOScreenshareSource.h"
 #include "DolbyIOSpatialAudioStyle.h"
+#include "DolbyIOVideoTrack.h"
 
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
@@ -205,40 +206,39 @@ public:
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Disable Video"))
 	static void DisableVideo(const UObject* WorldContextObject);
 
-	/** Binds a dynamic material instance to hold a participant's video frames. The plugin will update the material's
-	 * texture parameter named "DolbyIO Frame" with the necessary data, therefore the material should have such a
-	 * parameter to be usable. Automatically unbinds the material from all other participants, but it is possible to
-	 * bind multiple materials to the same participant. Has no effect if there is no video from the participant at the
-	 * moment the function is called, therefore it should usually be called as a response to the "On Video Track Added"
-	 * event.
+	/** Binds a dynamic material instance to hold the frames of the given video track. The plugin will update the
+	 * material's texture parameter named "DolbyIO Frame" with the necessary data, therefore the material should have
+	 * such a parameter to be usable. Automatically unbinds the material from all other tracks, but it is possible to
+	 * bind multiple materials to the same track. Has no effect if the track does not exist at the moment the function
+	 * is called, therefore it should usually be called as a response to the "On Video Track Added" event.
 	 *
 	 * @param Material - The dynamic material instance to bind.
-	 * @param ParticipantID - The participant's ID.
+	 * @param VideoTrackID - The ID of the video track.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Bind Material"))
 	static void BindMaterial(const UObject* WorldContextObject, UMaterialInstanceDynamic* Material,
-	                         const FString& ParticipantID);
+	                         const FString& VideoTrackID);
 
-	/** Unbinds a dynamic material instance to no longer hold a participant's video frames. The plugin will no longer
-	 * update the material's texture parameter named "DolbyIO Frame" with the necessary data.
+	/** Unbinds a dynamic material instance to no longer hold the video frames of the given video track. The plugin will
+	 * no longer update the material's texture parameter named "DolbyIO Frame" with the necessary data.
 	 *
 	 * @param Material - The dynamic material instance to unbind.
-	 * @param ParticipantID - The participant's ID.
+	 * @param VideoTrackID - The ID of the video track.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Unbind Material"))
 	static void UnbindMaterial(const UObject* WorldContextObject, UMaterialInstanceDynamic* Material,
-	                           const FString& ParticipantID);
+	                           const FString& VideoTrackID);
 
-	/** Gets the texture to which video from a given participant is being rendered.
+	/** Gets the texture to which video from a given track is being rendered.
 	 *
-	 * @param ParticipantID - The participant's ID.
-	 * @return The texture holding the participant's video frame or NULL if no such texture exists.
+	 * @param VideoTrackID - The ID of the video track.
+	 * @return The texture holding the video tracks's frame or NULL if no such texture exists.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Get Texture"))
-	static class UTexture2D* GetTexture(const UObject* WorldContextObject, const FString& ParticipantID);
+	static class UTexture2D* GetTexture(const UObject* WorldContextObject, const FString& VideoTrackID);
 
 	/** Starts screen sharing using a given source and content type. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",

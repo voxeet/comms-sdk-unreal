@@ -6,6 +6,7 @@
 
 #include "DolbyIOParticipantInfo.h"
 #include "DolbyIOScreenshareSource.h"
+#include "DolbyIOVideoTrack.h"
 
 #include "DolbyIOObserver.generated.h"
 
@@ -18,8 +19,13 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnParticipantAddedDelegate
                                              Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnParticipantUpdatedDelegate, const EDolbyIOParticipantStatus,
                                              Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackAddedDelegate, const FString&, ParticipantID);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackRemovedDelegate, const FString&, ParticipantID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackAddedDelegate, const FDolbyIOVideoTrack&, VideoTrack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackRemovedDelegate, const FDolbyIOVideoTrack&,
+                                            VideoTrack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoEnabledDelegate, const FString&, VideoTrackID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoDisabledDelegate, const FString&, VideoTrackID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnScreenshareStartedDelegate, const FString&, VideoTrackID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnScreenshareStoppedDelegate, const FString&, VideoTrackID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnActiveSpeakersChangedDelegate, const TArray<FString>&,
                                             ActiveSpeakers);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnAudioLevelsChangedDelegate, const TArray<FString>&,
@@ -77,6 +83,18 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnVideoTrackRemovedDelegate OnVideoTrackRemoved;
 
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnVideoEnabledDelegate OnVideoEnabled;
+
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnVideoDisabledDelegate OnVideoDisabled;
+
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnScreenshareStartedDelegate OnScreenshareStarted;
+
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnScreenshareStoppedDelegate OnScreenshareStopped;
+
 	/** Triggered when participants start or stop speaking. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnActiveSpeakersChangedDelegate OnActiveSpeakersChanged;
@@ -115,10 +133,22 @@ private:
 	                             const FDolbyIOParticipantInfo& ParticipantInfo);
 
 	UFUNCTION()
-	void FwdOnVideoTrackAdded(const FString& ParticipantID);
+	void FwdOnVideoTrackAdded(const FDolbyIOVideoTrack& VideoTrack);
 
 	UFUNCTION()
-	void FwdOnVideoTrackRemoved(const FString& ParticipantID);
+	void FwdOnVideoTrackRemoved(const FDolbyIOVideoTrack& VideoTrack);
+
+	UFUNCTION()
+	void FwdOnVideoEnabled(const FString& VideoTrackID);
+
+	UFUNCTION()
+	void FwdOnVideoDisabled(const FString& VideoTrackID);
+
+	UFUNCTION()
+	void FwdOnScreenshareStarted(const FString& VideoTrackID);
+
+	UFUNCTION()
+	void FwdOnScreenshareStopped(const FString& VideoTrackID);
 
 	UFUNCTION()
 	void FwdOnActiveSpeakersChanged(const TArray<FString>& ActiveSpeakers);

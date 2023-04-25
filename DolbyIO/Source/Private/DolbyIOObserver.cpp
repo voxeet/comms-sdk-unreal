@@ -26,6 +26,10 @@ void UDolbyIOObserver::InitializeComponent()
 		DolbyIOSubsystem->OnParticipantUpdated.AddDynamic(this, &UDolbyIOObserver::FwdOnParticipantUpdated);
 		DolbyIOSubsystem->OnVideoTrackAdded.AddDynamic(this, &UDolbyIOObserver::FwdOnVideoTrackAdded);
 		DolbyIOSubsystem->OnVideoTrackRemoved.AddDynamic(this, &UDolbyIOObserver::FwdOnVideoTrackRemoved);
+		DolbyIOSubsystem->OnVideoEnabled.AddDynamic(this, &UDolbyIOObserver::FwdOnVideoEnabled);
+		DolbyIOSubsystem->OnVideoDisabled.AddDynamic(this, &UDolbyIOObserver::FwdOnVideoDisabled);
+		DolbyIOSubsystem->OnScreenshareStarted.AddDynamic(this, &UDolbyIOObserver::FwdOnScreenshareStarted);
+		DolbyIOSubsystem->OnScreenshareStopped.AddDynamic(this, &UDolbyIOObserver::FwdOnScreenshareStopped);
 		DolbyIOSubsystem->OnActiveSpeakersChanged.AddDynamic(this, &UDolbyIOObserver::FwdOnActiveSpeakersChanged);
 		DolbyIOSubsystem->OnAudioLevelsChanged.AddDynamic(this, &UDolbyIOObserver::FwdOnAudioLevelsChanged);
 		DolbyIOSubsystem->OnScreenshareSourcesReceived.AddDynamic(this,
@@ -60,13 +64,29 @@ void UDolbyIOObserver::FwdOnParticipantUpdated(const EDolbyIOParticipantStatus S
 {
 	BroadcastEvent(OnParticipantUpdated, Status, ParticipantInfo);
 }
-void UDolbyIOObserver::FwdOnVideoTrackAdded(const FString& ParticipantID)
+void UDolbyIOObserver::FwdOnVideoTrackAdded(const FDolbyIOVideoTrack& VideoTrack)
 {
-	BroadcastEvent(OnVideoTrackAdded, ParticipantID);
+	BroadcastEvent(OnVideoTrackAdded, VideoTrack);
 }
-void UDolbyIOObserver::FwdOnVideoTrackRemoved(const FString& ParticipantID)
+void UDolbyIOObserver::FwdOnVideoTrackRemoved(const FDolbyIOVideoTrack& VideoTrack)
 {
-	BroadcastEvent(OnVideoTrackRemoved, ParticipantID);
+	BroadcastEvent(OnVideoTrackRemoved, VideoTrack);
+}
+void UDolbyIOObserver::FwdOnVideoEnabled(const FString& VideoTrackID)
+{
+	BroadcastEvent(OnVideoEnabled, VideoTrackID);
+}
+void UDolbyIOObserver::FwdOnVideoDisabled(const FString& VideoTrackID)
+{
+	BroadcastEvent(OnVideoDisabled, VideoTrackID);
+}
+void UDolbyIOObserver::FwdOnScreenshareStarted(const FString& VideoTrackID)
+{
+	BroadcastEvent(OnScreenshareStarted, VideoTrackID);
+}
+void UDolbyIOObserver::FwdOnScreenshareStopped(const FString& VideoTrackID)
+{
+	BroadcastEvent(OnScreenshareStopped, VideoTrackID);
 }
 void UDolbyIOObserver::FwdOnActiveSpeakersChanged(const TArray<FString>& ActiveSpeakers)
 {
