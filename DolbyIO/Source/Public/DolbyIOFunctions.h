@@ -122,6 +122,56 @@ private:
 	const UObject* WorldContextObject;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOEnableVideoOutputPin, const FString&, VideoTrackID);
+
+UCLASS()
+class DOLBYIO_API UDolbyIOEnableVideo : public UBlueprintAsyncActionBase
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
+	                  DisplayName = "Dolby.io Enable Video"))
+	static UDolbyIOEnableVideo* DolbyIOEnableVideo(const UObject* WorldContextObject);
+
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOEnableVideoOutputPin OnVideoEnabled;
+
+private:
+	void Activate() override;
+
+	UFUNCTION()
+	void OnVideoEnabledImpl(const FString& VideoTrackID);
+
+	const UObject* WorldContextObject;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIODisableVideoOutputPin, const FString&, VideoTrackID);
+
+UCLASS()
+class DOLBYIO_API UDolbyIODisableVideo : public UBlueprintAsyncActionBase
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
+	                  DisplayName = "Dolby.io Disable Video"))
+	static UDolbyIODisableVideo* DolbyIODisableVideo(const UObject* WorldContextObject);
+
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIODisableVideoOutputPin OnVideoDisabled;
+
+private:
+	void Activate() override;
+
+	UFUNCTION()
+	void OnVideoDisabledImpl(const FString& VideoTrackID);
+
+	const UObject* WorldContextObject;
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOGetScreenshareSourcesOutputPin,
                                             const TArray<FDolbyIOScreenshareSource>&, Sources);
 
@@ -144,6 +194,60 @@ private:
 
 	UFUNCTION()
 	void OnScreenshareSourcesReceivedImpl(const TArray<FDolbyIOScreenshareSource>& Sources);
+
+	const UObject* WorldContextObject;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOStartScreenshareOutputPin, const FString&, VideoTrackID);
+
+UCLASS()
+class DOLBYIO_API UDolbyIOStartScreenshare : public UBlueprintAsyncActionBase
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
+	                  DisplayName = "Dolby.io Start Screenshare"))
+	static UDolbyIOStartScreenshare* DolbyIOStartScreenshare(
+	    const UObject* WorldContextObject, const FDolbyIOScreenshareSource& Source,
+	    EDolbyIOScreenshareContentType ContentType = EDolbyIOScreenshareContentType::Unspecified);
+
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOStartScreenshareOutputPin OnScreenshareStarted;
+
+private:
+	void Activate() override;
+
+	UFUNCTION()
+	void OnScreenshareStartedImpl(const FString& VideoTrackID);
+
+	const UObject* WorldContextObject;
+	FDolbyIOScreenshareSource Source;
+	EDolbyIOScreenshareContentType ContentType;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOStopScreenshareOutputPin, const FString&, VideoTrackID);
+
+UCLASS()
+class DOLBYIO_API UDolbyIOStopScreenshare : public UBlueprintAsyncActionBase
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
+	                  DisplayName = "Dolby.io Stop Screenshare"))
+	static UDolbyIOStopScreenshare* DolbyIOStopScreenshare(const UObject* WorldContextObject);
+
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOStopScreenshareOutputPin OnScreenshareStopped;
+
+private:
+	void Activate() override;
+
+	UFUNCTION()
+	void OnScreenshareStoppedImpl(const FString& VideoTrackID);
 
 	const UObject* WorldContextObject;
 };
@@ -196,16 +300,6 @@ public:
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Unmute Participant"))
 	static void UnmuteParticipant(const UObject* WorldContextObject, const FString& ParticipantID);
 
-	/** Enables video streaming from the primary webcam. */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
-	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Enable Video"))
-	static void EnableVideo(const UObject* WorldContextObject);
-
-	/** Disables video streaming from the primary webcam. */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
-	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Disable Video"))
-	static void DisableVideo(const UObject* WorldContextObject);
-
 	/** Binds a dynamic material instance to hold the frames of the given video track. The plugin will update the
 	 * material's texture parameter named "DolbyIO Frame" with the necessary data, therefore the material should have
 	 * such a parameter to be usable. Automatically unbinds the material from all other tracks, but it is possible to
@@ -239,18 +333,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Get Texture"))
 	static class UTexture2D* GetTexture(const UObject* WorldContextObject, const FString& VideoTrackID);
-
-	/** Starts screen sharing using a given source and content type. */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
-	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Start Screenshare"))
-	static void StartScreenshare(
-	    const UObject* WorldContextObject, const FDolbyIOScreenshareSource& Source,
-	    EDolbyIOScreenshareContentType ContentType = EDolbyIOScreenshareContentType::Unspecified);
-
-	/** Stops screen sharing. */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
-	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Stop Screenshare"))
-	static void StopScreenshare(const UObject* WorldContextObject);
 
 	/** Changes the screenshare content type if already sharing screen. */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
