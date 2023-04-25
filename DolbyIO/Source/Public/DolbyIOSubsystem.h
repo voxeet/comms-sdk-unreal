@@ -138,11 +138,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteParticipant(const FString& ParticipantID);
 
-	/** Enables video streaming from the primary webcam. */
+	/** Enables video streaming from the primary webcam.
+	 *
+	 * Triggers On Video Enabled if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void EnableVideo();
 
-	/** Disables video streaming from the primary webcam. */
+	/** Disables video streaming from the primary webcam.
+	 *
+	 * Triggers On Video Disabled if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void DisableVideo();
 
@@ -180,12 +186,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetScreenshareSources();
 
-	/** Starts screen sharing using a given source and content type. */
+	/** Starts screen sharing using a given source and content type.
+	 *
+	 * Triggers On Screenshare Started if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void StartScreenshare(const FDolbyIOScreenshareSource& Source,
 	                      EDolbyIOScreenshareContentType ContentType = EDolbyIOScreenshareContentType::Unspecified);
 
-	/** Stops screen sharing. */
+	/** Stops screen sharing.
+	 *
+	 * Triggers On Screenshare Stopped if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void StopScreenshare();
 
