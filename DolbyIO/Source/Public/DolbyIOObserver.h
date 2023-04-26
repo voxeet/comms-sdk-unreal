@@ -83,15 +83,19 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnVideoTrackRemovedDelegate OnVideoTrackRemoved;
 
+	/** Triggered when local video is enabled. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnVideoEnabledDelegate OnVideoEnabled;
 
+	/** Triggered when local video is disabled. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnVideoDisabledDelegate OnVideoDisabled;
 
+	/** Triggered when screenshare is started. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnScreenshareStartedDelegate OnScreenshareStarted;
 
+	/** Triggered when screenshare is stopped. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnScreenshareStoppedDelegate OnScreenshareStopped;
 
