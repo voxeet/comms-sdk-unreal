@@ -176,7 +176,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            }
 
 			            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
-			            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s StreamID=%", *VideoTrack.TrackID,
+			            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s StreamID=%s", *VideoTrack.TrackID,
 			                       *VideoTrack.ParticipantID, *ToFString(Event.track.stream_id));
 
 			            VideoSinks.Emplace(VideoTrack.TrackID, std::make_shared<FVideoSink>());
