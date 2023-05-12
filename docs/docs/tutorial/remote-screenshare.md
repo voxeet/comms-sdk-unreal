@@ -1,5 +1,5 @@
 ---
-sidebar_position: 9
+sidebar_position: 8
 sidebar_label: Rendering remote screenshare
 title: Rendering remote screenshare
 ---
@@ -14,8 +14,8 @@ Then please follow the [video plane setup](video-plane-setup) steps to get a pla
 
 ## Remote screenshare
 
-Open the video plane's `Event Graph` and add handlers for the [`On Video Track Added`](../blueprints/Events/on-video-track-added.md) and [`On Video Track Removed`](../blueprints/Events/on-video-track-removed.md) events of the `DolbyIOObserver` and wire them up as follows:
+Open the video plane's `Event Graph` and add handlers for the [`On Video Track Added`](../blueprints/Events/on-video-track-added) and [`On Video Track Removed`](../blueprints/Events/on-video-track-removed) events of the `DolbyIOObserver` and wire them up as follows:
 
-![](../../static/img/screenshare-plane-eg.png)
+![](../../static/img/remote-screenshare-eg.png)
 
 If you launch the game now, assuming you successfully connect to a conference with screenshare going on, you should see the screenshare feed on the plane.
