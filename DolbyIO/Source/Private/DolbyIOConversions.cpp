@@ -174,6 +174,15 @@ namespace DolbyIO
 		return Ret;
 	}
 
+	FDolbyIOVideoTrack ToFDolbyIOVideoTrack(const dolbyio::comms::video_track& Track)
+	{
+		FDolbyIOVideoTrack Ret;
+		Ret.TrackID = ToFString(Track.track_id);
+		Ret.ParticipantID = ToFString(Track.peer_id);
+		Ret.bIsScreenshare = Track.is_screenshare;
+		return Ret;
+	}
+
 	spatial_audio_style ToSdkSpatialAudioStyle(EDolbyIOSpatialAudioStyle SpatialAudioStyle)
 	{
 		switch (SpatialAudioStyle)

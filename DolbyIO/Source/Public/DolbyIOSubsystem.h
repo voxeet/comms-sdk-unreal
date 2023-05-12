@@ -8,6 +8,7 @@
 #include "DolbyIOParticipantInfo.h"
 #include "DolbyIOScreenshareSource.h"
 #include "DolbyIOSpatialAudioStyle.h"
+#include "DolbyIOVideoTrack.h"
 
 #include <memory>
 
@@ -17,14 +18,20 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSubsystemOnTokenNeededDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSubsystemOnInitializedDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnConnectedDelegate, const FString&, LocalParticipantID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnConnectedDelegate, const FString&, LocalParticipantID,
+                                             const FString&, ConferenceID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSubsystemOnDisconnectedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnParticipantAddedDelegate, const EDolbyIOParticipantStatus,
                                              Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnParticipantUpdatedDelegate, const EDolbyIOParticipantStatus,
                                              Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackAddedDelegate, const FString&, ParticipantID);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackRemovedDelegate, const FString&, ParticipantID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackAddedDelegate, const FDolbyIOVideoTrack&, VideoTrack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackRemovedDelegate, const FDolbyIOVideoTrack&,
+                                            VideoTrack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoEnabledDelegate, const FString&, VideoTrackID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoDisabledDelegate, const FString&, VideoTrackID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnScreenshareStartedDelegate, const FString&, VideoTrackID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnScreenshareStoppedDelegate, const FString&, VideoTrackID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnActiveSpeakersChangedDelegate, const TArray<FString>&,
                                             ActiveSpeakers);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnAudioLevelsChangedDelegate, const TArray<FString>&,
@@ -41,6 +48,7 @@ namespace dolbyio::comms
 
 namespace DolbyIO
 {
+	class FVideoFrameHandler;
 	class FVideoSink;
 }
 
@@ -130,55 +138,66 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteParticipant(const FString& ParticipantID);
 
-	/** Enables video streaming from the primary webcam. */
+	/** Enables video streaming from the primary webcam.
+	 *
+	 * Triggers On Video Enabled if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void EnableVideo();
 
-	/** Disables video streaming from the primary webcam. */
+	/** Disables video streaming from the primary webcam.
+	 *
+	 * Triggers On Video Disabled if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void DisableVideo();
 
-	/** Binds a dynamic material instance to hold a participant's video frames. The plugin will update the material's
-	 * texture parameter named "DolbyIO Frame" with the necessary data, therefore the material should have such a
-	 * parameter to be usable. Automatically unbinds the material from all other participants, but it is possible to
-	 * bind multiple materials to the same participant. Has no effect if there is no video from the participant at the
-	 * moment the function is called, therefore it should usually be called as a response to the "On Video Track Added"
-	 * event.
+	/** Binds a dynamic material instance to hold the frames of the given video track. The plugin will update the
+	 * material's texture parameter named "DolbyIO Frame" with the necessary data, therefore the material should have
+	 * such a parameter to be usable. Automatically unbinds the material from all other tracks, but it is possible to
+	 * bind multiple materials to the same track. Has no effect if the track does not exist at the moment the function
+	 * is called, therefore it should usually be called as a response to the "On Video Track Added" event.
 	 *
 	 * @param Material - The dynamic material instance to bind.
-	 * @param ParticipantID - The participant's ID.
+	 * @param VideoTrackID - The ID of the video track.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void BindMaterial(UMaterialInstanceDynamic* Material, const FString& ParticipantID);
+	void BindMaterial(UMaterialInstanceDynamic* Material, const FString& VideoTrackID);
 
-	/** Unbinds a dynamic material instance to no longer hold a participant's video frames. The plugin will no longer
-	 * update the material's texture parameter named "DolbyIO Frame" with the necessary data.
+	/** Unbinds a dynamic material instance to no longer hold the video frames of the given video track. The plugin will
+	 * no longer update the material's texture parameter named "DolbyIO Frame" with the necessary data.
 	 *
 	 * @param Material - The dynamic material instance to unbind.
-	 * @param ParticipantID - The participant's ID.
+	 * @param VideoTrackID - The ID of the video track.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void UnbindMaterial(UMaterialInstanceDynamic* Material, const FString& ParticipantID);
+	void UnbindMaterial(UMaterialInstanceDynamic* Material, const FString& VideoTrackID);
 
-	/** Gets the texture to which video from a given participant is being rendered.
+	/** Gets the texture to which video from a given track is being rendered.
 	 *
-	 * @param ParticipantID - The participant's ID.
-	 * @return The texture holding the participant's video frame or NULL if no such texture exists.
+	 * @param VideoTrackID - The ID of the video track.
+	 * @return The texture holding the video tracks's frame or NULL if no such texture exists.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	class UTexture2D* GetTexture(const FString& ParticipantID);
+	class UTexture2D* GetTexture(const FString& VideoTrackID);
 
 	/** Gets a list of all possible screen sharing sources. These can be entire screens or specific application windows.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetScreenshareSources();
 
-	/** Starts screen sharing using a given source and content type. */
+	/** Starts screen sharing using a given source and content type.
+	 *
+	 * Triggers On Screenshare Started if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void StartScreenshare(const FDolbyIOScreenshareSource& Source,
 	                      EDolbyIOScreenshareContentType ContentType = EDolbyIOScreenshareContentType::Unspecified);
 
-	/** Stops screen sharing. */
+	/** Stops screen sharing.
+	 *
+	 * Triggers On Screenshare Stopped if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void StopScreenshare();
 
@@ -223,6 +242,14 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnVideoTrackRemovedDelegate OnVideoTrackRemoved;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnVideoEnabledDelegate OnVideoEnabled;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnVideoDisabledDelegate OnVideoDisabled;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnScreenshareStartedDelegate OnScreenshareStarted;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnScreenshareStoppedDelegate OnScreenshareStopped;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnActiveSpeakersChangedDelegate OnActiveSpeakersChanged;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnAudioLevelsChangedDelegate OnAudioLevelsChanged;
@@ -245,7 +272,6 @@ private:
 
 	void ToggleInputMute();
 	void ToggleOutputMute();
-	void ToggleVideo();
 
 	void SetLocationUsingFirstPlayer();
 	void SetLocalPlayerLocationImpl(const FVector& Location);
@@ -256,10 +282,13 @@ private:
 
 	dolbyio::comms::conference_status ConferenceStatus;
 	FString LocalParticipantID;
+	FString ConferenceID;
 	EDolbyIOConnectionMode ConnectionMode;
 	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
 
 	TMap<FString, std::shared_ptr<DolbyIO::FVideoSink>> VideoSinks;
+	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalCameraFrameHandler;
+	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalScreenshareFrameHandler;
 	TSharedPtr<dolbyio::comms::sdk> Sdk;
 	TSharedPtr<dolbyio::comms::refresh_token> RefreshTokenCb;
 

@@ -12,11 +12,11 @@ struct DOLBYIO_API FDolbyIOScreenshareSource
 
 	/** Unique id of the screen in question. */
 	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
-	int64 ID;
+	int64 ID{};
 
 	/** Indicates whether this is an entire screen (true) or an application window (false). */
 	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
-	bool bIsScreen;
+	bool bIsScreen{};
 
 	/** Title of the screen. */
 	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")

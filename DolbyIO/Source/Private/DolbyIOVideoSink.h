@@ -4,10 +4,7 @@
 
 #include "DolbyIOCppSdk.h"
 
-#include <memory>
-
-#include "RHI.h"
-#include "RenderCommandFence.h"
+#include "Containers/Set.h"
 
 class UMaterialInstanceDynamic;
 class UTexture2D;
@@ -25,14 +22,10 @@ namespace DolbyIO
 		void handle_frame(std::unique_ptr<dolbyio::comms::video_frame>) override;
 
 		void RecreateIfNeeded(int Width, int Height);
-		void Convert(dolbyio::comms::video_frame&);
-
 		void UpdateMaterial(UMaterialInstanceDynamic* Material);
+		void Convert(dolbyio::comms::video_frame& VideoFrame);
 
 		UTexture2D* Texture{};
-		TArray<uint8> Buffer;
-		FUpdateTextureRegion2D Region{0, 0, 0, 0, 0, 0};
-		FRenderCommandFence Fence;
 		TSet<UMaterialInstanceDynamic*> Materials;
 	};
 }
