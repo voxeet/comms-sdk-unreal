@@ -23,15 +23,3 @@ Add `Dolby.io Observer` as a component and add a handler for the [`On Token Need
 If set up correctly, this should connect you to the conference name specified in the [`Dolby.io Connect`](../blueprints/Functions/connect) node upon game start.
 
 > **_NOTE:_** If this does not work, try following the [Getting started - first conference](first-conference) tutorial first.
-
-## Video material
-
-If you intend to work with video, it is recommended to set up a material for easy rendering using the [`Dolby.io Bind Material`](../blueprints/Functions/bind-material) function.
-
-Create a new material anywhere within Content, name it `M_DolbyIOVideo` and open its editor. Add a `Texture Sample` node (e.g. 'T' + left click), right-click on the node and select `Convert to Parameter` and name this parameter `DolbyIO Frame`. To properly set up this material, for simplicity's sake, we need to give this node a base texture that will be displayed when there is no video to be displayed - let's select UE4_LOGO_CARD for example. Then wire it up as seen below:
-
-![](../../static/img/common-setup-video-material.png)
-
-> **_NOTE:_** All names in tutorials are only suggestions, except the `DolbyIO Frame` parameter name, which is necessary because [`Dolby.io Bind Material`](../blueprints/Functions/bind-material) requires this specific name.
-
-> **_NOTE:_** You can also modify your own material and simply add a texture parameter named `DolbyIO Frame`, then use it however you wish.

@@ -8,7 +8,7 @@ For all the video-related tutorials, we need some surfaces to display the videos
 
 ![](../../static/img/video-plane-result.png)
 
-The plane also needs an appropriate material for the videos to be displayed correctly. Follow [these steps](common-setup#video-material) to set up the material. Then, click on the highlighted button to convert the plane into a Blueprint:
+Then, click on the highlighted button to convert the plane into a Blueprint:
 
 ![](../../static/img/video-plane-blueprintize.png)
 
@@ -17,6 +17,10 @@ Edit the newly-created Blueprint and place the following nodes in the `Construct
 ![](../../static/img/video-plane-cs.png)
 
 That is, create a dynamic material instance of type `M_DolbyIOVideo`, promote it to a variable and set it as the plane's material.
+
+> **_NOTE:_** We are using `M_DolbyIOVideo` from the plugin's content. If you do not see this material, go to the content browser settings and tick `Show Plugin Content`.
+
+> **_NOTE:_** You do not have to use `M_DolbyIOVideo` specifically. You can use your custom material (e.g. one that will not be affected by lighting) or modify `M_DolbyIOVideo`. However, if you wish to use the [`Dolby.io Bind Material`](../blueprints/Functions/bind-material) function, you must provide a texture parameter named `DolbyIO Frame` (see `M_DolbyIOVideo` in editor).
 
 Turning to the `Event Graph`, you may delete anything put there automatically and instead add `Dolby.io Observer` as a component:
 

@@ -10,7 +10,7 @@
 	"DocsURL": "https://github.com/DolbyIO/comms-sdk-unreal",
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/OFFERID",
 	"SupportURL": "https://github.com/DolbyIO/comms-sdk-unreal",
-	"CanContainContent": false,
+	"CanContainContent": true,
 	"IsBetaVersion": true,
 	"Installed": false,
 	"Modules": [
