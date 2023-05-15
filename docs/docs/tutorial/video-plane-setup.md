@@ -20,7 +20,7 @@ That is, create a dynamic material instance of type `M_DolbyIOVideo`, promote it
 
 > **_NOTE:_** We are using `M_DolbyIOVideo` from the plugin's content. If you do not see this material, go to the content browser settings and tick `Show Plugin Content`.
 
-> **_NOTE:_** You do not have to use `M_DolbyIOVideo` specifically. You can use your custom material (e.g. one that will not be affected by lighting) or modify `M_DolbyIOVideo`. However, if you wish to use the [`Dolby.io Bind Material`](../blueprints/Functions/bind-material) function, you must provide a texture parameter named `DolbyIO Frame` (see `M_DolbyIOVideo` in editor).
+> **_NOTE:_** You do not have to use `M_DolbyIOVideo` specifically. You can use your custom material (e.g. one that will be affected by lighting) or modify `M_DolbyIOVideo`. However, if you wish to use the [`Dolby.io Bind Material`](../blueprints/Functions/bind-material) function, you must provide a texture parameter named `DolbyIO Frame` (see `M_DolbyIOVideo` in editor).
 
 Turning to the `Event Graph`, you may delete anything put there automatically and instead add `Dolby.io Observer` as a component:
 
