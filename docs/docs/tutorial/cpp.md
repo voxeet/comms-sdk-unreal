@@ -1,7 +1,7 @@
 ---
-sidebar_position: 4
-sidebar_label: Use the Plugin with C++
-title: Use the Plugin with C++
+sidebar_position: 9
+sidebar_label: Using the Plugin with C++
+title: Using the Plugin with C++
 ---
 
 After enabling the plugin, you need to use the `UDolbyIOSubsystem` class to be able to use the available features in C++. We will show an example using Unreal Engine 5's First Person C++ game template. For simplicity, we assume that the project is named "Foo".

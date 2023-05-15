@@ -1,10 +1,10 @@
 ---
-sidebar_position: 2
-sidebar_label: Obtain Permissions
-title: Obtain Permissions
+sidebar_position: 10
+sidebar_label: macOS permissions
+title: macOS permissions
 ---
 
-> MacOS only, ignore this section if you are developing on Windows
+> **_NOTE:_** macOS only - ignore this section if you are developing on Windows.
 
 Using the plugin in the Unreal Editor requires the editor to obtain microphone and camera permissions. However, on macOS the editor never asks for permissions, so you need to forcefully provide them to your application. To do so, you can use the [tccutil](https://github.com/DocSystem/tccutil) permissions manager and the following commands:  
 - Epic Games Launcher: `sudo python tccutil.py -e -id com.epicgames.EpicGamesLauncher --microphone --camera`

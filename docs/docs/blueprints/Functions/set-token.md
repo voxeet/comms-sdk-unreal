@@ -6,4 +6,4 @@ Initializes or refreshes the client access token. The function takes the token a
 
 For quick testing, you can manually obtain a token from the [Dolby.io dashboard](https://dashboard.dolby.io/) and paste it directly into the node.
 
-![Sample](../../../static/img/on_token_needed.PNG)
+For example usage, see the [first conference tutorial](../../tutorial/first-conference).
