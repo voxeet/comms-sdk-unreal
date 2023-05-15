@@ -20,15 +20,13 @@ Before you start, follow the [common setup](common-setup) tutorial.
 
 ![](../../static/img/video-plane-result.png)
 
-3. Test the preview by going to the `BP_FirstPersonCharacter` Blueprint and adding the following nodes to enable video with the "Z" key and disable it with the "X" key:
+If you launch the game now, assuming there is no conflicting screen share going on, you should see your screen share feed on the plane when you press "Z" and the plane should go blank when you press "X". This is because `BP_DolbyIOStarter` handles these key events as follows:
 
 ![](../../static/img/screenshare-preview-toggle.png)
 
-If you launch the game now, assuming you connect to the conference successfully and there is no conflicting screen share going on, you should see your screen share feed on the plane when you press "Z" and the plane should go blank when you press "X".
+This particular example will always share the first available screen share source, which is likely going to be the primary monitor screen. Selecting a screen share source is out of the scope of this tutorial as it requires some UI to parse the available screen share sources, received using [`Dolby.io Get Screenshare Sources`](../blueprints/Functions/get-screenshare-sources), into some sort of menu. The general flow however remains the same and requires getting screen share sources, choosing the desired source from the list, and starting screen share using this source.
 
 ![](../../static/img/screenshare-preview-result.png)
-
-This particular example will always share the first available screen share source, which is likely going to be the primary monitor screen. Selecting a screen share source is out of the scope of this tutorial as it requires some UI to parse the available screen share sources, received using [`Dolby.io Get Screenshare Sources`](../blueprints/Functions/get-screenshare-sources), into some sort of menu. The general flow however remains the same and requires getting screen share sources, choosing the desired source from the list, and starting screen share using this source.
 
 ## How it works
 

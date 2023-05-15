@@ -20,13 +20,9 @@ Before you start, [set up](common-setup) your project.
 
 ![](../../static/img/video-plane-result.png)
 
-3. Test the camera preview by going to the `BP_FirstPersonCharacter` Blueprint and adding the following nodes to enable video with the "V" key and disable it with the "B" key:
+If you launch the game now, you should see your camera feed on the plane when you press "V" and the plane should go blank when you press "B". This is because `BP_DolbyIOStarter` handles these key events as follows:
 
 ![](../../static/img/camera-preview-toggle.png)
-
-If you launch the game now, assuming the plugin is initialized correctly, you should see your camera feed on the plane when you press "V" and the plane should go blank when you press "B".
-
-![](../../static/img/camera-preview-result.png)
 
 ## How it works
 
