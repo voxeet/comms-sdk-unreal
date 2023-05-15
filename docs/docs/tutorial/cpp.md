@@ -1,5 +1,5 @@
 ---
-sidebar_position: 9
+sidebar_position: 8
 sidebar_label: Using the Plugin with C++
 title: Using the Plugin with C++
 ---
