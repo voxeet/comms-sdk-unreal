@@ -2,7 +2,7 @@
 sidebar_label: On Participant Updated
 title: On Participant Updated
 ---
-Triggered when a remote participant's status is updated. Provides the participant status and participant info in its arguments.
+Triggered when a remote participant's status is updated. The event provides the participant status and participant info in its arguments.
 
 Example:
 
