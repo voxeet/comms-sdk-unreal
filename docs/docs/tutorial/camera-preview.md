@@ -1,5 +1,5 @@
 ---
-sidebar_position: 5
+sidebar_position: 4
 sidebar_label: Camera preview
 title: Camera preview
 ---
@@ -12,13 +12,15 @@ Before you start, [set up](common-setup) your project and follow the [video plan
 
 ## Set up camera preview
 
-1. Open the video plane's `Event Graph` and add handlers for the [`On Video Enabled`](../blueprints/Events/on-video-enabled) and [`On Video Disabled`](../blueprints/Events/on-video-disabled) events of the `DolbyIOObserver` and wire them up as in the following example:
+1. Find `BP_DolbyIOVideoPreviewPlane` in the plugin's content in `Content Browser` and drag it onto the scene.
 
-![](../../static/img/camera-preview-eg.png)
+> **_NOTE:_** If you do not see this item, go to the `Content Browser` settings and tick `Show Plugin Content`.
 
-This automatically makes the plane render your camera feed when it is enabled and go blank when disabled.
+2. Rescale the plane to the desired aspect ratio, for example, [6.4, 3.6, 1.0], and rotate it by [90, 0, 90] to make it face the player start, as in the following example:
 
-2. Test the camera preview by going to the `BP_FirstPersonCharacter` Blueprint and adding the following nodes to enable video with the "V" key and disable it with the "B" key:
+![](../../static/img/video-plane-result.png)
+
+3. Test the camera preview by going to the `BP_FirstPersonCharacter` Blueprint and adding the following nodes to enable video with the "V" key and disable it with the "B" key:
 
 ![](../../static/img/camera-preview-toggle.png)
 
@@ -26,4 +28,14 @@ If you launch the game now, assuming the plugin is initialized correctly, you sh
 
 ![](../../static/img/camera-preview-result.png)
 
-As a useful practical exercise, you can also make the plane invisible by default, visible when video is enabled, and invisible again when it is disabled.
+## How it works
+
+`BP_DolbyIOVideoPreviewPlane` is a sample Blueprint with a simple `Event Graph`, which handles [`On Video Enabled`](../blueprints/Events/on-video-enabled) and [`On Video Disabled`](../blueprints/Events/on-video-enabled).
+
+![](../../static/img/camera-preview-eg.png)
+
+It also contains a generic `Construction Script` to set up the plane's material:
+
+![](../../static/img/video-plane-cs.png)
+
+As a useful practical exercise, you can also make the plane invisible by default, then make it visible when video is enabled and invisible again when it is disabled.

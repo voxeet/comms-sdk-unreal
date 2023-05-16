@@ -5,7 +5,7 @@
 #include "DolbyIOSpatialAudioStyle.generated.h"
 
 /** The possible spatial audio styles of the conference. */
-UENUM(BlueprintType, DisplayName = "Dolby.io Connection Mode")
+UENUM(BlueprintType, DisplayName = "Dolby.io Spatial Audio Style")
 enum class EDolbyIOSpatialAudioStyle : uint8
 {
 	/** Spatial audio is disabled. */
