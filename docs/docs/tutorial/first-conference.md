@@ -6,15 +6,15 @@ title: Getting started - first conference
 
 The following steps present how to create a sample game which uses the plugin and connects to a demo conference. It is based on the Unreal Engine 5 First Person game template.
 
-## Step 1 - Open Event Graph
+## 1. Open Event Graph
 Open Unreal Editor and locate the `All/Content/Blueprints/FirstPerson` folder in the `Content Browser` window. Select the folder and open the `BP_FirstPersonCharacter` Blueprint.
 
-## Step 2 - Add `DolbyIOObserver` component
+## 2. Add `DolbyIOObserver` component
 Click the `+Add` button located in the `Components` window and select `Dolby.io Observer`.
 
 ![](../../static/img/first-conf-observer-component.png)
 
-## Step 3 - Configure access credentials
+## 3. Configure access credentials
 Select the added component and check its details in the `Details` panel. Scroll down to the `Events` section to see the available events. Select the [`On Token Needed`](../blueprints/Events/on-token-needed) event from the list by clicking the plus button next to it. After this step, an `On Token Needed (DolbyIOObserver)` node should appear in the Event Graph.
 
 ### Option A - Use client access token
@@ -33,13 +33,10 @@ Select the added component and check its details in the `Details` panel. Scroll 
 
 3. Provide your app key and app secret to the [`Get Dolby.io Token`](../blueprints/Functions/get-token) function.
 
-## Step 4 - Connect to demo conference  
-
+## 4. Connect to demo conference  
 Place a [`Dolby.io Demo Conference`](../blueprints/Functions/demo-conference) node and connect it to the [`Dolby.io Set Token`](../blueprints/Functions/set-token) node as shown below:
 
 ![](../../static/img/first-conf-demo.png)
 
-## Step 5 - Run the game
-You should be able join a demo conference and hear audio from its participants.
-
-> **_NOTE:_** If you do not, check the `Output Log` for clues - in particular, check whether the credentials are set up appropriately.
+## 5. Run the game
+You should now be able join a demo conference and hear audio from its participants. If you are not able to join the conference, check the `Output Log` for clues - in particular, check whether the credentials are set up appropriately.
