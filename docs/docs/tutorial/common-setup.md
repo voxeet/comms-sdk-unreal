@@ -4,34 +4,38 @@ sidebar_label: Common tutorial setup
 title: Common tutorial setup
 ---
 
+This tutorial explains how to initialize the plugin and set up video material.
+
 ## Prerequisites
 
-All of the tutorials will be based on a scene set up using the Unreal Engine 5 First Person game template.
+Make sure that you use a scene setup and the Unreal Engine 5 First Person game template.
 
-## Initialization
+## Initialize the plugin
 
-For all tutorials, we need to initialize the plugin. We could do this from multiple places (such as the game instance, the level Blueprint, etc.), but for this example we will use the First Person Character Blueprint since it is already in the template and will do just fine. Therefore, in the Content Browser, open `All -> Content -> FirstPerson -> Blueprints -> BP_FirstPersonCharacter`.
+You can initialize the plugin from multiple places, such as the game instance or the level Blueprint, but in this example, we will use the First Person Character Blueprint since it is already in the template. 
 
-> **_NOTE:_** If you set up the project from a C++ template, click `Open Full Blueprint Editor`.
+1. In the Content Browser, open `All -> Content -> FirstPerson -> Blueprints -> BP_FirstPersonCharacter`. If you set up the project from a C++ template, click `Open Full Blueprint Editor`.
 
-Add `Dolby.io Observer` as a component and add a handler for the [`On Token Needed`](../blueprints/Events/on-token-needed) event. Wire the nodes as presented below, pasting your client access token in the [`Dolby.io Set Token`](../blueprints/Functions/set-token) node:
+2. Add `Dolby.io Observer` as a component and add a handler for the [`On Token Needed`](../blueprints/Events/on-token-needed) event. Wire the nodes as presented in the following example and paste your client access token into the [`Dolby.io Set Token`](../blueprints/Functions/set-token) node.
 
 ![](../../static/img/common-setup-connect.png)
 
-> **_NOTE:_** In development, you may also use the [`Get Dolby.io Token`](../blueprints/Functions/get-token) helper to use your app key and secret instead.
+In development, you may also use the [`Get Dolby.io Token`](../blueprints/Functions/get-token) helper to use your app key and secret instead.
 
-If set up correctly, this should connect you to the conference name specified in the [`Dolby.io Connect`](../blueprints/Functions/connect) node upon game start.
+After this step, you should connect to a conference that has a name that you specified in the [`Dolby.io Connect`](../blueprints/Functions/connect) node upon starting your game. If you cannot connect, follow the [Getting started - first conference](first-conference) tutorial first.
 
-> **_NOTE:_** If this does not work, try following the [Getting started - first conference](first-conference) tutorial first.
+## Set up a video material
 
-## Video material
+If you intend to work with video, set up a material for easy rendering using the [`Dolby.io Bind Material`](../blueprints/Functions/bind-material) function.
 
-If you intend to work with video, it is recommended to set up a material for easy rendering using the [`Dolby.io Bind Material`](../blueprints/Functions/bind-material) function.
+1. Create a new material anywhere within Content, name it `M_DolbyIOVideo`, and open its editor. 
 
-Create a new material anywhere within Content, name it `M_DolbyIOVideo` and open its editor. Add a `Texture Sample` node (e.g. 'T' + left click), right-click on the node and select `Convert to Parameter` and name this parameter `DolbyIO Frame`. To properly set up this material, for simplicity's sake, we need to give this node a base texture that will be displayed when there is no video to be displayed - let's select UE4_LOGO_CARD for example. Then wire it up as seen below:
+2. Add a `Texture Sample` node, for example, 'T' + left click, right-click the node and select `Convert to Parameter`. Name this parameter `DolbyIO Frame`. 
+
+3. To properly set up this material, you need to give this node a base texture that will be displayed when there is no video to be displayed. For example, you can select UE4_LOGO_CARD. Then, wire it up as in the following example:
 
 ![](../../static/img/common-setup-video-material.png)
 
-> **_NOTE:_** All names in tutorials are only suggestions, except the `DolbyIO Frame` parameter name, which is necessary because [`Dolby.io Bind Material`](../blueprints/Functions/bind-material) requires this specific name.
+All names in this tutorial are only suggestions, except the `DolbyIO Frame` parameter name, which is necessary because [`Dolby.io Bind Material`](../blueprints/Functions/bind-material) requires this specific name.
 
-> **_NOTE:_** You can also modify your own material and simply add a texture parameter named `DolbyIO Frame`, then use it however you wish.
+You can also modify your own material and simply add a texture parameter named `DolbyIO Frame`. Then, you can use it however you wish.
