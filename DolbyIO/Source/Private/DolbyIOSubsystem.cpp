@@ -8,7 +8,9 @@
 #include "DolbyIOVideoSink.h"
 
 #include "Async/Async.h"
+#include "Engine/GameInstance.h"
 #include "Engine/World.h"
+#include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "TimerManager.h"
 
