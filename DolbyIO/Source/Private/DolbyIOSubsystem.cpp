@@ -378,6 +378,8 @@ void UDolbyIOSubsystem::DemoConference()
 		return;
 	}
 
+	ConnectionMode = EDolbyIOConnectionMode::Active;
+	SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared;
 	DLB_UE_LOG("Connecting to demo conference");
 
 	Sdk->session()
@@ -386,7 +388,7 @@ void UDolbyIOSubsystem::DemoConference()
 	        [this](services::session::user_info&& User)
 	        {
 		        LocalParticipantID = ToFString(User.participant_id.value_or(""));
-		        return Sdk->conference().demo(spatial_audio_style::shared);
+		        return Sdk->conference().demo(ToSdkSpatialAudioStyle(SpatialAudioStyle));
 	        })
 	    .then(
 	        [this](conference_info&& ConferenceInfo)
