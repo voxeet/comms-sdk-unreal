@@ -41,6 +41,11 @@ void UDolbyIOSetToken::Activate()
 void UDolbyIOSetToken::OnInitializedImpl()
 {
 	OnInitialized.Broadcast();
+
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnInitialized.RemoveDynamic(this, &UDolbyIOSetToken::OnInitializedImpl);
+	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -73,6 +78,11 @@ void UDolbyIOConnect::Activate()
 void UDolbyIOConnect::OnConnectedImpl(const FString& LocalParticipantID, const FString& ConferenceID)
 {
 	OnConnected.Broadcast(LocalParticipantID, ConferenceID);
+
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnConnected.RemoveDynamic(this, &UDolbyIOConnect::OnConnectedImpl);
+	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -96,6 +106,11 @@ void UDolbyIODemoConference::Activate()
 void UDolbyIODemoConference::OnConnectedImpl(const FString& LocalParticipantID, const FString& ConferenceID)
 {
 	OnConnected.Broadcast(LocalParticipantID, ConferenceID);
+
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnConnected.RemoveDynamic(this, &UDolbyIODemoConference::OnConnectedImpl);
+	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -119,6 +134,11 @@ void UDolbyIODisconnect::Activate()
 void UDolbyIODisconnect::OnDisconnectedImpl()
 {
 	OnDisconnected.Broadcast();
+
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnDisconnected.RemoveDynamic(this, &UDolbyIODisconnect::OnDisconnectedImpl);
+	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -142,6 +162,11 @@ void UDolbyIOEnableVideo::Activate()
 void UDolbyIOEnableVideo::OnVideoEnabledImpl(const FString& VideoTrackID)
 {
 	OnVideoEnabled.Broadcast(VideoTrackID);
+
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnVideoEnabled.RemoveDynamic(this, &UDolbyIOEnableVideo::OnVideoEnabledImpl);
+	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -165,6 +190,11 @@ void UDolbyIODisableVideo::Activate()
 void UDolbyIODisableVideo::OnVideoDisabledImpl(const FString& VideoTrackID)
 {
 	OnVideoDisabled.Broadcast(VideoTrackID);
+
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnVideoDisabled.RemoveDynamic(this, &UDolbyIODisableVideo::OnVideoDisabledImpl);
+	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -190,6 +220,12 @@ void UDolbyIOGetScreenshareSources::Activate()
 void UDolbyIOGetScreenshareSources::OnScreenshareSourcesReceivedImpl(const TArray<FDolbyIOScreenshareSource>& Sources)
 {
 	OnScreenshareSourcesReceived.Broadcast(Sources);
+
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnScreenshareSourcesReceived.RemoveDynamic(
+		    this, &UDolbyIOGetScreenshareSources::OnScreenshareSourcesReceivedImpl);
+	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -217,6 +253,11 @@ void UDolbyIOStartScreenshare::Activate()
 void UDolbyIOStartScreenshare::OnScreenshareStartedImpl(const FString& VideoTrackID)
 {
 	OnScreenshareStarted.Broadcast(VideoTrackID);
+
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnScreenshareStarted.RemoveDynamic(this, &UDolbyIOStartScreenshare::OnScreenshareStartedImpl);
+	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -240,6 +281,11 @@ void UDolbyIOStopScreenshare::Activate()
 void UDolbyIOStopScreenshare::OnScreenshareStoppedImpl(const FString& VideoTrackID)
 {
 	OnScreenshareStopped.Broadcast(VideoTrackID);
+
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnScreenshareStopped.RemoveDynamic(this, &UDolbyIOStopScreenshare::OnScreenshareStoppedImpl);
+	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
