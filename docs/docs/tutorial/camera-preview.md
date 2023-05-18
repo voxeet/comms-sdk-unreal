@@ -33,5 +33,3 @@ If you launch the game now, you should see your camera feed on the plane when yo
 It also contains a generic `Construction Script` to set up the plane's material:
 
 ![](../../static/img/video-plane-cs.png)
-
-As a useful practical exercise, you can also make the plane invisible by default, then make it visible when video is enabled and invisible again when it is disabled.

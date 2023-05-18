@@ -37,5 +37,3 @@ This particular example will always share the first available screen share sourc
 It also contains a generic `Construction Script` to set up the plane's material:
 
 ![](../../static/img/video-plane-cs.png)
-
-As a useful practical exercise, you can also make the plane invisible by default, visible when screen share is started, and invisible again when it is stopped.
