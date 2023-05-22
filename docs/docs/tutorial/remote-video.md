@@ -1,7 +1,7 @@
 ---
 sidebar_position: 6
-sidebar_label: Rendering remote video
-title: Rendering remote video
+sidebar_label: Rendering Remote Video
+title: Rendering Remote Video
 ---
 
 This tutorial explains how to render camera video coming from other participants.

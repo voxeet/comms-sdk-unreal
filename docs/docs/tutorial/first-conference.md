@@ -1,7 +1,7 @@
 ---
 sidebar_position: 2
-sidebar_label: Getting started - first conference
-title: Getting started - first conference
+sidebar_label: Getting Started - First Conference
+title: Getting Started - First Conference
 ---
 
 The following steps present how to create a sample game which uses the plugin and connects to a demo conference. It is based on the Unreal Engine 5 First Person game template.
