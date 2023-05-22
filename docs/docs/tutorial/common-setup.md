@@ -10,7 +10,7 @@ This tutorial explains how to initialize the plugin and connect to a conference,
 
 The tutorials and samples are designed to work with the Unreal Engine 5 First Person game template.
 
-The sample Blueprints included with the plugin are designed in Unreal Engine 5 and will not work with Unreal Engine 4. You can still use Unreal Engine 4 to follow the tutorials but you will not be able to use the sample Blueprints and will need to create them from scratch.
+The sample Blueprints included with the plugin are designed in Unreal Engine 5.1 and will not work with previous versions. You can still use previous versions to follow the tutorials but you will not be able to use the sample Blueprints and will need to create them from scratch.
 
 ## Getting started
 
