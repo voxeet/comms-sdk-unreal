@@ -8,7 +8,7 @@ This tutorial explains how to render a preview of your camera feed.
 
 ## Prerequisites
 
-Before you start, [set up](common-setup) your project and follow the [video plane setup](video-plane-setup) to get a plane to render the preview on.
+Before you start, [set up](common-setup) your project.
 
 ## Set up camera preview
 
