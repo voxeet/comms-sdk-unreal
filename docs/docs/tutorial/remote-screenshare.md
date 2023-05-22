@@ -1,7 +1,7 @@
 ---
 sidebar_position: 7
-sidebar_label: Rendering remote screenshare
-title: Rendering remote screenshare
+sidebar_label: Rendering Remote Screen Share
+title: Rendering Remote Screen Share
 ---
 
 This tutorial explains how to render screen share feeds coming from remote participants.

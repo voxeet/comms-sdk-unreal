@@ -1,7 +1,7 @@
 ---
 sidebar_position: 9
-sidebar_label: macOS permissions
-title: macOS permissions
+sidebar_label: macOS Permissions
+title: macOS Permissions
 ---
 
 > **_NOTE:_** macOS only - ignore this section if you are developing on Windows.

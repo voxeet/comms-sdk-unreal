@@ -1,7 +1,7 @@
 ---
 sidebar_position: 3
-sidebar_label: Common tutorial setup
-title: Common tutorial setup
+sidebar_label: Common Tutorial Setup
+title: Common Tutorial Setup
 ---
 
 This tutorial explains how to initialize the plugin.

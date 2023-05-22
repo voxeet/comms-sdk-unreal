@@ -1,7 +1,7 @@
 ---
 sidebar_position: 4
-sidebar_label: Camera preview
-title: Camera preview
+sidebar_label: Camera Preview
+title: Camera Preview
 ---
 
 This tutorial explains how to render a preview of your camera feed.

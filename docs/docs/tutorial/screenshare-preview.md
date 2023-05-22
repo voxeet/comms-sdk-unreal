@@ -1,7 +1,7 @@
 ---
 sidebar_position: 5
-sidebar_label: Screenshare preview
-title: Screenshare preview
+sidebar_label: Screen Share Preview
+title: Screen Share Preview
 ---
 
 This tutorial explains how to render a preview of your screen share feed.
