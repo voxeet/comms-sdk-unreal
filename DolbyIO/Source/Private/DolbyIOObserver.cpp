@@ -5,6 +5,7 @@
 #include "DolbyIOSubsystem.h"
 
 #include "Async/Async.h"
+#include "Engine/GameInstance.h"
 #include "Engine/World.h"
 
 UDolbyIOObserver::UDolbyIOObserver()

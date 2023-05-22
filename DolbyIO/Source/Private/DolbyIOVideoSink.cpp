@@ -13,6 +13,7 @@
 #include "Engine/Texture2D.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Runtime/Launch/Resources/Version.h"
+#include "TextureResource.h"
 
 namespace DolbyIO
 {
