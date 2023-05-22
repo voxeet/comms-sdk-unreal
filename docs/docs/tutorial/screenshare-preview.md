@@ -8,7 +8,7 @@ This tutorial explains how to render a preview of your screen share feed.
 
 ## Prerequisites
 
-Before you start, follow the [common setup](common-setup) tutorial and the [video plane setup](video-plane-setup) steps to get a plane to render the preview on.
+Before you start, follow the [common setup](common-setup) tutorial.
 
 ## Set up a screen share preview
 
