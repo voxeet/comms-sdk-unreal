@@ -35,6 +35,19 @@ void UDolbyIOObserver::InitializeComponent()
 		DolbyIOSubsystem->OnAudioLevelsChanged.AddDynamic(this, &UDolbyIOObserver::FwdOnAudioLevelsChanged);
 		DolbyIOSubsystem->OnScreenshareSourcesReceived.AddDynamic(this,
 		                                                          &UDolbyIOObserver::FwdOnScreenshareSourcesReceived);
+		DolbyIOSubsystem->OnAudioInputDevicesReceived.AddDynamic(this,
+		                                                         &UDolbyIOObserver::FwdOnAudioInputDevicesReceived);
+		DolbyIOSubsystem->OnAudioOutputDevicesReceived.AddDynamic(this,
+		                                                          &UDolbyIOObserver::FwdOnAudioOutputDevicesReceived);
+		DolbyIOSubsystem->OnCurrentAudioInputDeviceReceived.AddDynamic(
+		    this, &UDolbyIOObserver::FwdOnCurrentAudioInputDeviceReceived);
+		DolbyIOSubsystem->OnCurrentAudioOutputDeviceReceived.AddDynamic(
+		    this, &UDolbyIOObserver::FwdOnCurrentAudioOutputDeviceReceived);
+		DolbyIOSubsystem->OnVideoDevicesReceived.AddDynamic(this, &UDolbyIOObserver::FwdOnVideoDevicesReceived);
+		DolbyIOSubsystem->OnCurrentAudioInputDeviceChanged.AddDynamic(
+		    this, &UDolbyIOObserver::FwdOnCurrentAudioInputDeviceChanged);
+		DolbyIOSubsystem->OnCurrentAudioOutputDeviceChanged.AddDynamic(
+		    this, &UDolbyIOObserver::FwdOnCurrentAudioOutputDeviceChanged);
 		FwdOnTokenNeeded();
 	}
 }
@@ -100,6 +113,34 @@ void UDolbyIOObserver::FwdOnAudioLevelsChanged(const TArray<FString>& ActiveSpea
 void UDolbyIOObserver::FwdOnScreenshareSourcesReceived(const TArray<FDolbyIOScreenshareSource>& Sources)
 {
 	BroadcastEvent(OnScreenshareSourcesReceived, Sources);
+}
+void UDolbyIOObserver::FwdOnAudioInputDevicesReceived(const TArray<FDolbyIOAudioDevice>& Devices)
+{
+	BroadcastEvent(OnAudioInputDevicesReceived, Devices);
+}
+void UDolbyIOObserver::FwdOnAudioOutputDevicesReceived(const TArray<FDolbyIOAudioDevice>& Devices)
+{
+	BroadcastEvent(OnAudioOutputDevicesReceived, Devices);
+}
+void UDolbyIOObserver::FwdOnCurrentAudioInputDeviceReceived(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
+{
+	BroadcastEvent(OnCurrentAudioInputDeviceReceived, IsNone, OptionalDevice);
+}
+void UDolbyIOObserver::FwdOnCurrentAudioOutputDeviceReceived(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
+{
+	BroadcastEvent(OnCurrentAudioOutputDeviceReceived, IsNone, OptionalDevice);
+}
+void UDolbyIOObserver::FwdOnVideoDevicesReceived(const TArray<FDolbyIOVideoDevice>& Devices)
+{
+	BroadcastEvent(OnVideoDevicesReceived, Devices);
+}
+void UDolbyIOObserver::FwdOnCurrentAudioInputDeviceChanged(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
+{
+	BroadcastEvent(OnCurrentAudioInputDeviceChanged, IsNone, OptionalDevice);
+}
+void UDolbyIOObserver::FwdOnCurrentAudioOutputDeviceChanged(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
+{
+	BroadcastEvent(OnCurrentAudioOutputDeviceChanged, IsNone, OptionalDevice);
 }
 
 template <class TDelegate, class... TArgs> void UDolbyIOObserver::BroadcastEvent(TDelegate& Event, TArgs&&... Args)

@@ -75,8 +75,11 @@ namespace DolbyIO
 		constexpr int Stride = 4;
 		struct FTextureBuffer
 		{
-			FTextureBuffer(UTexture2D* Texture) : Texture(Texture),
-				Buffer(reinterpret_cast<uint8_t*>(Texture->PLATFORM_DATA->Mips[0].BulkData.Lock(LOCK_READ_WRITE))) {}
+			FTextureBuffer(UTexture2D* Texture)
+			    : Texture(Texture),
+			      Buffer(reinterpret_cast<uint8_t*>(Texture->PLATFORM_DATA->Mips[0].BulkData.Lock(LOCK_READ_WRITE)))
+			{
+			}
 			~FTextureBuffer()
 			{
 				Texture->PLATFORM_DATA->Mips[0].BulkData.Unlock();
@@ -86,6 +89,7 @@ namespace DolbyIO
 			{
 				return Buffer;
 			}
+
 		private:
 			UTexture2D* const Texture;
 			uint8_t* const Buffer;
