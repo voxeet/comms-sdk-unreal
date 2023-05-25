@@ -6,10 +6,6 @@ title: Game instance usage
 
 This tutorial explains how to use the plugin when working from within a game instance.
 
-## Prerequisites
-
-The sample Blueprints included with the plugin are designed in Unreal Engine 5.1 and will not work with previous versions. You can still use previous versions to follow the tutorials but you will not be able to use the sample Blueprints and will need to create them from scratch.
-
 ## Starting notes
 
 The plugin's core class is a game instance subsystem. This means that its state is persistent throughout the game. It also means that it is created after the game instance. Therefore we cannot use it this way from a game instance Blueprint:
