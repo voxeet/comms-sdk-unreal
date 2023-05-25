@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: ["4.27", "5.0", "5.1"]
+        version: ["4.27", "5.2"]
     runs-on: ["self-hosted", "X64", "macOS"]
     env:
       BUILD_PLATFORM: 'macos64'
@@ -74,7 +74,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: ["4.27", "5.0", "5.1"]
+        version: ["4.27", "5.2"]
     runs-on: ["self-hosted", "X64", "Windows"]
     env:
       BUILD_PLATFORM: 'windows64'
