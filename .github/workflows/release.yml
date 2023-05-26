@@ -1,0 +1,114 @@
+name: Build and release Unreal Plugin  🎉 
+
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  CPP_SDK_TAG: "2.3.3 "
+  CPP_SDK_DESTINATION: "DolbyIO"
+  CPP_SDK_URL: "https://github.com/DolbyIO/comms-sdk-cpp/releases/download"
+  UNREAL_PLUGIN_OUTPUT: "Build/DolbyIO"
+  RETENTION: 7
+
+jobs:
+  build-macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["4.27", "5.0"]
+    runs-on: ["self-hosted", "X64", "macOS"]
+    env:
+      BUILD_PLATFORM: 'macos64'
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v3
+      - name: Download C++ SDK release asset
+        uses: ./.github/actions/download_cpp/bash
+        with:
+          url: ${{ env.CPP_SDK_URL }}
+          tag: ${{ env.CPP_SDK_TAG }}
+          asset_name: "cppsdk-${{ env.CPP_SDK_TAG }}-${{ env.BUILD_PLATFORM }}.zip"
+      - name: Remove symlinks from cpp sdk libs
+        env:
+          LIB_PATH_ARM: "${{ github.workspace }}/${{ env.CPP_SDK_DESTINATION }}/sdk-release-arm/lib"
+          LIB_PATH_X86: "${{ github.workspace }}/${{ env.CPP_SDK_DESTINATION }}/sdk-release-x86/lib"
+        run: |
+          echo "Removing symlinks from ${LIB_PATH_ARM}"
+          rm ${LIB_PATH_ARM}/libav*.dylib
+          echo "Removing symlinks from ${LIB_PATH_X86}"
+          rm ${LIB_PATH_X86}/libav*.dylib
+      - name: Run Build
+        run: |
+          /Users/Shared/Epic\ Games/UE_${{ matrix.version }}/Engine/Build/BatchFiles/RunUAT.sh BuildPlugin \
+          -Rocket \
+          -Plugin=$(pwd)/DolbyIO/DolbyIO.uplugin \
+          -TargetPlatforms=Mac \
+          -Package=$(pwd)/${{ env.UNREAL_PLUGIN_OUTPUT }} \
+          -StrictIncludes
+      - name: Sign DolbyIO Unreal Plugin
+        env:
+          DOLBYIO_KEYCHAIN_PASSWORD: ${{ secrets.VOXEET_KEYCHAIN_PASSWORD }}
+        uses: ./.github/actions/sign/mac
+        with:
+          path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
+          platform: 'macos'
+      - name: Zip of assets of DolbyIO Unreal Plugin
+        working-directory: Build
+        run: |
+          zip -rq DolbyIO/DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip DolbyIO/
+      - name: Send assets of DolbyIO Unreal Plugin 🎉
+        working-directory: ${{ env.UNREAL_PLUGIN_OUTPUT }}
+        run: |
+          ${GITHUB_WORKSPACE}/.github/actions/upload_assets/upload_release_asset.sh DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
+
+  build-windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["4.27", "5.0"]
+    runs-on: ["self-hosted", "X64", "Windows"]
+    env:
+      BUILD_PLATFORM: 'windows64'
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v3
+      - name: Download C++ SDK release asset
+        id: download_cpp
+        uses: ./.github/actions/download_cpp/powershell
+        with:
+          url: ${{ env.CPP_SDK_URL }}
+          tag: ${{ env.CPP_SDK_TAG }}
+          asset_name: "cppsdk-${{ env.CPP_SDK_TAG }}-${{ env.BUILD_PLATFORM }}.zip"
+      - name: Run Build
+        run: |
+          Write-Output "UE_${{ matrix.version }}"
+          $UERunUAT = "C:\\Program Files\\Epic Games\\UE_${{ matrix.version }}\\Engine\\Build\\BatchFiles\\RunUAT.bat"
+          & $UERunUAT BuildPlugin -Rocket -Plugin="$(pwd)\\DolbyIO\\DolbyIO.uplugin" -TargetPlatforms=Win64 -Package="$(pwd)\\Build\\DolbyIO" -StrictIncludes -VS2019 -NoTurnKeyVariables
+      - name: Sign DolbyIO Unreal Plugin
+        env:
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        uses: ./.github/actions/sign/win
+        with:
+          path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
+          platform: 'windows'
+      - name: Zip of assets of DolbyIO Unreal Plugin
+        working-directory: ${{ env.UNREAL_PLUGIN_OUTPUT }}
+        run: |
+          Compress-Archive -Path . -DestinationPath DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip 
+      - name: Send assets of DolbyIO Unreal Plugin 🎉
+        id: upload_release_asset
+        working-directory: ${{ env.UNREAL_PLUGIN_OUTPUT }}
+        run: | 
+         ${{ github.workspace }}\\.github\\actions\\upload_assets\\upload_release_asset.ps1 -File DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
+
+
