@@ -689,6 +689,16 @@ void UDolbyIOSubsystem::SetRotationUsingFirstPlayer()
 	}
 }
 
+void UDolbyIOSubsystem::SetLogSettings(EDolbyIOLogLevel SdkLogLevel, EDolbyIOLogLevel MediaLogLevel,
+                                       const FString& LogDirectory)
+{
+	sdk::log_settings LogSettings;
+	LogSettings.sdk_log_level = ToSdkLogLevel(SdkLogLevel);
+	LogSettings.media_log_level = ToSdkLogLevel(MediaLogLevel);
+	LogSettings.log_directory = ToStdString(LogDirectory);
+	sdk::set_log_settings(LogSettings);
+}
+
 template <class TDelegate, class... TArgs> void UDolbyIOSubsystem::BroadcastEvent(TDelegate& Event, TArgs&&... Args)
 {
 	if (IsValid(this))

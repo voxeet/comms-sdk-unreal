@@ -210,4 +210,23 @@ namespace DolbyIO
 				return screen_share_content_type::unspecified;
 		}
 	}
+
+	log_level ToSdkLogLevel(EDolbyIOLogLevel Level)
+	{
+		switch (Level)
+		{
+			case EDolbyIOLogLevel::ERROR:
+				return log_level::ERROR;
+			case EDolbyIOLogLevel::WARNING:
+				return log_level::WARNING;
+			case EDolbyIOLogLevel::INFO:
+				return log_level::INFO;
+			case EDolbyIOLogLevel::DEBUG:
+				return log_level::DEBUG;
+			case EDolbyIOLogLevel::VERBOSE:
+				return log_level::VERBOSE;
+			default:
+				return log_level::OFF;
+		}
+	}
 }
