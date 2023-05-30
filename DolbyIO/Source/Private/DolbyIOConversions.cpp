@@ -215,15 +215,15 @@ namespace DolbyIO
 	{
 		switch (Level)
 		{
-			case EDolbyIOLogLevel::ERROR:
+			case EDolbyIOLogLevel::Error:
 				return log_level::ERROR;
-			case EDolbyIOLogLevel::WARNING:
+			case EDolbyIOLogLevel::Warning:
 				return log_level::WARNING;
-			case EDolbyIOLogLevel::INFO:
+			case EDolbyIOLogLevel::Info:
 				return log_level::INFO;
-			case EDolbyIOLogLevel::DEBUG:
+			case EDolbyIOLogLevel::Debug:
 				return log_level::DEBUG;
-			case EDolbyIOLogLevel::VERBOSE:
+			case EDolbyIOLogLevel::Verbose:
 				return log_level::VERBOSE;
 			default:
 				return log_level::OFF;

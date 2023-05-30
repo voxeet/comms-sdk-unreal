@@ -9,22 +9,22 @@ UENUM(BlueprintType, DisplayName = "Dolby.io Log Level")
 enum class EDolbyIOLogLevel : uint8
 {
 	/** Turns off logging. */
-	OFF,
+	Off,
 
 	/** The error level logging generates logs when an error occurs and the SDK cannot properly function. */
-	ERROR,
+	Error,
 
 	/** The warning level logging generates logs when the SDK detects an unexpected problem but is still able to work as
 	 * usual. */
-	WARNING,
+	Warning,
 
 	/** The info level logging generates an informative number of logs. */
-	INFO,
+	Info,
 
 	/** The debug level logging generates a high number of logs to provide diagnostic information in a detailed manner.
 	 */
-	DEBUG,
+	Debug,
 
 	/** The verbose level logging generates the highest number of logs, including even the HTTP requests. */
-	VERBOSE,
+	Verbose
 };

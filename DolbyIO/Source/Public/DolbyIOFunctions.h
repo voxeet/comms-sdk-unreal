@@ -368,16 +368,16 @@ public:
 	 * This function should be called before the first call to Set Token if the user needs logs about the plugin's
 	 * operation. Calling more than once has no effect.
 	 *
-	 * @param SdkLogLevel - Log level for SDK logs. Default is INFO.
+	 * @param SdkLogLevel - Log level for SDK logs. Default is Info.
 	 * @param MediaLogLevel - Log level for Media Engine logs. It is recommended to keep the Media Engine log level
-	 * at OFF, ERROR or WARNING to avoid spam and only enable more detailed logs when necessary. Default is OFF.
+	 * at OFF, ERROR or WARNING to avoid spam and only enable more detailed logs when necessary. Default is Off.
 	 * @param LogDirectory - Directory to which the logs should be saved. The application must have write access to
 	 * the directory or it must be able to create such a directory. Providing a valid directory implies starting logging
 	 * to a timestamped file. Providing no value or an empty string has no effect. Default is an empty string.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Log Settings"))
-	static void SetLogSettings(const UObject* WorldContextObject, EDolbyIOLogLevel SdkLogLevel = EDolbyIOLogLevel::INFO,
-	                           EDolbyIOLogLevel MediaLogLevel = EDolbyIOLogLevel::OFF,
+	static void SetLogSettings(const UObject* WorldContextObject, EDolbyIOLogLevel SdkLogLevel = EDolbyIOLogLevel::Info,
+	                           EDolbyIOLogLevel MediaLogLevel = EDolbyIOLogLevel::Off,
 	                           const FString& LogDirectory = "");
 };
