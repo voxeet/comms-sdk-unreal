@@ -1,7 +1,7 @@
 ---
 sidebar_position: 4
-sidebar_label: Game instance usage
-title: Game instance usage
+sidebar_label: Game Instance Usage
+title: Game Instance Usage
 ---
 
 This tutorial explains how to use the plugin when working from within a game instance.
