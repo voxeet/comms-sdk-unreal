@@ -4,6 +4,7 @@
 
 #include "DolbyIOConnectionMode.h"
 #include "DolbyIOCppSdk.h"
+#include "DolbyIOLogLevel.h"
 #include "DolbyIOParticipantInfo.h"
 #include "DolbyIOScreenshareSource.h"
 #include "DolbyIOSpatialAudioStyle.h"
@@ -28,4 +29,5 @@ namespace DolbyIO
 
 	dolbyio::comms::spatial_audio_style ToSdkSpatialAudioStyle(EDolbyIOSpatialAudioStyle SpatialAudioStyle);
 	dolbyio::comms::screen_share_content_type ToSdkContentType(EDolbyIOScreenshareContentType Type);
+	dolbyio::comms::log_level ToSdkLogLevel(EDolbyIOLogLevel Level);
 }

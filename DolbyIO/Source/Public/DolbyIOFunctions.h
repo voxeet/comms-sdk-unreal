@@ -3,6 +3,7 @@
 #pragma once
 
 #include "DolbyIOConnectionMode.h"
+#include "DolbyIOLogLevel.h"
 #include "DolbyIOScreenshareSource.h"
 #include "DolbyIOSpatialAudioStyle.h"
 #include "DolbyIOVideoTrack.h"
@@ -361,4 +362,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Local Player Rotation"))
 	static void SetLocalPlayerRotation(const UObject* WorldContextObject, const FRotator& Rotation);
+
+	/** Sets what and how to log in the Dolby.io C++ SDK.
+	 *
+	 * This function should be called before the first call to Set Token if the user needs logs about the plugin's
+	 * operation. Calling more than once has no effect.
+	 *
+	 * @param SdkLogLevel - Log level for SDK logs. The default value is Info.
+	 * @param MediaLogLevel - Log level for Media Engine logs. We recommend keeping the Media Engine log level
+	 * at Off, Error, or Warning to avoid spam and only enable more detailed logs when necessary. The default value is Off.
+	 * @param LogDirectory - The directory to which the logs should be saved. The application must have write access to
+	 * the directory or it must be able to create such a directory. Providing a valid directory implies starting logging
+	 * to a timestamped file. Providing no value or an empty string has no effect. The default value is an empty string.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Log Settings"))
+	static void SetLogSettings(const UObject* WorldContextObject, EDolbyIOLogLevel SdkLogLevel = EDolbyIOLogLevel::Info,
+	                           EDolbyIOLogLevel MediaLogLevel = EDolbyIOLogLevel::Off,
+	                           const FString& LogDirectory = "");
 };

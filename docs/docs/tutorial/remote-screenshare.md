@@ -1,5 +1,5 @@
 ---
-sidebar_position: 7
+sidebar_position: 8
 sidebar_label: Rendering Remote Screen Share
 title: Rendering Remote Screen Share
 ---
@@ -31,5 +31,3 @@ If you launch the game now, assuming you successfully connect to a conference wi
 It also contains a generic `Construction Script` to set up the plane's material:
 
 ![](../../static/img/video-plane-cs.png)
-
-As a useful practical exercise, you can also make the plane invisible by default, then make it visible when screenshare is started and invisible again when it is stopped.

@@ -4,24 +4,22 @@ sidebar_label: Common Tutorial Setup
 title: Common Tutorial Setup
 ---
 
-This tutorial explains how to initialize the plugin.
+This tutorial explains how to initialize the plugin and connect to a conference, which is a common prerequisite for other tutorials.
 
 ## Prerequisites
 
 The tutorials and samples are designed to work with the Unreal Engine 5 First Person game template.
 
-The sample Blueprints included with the plugin are designed in Unreal Engine 5 and will not work with Unreal Engine 4. You can still use Unreal Engine 4 to follow the tutorials but you will not be able to use the sample Blueprints and will need to create them from scratch.
+## Getting started
 
-## Initialize the plugin
+1. Find `BP_DolbyIOStarter` in the plugin's content in `Content Browser` and drag it onto the scene.
 
-You can initialize the plugin from multiple places, such as the game instance or the level Blueprint, but in this example, we will use the First Person Character Blueprint since it is already in the template. 
+> **_NOTE:_** If you do not see this item, go to the `Content Browser` settings and tick `Show Plugin Content`.
 
-1. In the Content Browser, open `All -> Content -> FirstPerson -> Blueprints -> BP_FirstPersonCharacter`. If you set up the project from a C++ template, click `Open Full Blueprint Editor`.
+2. Make sure the newly-placed actor is selected and enter your client access token or app key and secret combination in the `Details` panel.
 
-2. Add `Dolby.io Observer` as a component and add a handler for the [`On Token Needed`](../blueprints/Events/on-token-needed) event. Wire the nodes as presented in the following example and paste your client access token into the [`Dolby.io Set Token`](../blueprints/Functions/set-token) node.
+You can modify other parameters of this actor as you see fit, but using the demo conference does not make sense for some tutorials, because it is an audio-only conference.
 
-![](../../static/img/common-setup-connect.png)
+If you launch the game now, assuming the credentials are set up appropriately, you should connect to a conference.
 
-In development, you may also use the [`Get Dolby.io Token`](../blueprints/Functions/get-token) helper to use your app key and secret instead.
-
-After this step, you should connect to a conference that has a name that you specified in the [`Dolby.io Connect`](../blueprints/Functions/connect) node upon starting your game. If you cannot connect, follow the [Getting started - first conference](first-conference) tutorial first.
+> **_NOTE:_** `BP_DolbyIOStarter` is a sample Blueprint which handles several "key pressed" events and as such is designed to work the template game only, because it will likely override key bindings in more advanced games. It is meant to be used as an example on how to get started, not for use in production.
