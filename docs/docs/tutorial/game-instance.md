@@ -8,7 +8,7 @@ This tutorial explains how to use the plugin when working from within a game ins
 
 ## Starting notes
 
-The plugin's core class is a game instance subsystem. This means that its state is persistent throughout the game. It also means that it is created after the game instance. Therefore we cannot use it this way from a game instance Blueprint:
+The plugin's core class is a game instance subsystem. This means that its state is persistent throughout the game. It also means that it is created after the game instance. Therefore, we cannot use it this way from a game instance Blueprint:
 
 ![](../../static/img/game-instance-wrong.png)
 
@@ -26,7 +26,7 @@ Suppose you want to handle the [`On Participant Updated`](../blueprints/Events/o
 
 > **_NOTE:_** If you do not see this item, go to the `Content Browser` settings and tick `Show Plugin Content`.
 
-2. Notice that we are creating an event to tell the game instance that the `Dolby.io Subsystem` is ready for use. From within this event handler we can now assign event handlers to the plugin's events as shown below:
+2. Notice that we are creating an event to tell the game instance that the `Dolby.io Subsystem` is ready for use. From within this event handler, we can now assign event handlers to the plugin's events as shown below:
 
 ![](../../static/img/game-instance-eg.png)
 
@@ -36,4 +36,4 @@ Suppose you want to handle the [`On Participant Updated`](../blueprints/Events/o
 
 ![](../../static/img/game-instance-level-eg.png)
 
-The game instance should now be set up to handle the [`On Participant Updated`](../blueprints/Events/on-participant-updated) event. You can use this method for other events as well by chaining `Bind Event` calls. In theory it is possible to control the plugin entirely from a game instance, however doing so is less convenient than using the `Dolby.io Observer` actor component.
+The game instance should now be set up to handle the [`On Participant Updated`](../blueprints/Events/on-participant-updated) event. You can use this method for other events as well by chaining `Bind Event` calls. In theory, it is possible to control the plugin entirely from a game instance, however doing so is less convenient than using the `Dolby.io Observer` actor component.
