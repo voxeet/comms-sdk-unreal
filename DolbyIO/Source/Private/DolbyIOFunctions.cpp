@@ -389,3 +389,11 @@ void UDolbyIOBlueprintFunctionLibrary::SetLocalPlayerRotation(const UObject* Wor
 		DolbyIOSubsystem->SetLocalPlayerRotation(Rotation);
 	}
 }
+void UDolbyIOBlueprintFunctionLibrary::SetLogSettings(const UObject* WorldContextObject, EDolbyIOLogLevel SdkLogLevel,
+                                                      EDolbyIOLogLevel MediaLogLevel, const FString& LogDirectory)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->SetLogSettings(SdkLogLevel, MediaLogLevel, LogDirectory);
+	}
+}
