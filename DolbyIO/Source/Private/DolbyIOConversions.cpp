@@ -4,6 +4,11 @@
 
 #include "Misc/Base64.h"
 
+struct FSdkId
+{
+	dolbyio::comms::audio_device::identity SdkIdentity;
+};
+
 namespace DolbyIO
 {
 	using namespace dolbyio::comms;
@@ -101,6 +106,28 @@ namespace DolbyIO
 			default:
 				return "unknown";
 		}
+	}
+
+	FString ToString(enum audio_device::direction Direction)
+	{
+		switch (Direction)
+		{
+			case audio_device::input:
+				return "input";
+			case audio_device::output:
+				return "output";
+			case audio_device::input_and_output:
+				return "input&output";
+			case audio_device::none:
+			default:
+				return "none";
+		}
+	}
+
+	FString ToString(const audio_device& Device)
+	{
+		return FString::Printf(TEXT("name: %s, direction: %s, native_id: %s"), *ToFString(Device.name()),
+		                       *ToString(Device.direction()), *ToUnrealDeviceId(Device.native_id()));
 	}
 
 	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<participant_status> Status)
@@ -228,5 +255,41 @@ namespace DolbyIO
 			default:
 				return log_level::OFF;
 		}
+	}
+
+	FSdkNativeDeviceId ToSdkNativeDeviceId(const FString& Id)
+	{
+#if PLATFORM_WINDOWS
+		return ToStdString(Id);
+#else
+		unsigned Ret;
+		TTypeFromString<unsigned>::FromString(Ret, *Id);
+		return Ret;
+#endif
+	}
+
+	FString ToUnrealDeviceId(const FSdkNativeDeviceId& Id)
+	{
+#if PLATFORM_WINDOWS
+		return ToFString(Id);
+#else
+		return ToFString(std::to_string(Id));
+#endif
+	}
+
+	FDolbyIOAudioDevice ToFDolbyIOAudioDevice(const audio_device& Device)
+	{
+		return FDolbyIOAudioDevice{ToFText(Device.name()), ToUnrealDeviceId(Device.native_id()),
+		                           MakeShared<FSdkId>(FSdkId{Device.get_identity()})};
+	}
+
+	FDolbyIOVideoDevice ToFDolbyIOVideoDevice(const camera_device& Device)
+	{
+		return FDolbyIOVideoDevice{ToFText(Device.display_name), ToFString(Device.unique_id)};
+	}
+
+	camera_device ToSdkVideoDevice(const FDolbyIOVideoDevice& VideoDevice)
+	{
+		return camera_device{ToStdString(VideoDevice.Name.ToString()), ToStdString(VideoDevice.UniqueId)};
 	}
 }

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "DolbyIOConnectionMode.h"
+#include "DolbyIODevices.h"
 #include "DolbyIOLogLevel.h"
 #include "DolbyIOScreenshareSource.h"
 #include "DolbyIOSpatialAudioStyle.h"
@@ -133,8 +134,9 @@ class DOLBYIO_API UDolbyIOEnableVideo : public UBlueprintAsyncActionBase
 public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
-	                  DisplayName = "Dolby.io Enable Video"))
-	static UDolbyIOEnableVideo* DolbyIOEnableVideo(const UObject* WorldContextObject);
+	                  DisplayName = "Dolby.io Enable Video", AutoCreateRefTerm = "VideoDevice"))
+	static UDolbyIOEnableVideo* DolbyIOEnableVideo(const UObject* WorldContextObject,
+	                                               const FDolbyIOVideoDevice& VideoDevice);
 
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIOEnableVideoOutputPin OnVideoEnabled;
@@ -146,6 +148,7 @@ private:
 	void OnVideoEnabledImpl(const FString& VideoTrackID);
 
 	const UObject* WorldContextObject;
+	FDolbyIOVideoDevice VideoDevice;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIODisableVideoOutputPin, const FString&, VideoTrackID);
@@ -249,6 +252,136 @@ private:
 
 	UFUNCTION()
 	void OnScreenshareStoppedImpl(const FString& VideoTrackID);
+
+	const UObject* WorldContextObject;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOGetAudioInputDevicesOutputPin, const TArray<FDolbyIOAudioDevice>&,
+                                            Devices);
+
+UCLASS()
+class DOLBYIO_API UDolbyIOGetAudioInputDevices : public UBlueprintAsyncActionBase
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
+	                  DisplayName = "Dolby.io Get Audio Input Devices"))
+	static UDolbyIOGetAudioInputDevices* DolbyIOGetAudioInputDevices(const UObject* WorldContextObject);
+
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOGetAudioInputDevicesOutputPin OnAudioInputDevicesReceived;
+
+private:
+	void Activate() override;
+
+	UFUNCTION()
+	void OnAudioInputDevicesReceivedImpl(const TArray<FDolbyIOAudioDevice>& Devices);
+
+	const UObject* WorldContextObject;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOGetAudioOutputDevicesOutputPin, const TArray<FDolbyIOAudioDevice>&,
+                                            Devices);
+
+UCLASS()
+class DOLBYIO_API UDolbyIOGetAudioOutputDevices : public UBlueprintAsyncActionBase
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
+	                  DisplayName = "Dolby.io Get Audio Output Devices"))
+	static UDolbyIOGetAudioOutputDevices* DolbyIOGetAudioOutputDevices(const UObject* WorldContextObject);
+
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOGetAudioOutputDevicesOutputPin OnAudioOutputDevicesReceived;
+
+private:
+	void Activate() override;
+
+	UFUNCTION()
+	void OnAudioOutputDevicesReceivedImpl(const TArray<FDolbyIOAudioDevice>& Devices);
+
+	const UObject* WorldContextObject;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOGetCurrentAudioInputDeviceOutputPin, bool, IsNone,
+                                             const FDolbyIOAudioDevice&, OptionalDevice);
+
+UCLASS()
+class DOLBYIO_API UDolbyIOGetCurrentAudioInputDevice : public UBlueprintAsyncActionBase
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
+	                  DisplayName = "Dolby.io Get Current Audio Input Device"))
+	static UDolbyIOGetCurrentAudioInputDevice* DolbyIOGetCurrentAudioInputDevice(const UObject* WorldContextObject);
+
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOGetCurrentAudioInputDeviceOutputPin OnCurrentAudioInputDeviceReceived;
+
+private:
+	void Activate() override;
+
+	UFUNCTION()
+	void OnCurrentAudioInputDeviceReceivedImpl(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice);
+
+	const UObject* WorldContextObject;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOGetCurrentAudioOutputDeviceOutputPin, bool, IsNone,
+                                             const FDolbyIOAudioDevice&, OptionalDevice);
+
+UCLASS()
+class DOLBYIO_API UDolbyIOGetCurrentAudioOutputDevice : public UBlueprintAsyncActionBase
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
+	                  DisplayName = "Dolby.io Get Current Audio Output Device"))
+	static UDolbyIOGetCurrentAudioOutputDevice* DolbyIOGetCurrentAudioOutputDevice(const UObject* WorldContextObject);
+
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOGetCurrentAudioOutputDeviceOutputPin OnCurrentAudioOutputDeviceReceived;
+
+private:
+	void Activate() override;
+
+	UFUNCTION()
+	void OnCurrentAudioOutputDeviceReceivedImpl(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice);
+
+	const UObject* WorldContextObject;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOGetVideoDevicesOutputPin, const TArray<FDolbyIOVideoDevice>&,
+                                            Devices);
+
+UCLASS()
+class DOLBYIO_API UDolbyIOGetVideoDevices : public UBlueprintAsyncActionBase
+{
+	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
+	                  DisplayName = "Dolby.io Get Video Devices"))
+	static UDolbyIOGetVideoDevices* DolbyIOGetVideoDevices(const UObject* WorldContextObject);
+
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOGetVideoDevicesOutputPin OnVideoDevicesReceived;
+
+private:
+	void Activate() override;
+
+	UFUNCTION()
+	void OnVideoDevicesReceivedImpl(const TArray<FDolbyIOVideoDevice>& Devices);
 
 	const UObject* WorldContextObject;
 };
@@ -380,4 +513,20 @@ public:
 	static void SetLogSettings(const UObject* WorldContextObject, EDolbyIOLogLevel SdkLogLevel = EDolbyIOLogLevel::Info,
 	                           EDolbyIOLogLevel MediaLogLevel = EDolbyIOLogLevel::Off,
 	                           const FString& LogDirectory = "");
+
+	/** Sets audio input device.
+	 *
+	 * @param NativeId - The native ID of the requested device.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Audio Input Device"))
+	static void SetAudioInputDevice(const UObject* WorldContextObject, const FString& NativeId);
+
+	/** Sets audio output device.
+	 *
+	 * @param NativeId - The native ID of the requested device.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Audio Output Device"))
+	static void SetAudioOutputDevice(const UObject* WorldContextObject, const FString& NativeId);
 };

@@ -143,10 +143,12 @@ void UDolbyIODisconnect::OnDisconnectedImpl()
 
 // --------------------------------------------------------------------------------------------------------------------
 
-UDolbyIOEnableVideo* UDolbyIOEnableVideo::DolbyIOEnableVideo(const UObject* WorldContextObject)
+UDolbyIOEnableVideo* UDolbyIOEnableVideo::DolbyIOEnableVideo(const UObject* WorldContextObject,
+                                                             const FDolbyIOVideoDevice& VideoDevice)
 {
 	UDolbyIOEnableVideo* Self = NewObject<UDolbyIOEnableVideo>();
 	Self->WorldContextObject = WorldContextObject;
+	Self->VideoDevice = VideoDevice;
 	return Self;
 }
 
@@ -155,7 +157,7 @@ void UDolbyIOEnableVideo::Activate()
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
 		DolbyIOSubsystem->OnVideoEnabled.AddDynamic(this, &UDolbyIOEnableVideo::OnVideoEnabledImpl);
-		DolbyIOSubsystem->EnableVideo();
+		DolbyIOSubsystem->EnableVideo(VideoDevice);
 	}
 }
 
@@ -290,6 +292,161 @@ void UDolbyIOStopScreenshare::OnScreenshareStoppedImpl(const FString& VideoTrack
 
 // --------------------------------------------------------------------------------------------------------------------
 
+UDolbyIOGetAudioInputDevices* UDolbyIOGetAudioInputDevices::DolbyIOGetAudioInputDevices(
+    const UObject* WorldContextObject)
+{
+	UDolbyIOGetAudioInputDevices* Self = NewObject<UDolbyIOGetAudioInputDevices>();
+	Self->WorldContextObject = WorldContextObject;
+	return Self;
+}
+
+void UDolbyIOGetAudioInputDevices::Activate()
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnAudioInputDevicesReceived.AddDynamic(
+		    this, &UDolbyIOGetAudioInputDevices::OnAudioInputDevicesReceivedImpl);
+		DolbyIOSubsystem->GetAudioInputDevices();
+	}
+}
+
+void UDolbyIOGetAudioInputDevices::OnAudioInputDevicesReceivedImpl(const TArray<FDolbyIOAudioDevice>& Devices)
+{
+	OnAudioInputDevicesReceived.Broadcast(Devices);
+
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnAudioInputDevicesReceived.RemoveDynamic(
+		    this, &UDolbyIOGetAudioInputDevices::OnAudioInputDevicesReceivedImpl);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
+UDolbyIOGetAudioOutputDevices* UDolbyIOGetAudioOutputDevices::DolbyIOGetAudioOutputDevices(
+    const UObject* WorldContextObject)
+{
+	UDolbyIOGetAudioOutputDevices* Self = NewObject<UDolbyIOGetAudioOutputDevices>();
+	Self->WorldContextObject = WorldContextObject;
+	return Self;
+}
+
+void UDolbyIOGetAudioOutputDevices::Activate()
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnAudioOutputDevicesReceived.AddDynamic(
+		    this, &UDolbyIOGetAudioOutputDevices::OnAudioOutputDevicesReceivedImpl);
+		DolbyIOSubsystem->GetAudioOutputDevices();
+	}
+}
+
+void UDolbyIOGetAudioOutputDevices::OnAudioOutputDevicesReceivedImpl(const TArray<FDolbyIOAudioDevice>& Devices)
+{
+	OnAudioOutputDevicesReceived.Broadcast(Devices);
+
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnAudioOutputDevicesReceived.RemoveDynamic(
+		    this, &UDolbyIOGetAudioOutputDevices::OnAudioOutputDevicesReceivedImpl);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
+UDolbyIOGetCurrentAudioInputDevice* UDolbyIOGetCurrentAudioInputDevice::DolbyIOGetCurrentAudioInputDevice(
+    const UObject* WorldContextObject)
+{
+	UDolbyIOGetCurrentAudioInputDevice* Self = NewObject<UDolbyIOGetCurrentAudioInputDevice>();
+	Self->WorldContextObject = WorldContextObject;
+	return Self;
+}
+
+void UDolbyIOGetCurrentAudioInputDevice::Activate()
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnCurrentAudioInputDeviceReceived.AddDynamic(
+		    this, &UDolbyIOGetCurrentAudioInputDevice::OnCurrentAudioInputDeviceReceivedImpl);
+		DolbyIOSubsystem->GetCurrentAudioInputDevice();
+	}
+}
+
+void UDolbyIOGetCurrentAudioInputDevice::OnCurrentAudioInputDeviceReceivedImpl(
+    bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
+{
+	OnCurrentAudioInputDeviceReceived.Broadcast(IsNone, OptionalDevice);
+
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnCurrentAudioInputDeviceReceived.RemoveDynamic(
+		    this, &UDolbyIOGetCurrentAudioInputDevice::OnCurrentAudioInputDeviceReceivedImpl);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
+UDolbyIOGetCurrentAudioOutputDevice* UDolbyIOGetCurrentAudioOutputDevice::DolbyIOGetCurrentAudioOutputDevice(
+    const UObject* WorldContextObject)
+{
+	UDolbyIOGetCurrentAudioOutputDevice* Self = NewObject<UDolbyIOGetCurrentAudioOutputDevice>();
+	Self->WorldContextObject = WorldContextObject;
+	return Self;
+}
+
+void UDolbyIOGetCurrentAudioOutputDevice::Activate()
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnCurrentAudioOutputDeviceReceived.AddDynamic(
+		    this, &UDolbyIOGetCurrentAudioOutputDevice::OnCurrentAudioOutputDeviceReceivedImpl);
+		DolbyIOSubsystem->GetCurrentAudioOutputDevice();
+	}
+}
+
+void UDolbyIOGetCurrentAudioOutputDevice::OnCurrentAudioOutputDeviceReceivedImpl(
+    bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
+{
+	OnCurrentAudioOutputDeviceReceived.Broadcast(IsNone, OptionalDevice);
+
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnCurrentAudioOutputDeviceReceived.RemoveDynamic(
+		    this, &UDolbyIOGetCurrentAudioOutputDevice::OnCurrentAudioOutputDeviceReceivedImpl);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
+UDolbyIOGetVideoDevices* UDolbyIOGetVideoDevices::DolbyIOGetVideoDevices(const UObject* WorldContextObject)
+{
+	UDolbyIOGetVideoDevices* Self = NewObject<UDolbyIOGetVideoDevices>();
+	Self->WorldContextObject = WorldContextObject;
+	return Self;
+}
+
+void UDolbyIOGetVideoDevices::Activate()
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnVideoDevicesReceived.AddDynamic(this, &UDolbyIOGetVideoDevices::OnVideoDevicesReceivedImpl);
+		DolbyIOSubsystem->GetVideoDevices();
+	}
+}
+
+void UDolbyIOGetVideoDevices::OnVideoDevicesReceivedImpl(const TArray<FDolbyIOVideoDevice>& Devices)
+{
+	OnVideoDevicesReceived.Broadcast(Devices);
+
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->OnVideoDevicesReceived.RemoveDynamic(this,
+		                                                       &UDolbyIOGetVideoDevices::OnVideoDevicesReceivedImpl);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
 void UDolbyIOBlueprintFunctionLibrary::SetSpatialEnvironmentScale(const UObject* WorldContextObject,
                                                                   float SpatialEnvironmentScale)
 {
@@ -395,5 +552,21 @@ void UDolbyIOBlueprintFunctionLibrary::SetLogSettings(const UObject* WorldContex
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
 		DolbyIOSubsystem->SetLogSettings(SdkLogLevel, MediaLogLevel, LogDirectory);
+	}
+}
+
+void UDolbyIOBlueprintFunctionLibrary::SetAudioInputDevice(const UObject* WorldContextObject, const FString& NativeId)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->SetAudioInputDevice(NativeId);
+	}
+}
+
+void UDolbyIOBlueprintFunctionLibrary::SetAudioOutputDevice(const UObject* WorldContextObject, const FString& NativeId)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->SetAudioOutputDevice(NativeId);
 	}
 }
