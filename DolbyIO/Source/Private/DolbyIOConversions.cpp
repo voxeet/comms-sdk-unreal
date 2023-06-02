@@ -126,7 +126,7 @@ namespace DolbyIO
 
 	FString ToString(const audio_device& Device)
 	{
-		return FString::Printf(TEXT("name: %s, direction: %s, native_id: %s"), *ToFString(Device.name()),
+		return FString::Printf(TEXT("%s, direction: %s, native_id: %s"), *ToFText(Device.name()).ToString(),
 		                       *ToString(Device.direction()), *ToUnrealDeviceId(Device.native_id()));
 	}
 
