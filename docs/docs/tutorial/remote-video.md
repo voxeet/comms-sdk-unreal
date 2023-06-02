@@ -1,5 +1,5 @@
 ---
-sidebar_position: 7
+sidebar_position: 5
 sidebar_label: Rendering Remote Video
 title: Rendering Remote Video
 ---
