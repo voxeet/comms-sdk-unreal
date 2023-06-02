@@ -754,12 +754,11 @@ void UDolbyIOSubsystem::GetAudioInputDevices()
 	        {
 		        TArray<FDolbyIOAudioDevice> Devices;
 		        Devices.Reserve(DvcDevices.size());
-		        DLB_UE_LOG("Got %d audio device(s):", DvcDevices.size());
 		        for (const audio_device& Device : DvcDevices)
 		        {
 			        if (Device.direction() & audio_device::direction::input)
 			        {
-				        DLB_UE_LOG(" - added audio device - %s", *ToString(Device));
+				        DLB_UE_LOG("Got audio input device: %s", *ToString(Device));
 				        Devices.Add(ToFDolbyIOAudioDevice(Device));
 			        }
 		        }
@@ -784,12 +783,11 @@ void UDolbyIOSubsystem::GetAudioOutputDevices()
 	        {
 		        TArray<FDolbyIOAudioDevice> Devices;
 		        Devices.Reserve(DvcDevices.size());
-		        DLB_UE_LOG("Got %d audio device(s):", DvcDevices.size());
 		        for (const audio_device& Device : DvcDevices)
 		        {
 			        if (Device.direction() & audio_device::direction::output)
 			        {
-				        DLB_UE_LOG(" - added audio device - %s", *ToString(Device));
+				        DLB_UE_LOG("Got audio output device: %s", *ToString(Device));
 				        Devices.Add(ToFDolbyIOAudioDevice(Device));
 			        }
 		        }
@@ -858,7 +856,7 @@ void UDolbyIOSubsystem::SetAudioInputDevice(const FString& InNativeId)
 		return;
 	}
 
-	DLB_UE_LOG("Setting audio input device to %s", *InNativeId);
+	DLB_UE_LOG("Setting audio input device with native ID %s", *InNativeId);
 	Sdk->device_management()
 	    .get_audio_devices()
 	    .then(
@@ -867,7 +865,7 @@ void UDolbyIOSubsystem::SetAudioInputDevice(const FString& InNativeId)
 		        for (const audio_device& Device : DvcDevices)
 			        if (Device.direction() & audio_device::direction::input && Device.native_id() == NativeId)
 			        {
-				        DLB_UE_LOG("Set audio input device - %s", *ToString(Device));
+				        DLB_UE_LOG("Setting audio input device to %s", *ToString(Device));
 				        Sdk->device_management().set_preferred_input_audio_device(Device).on_error(
 				            MAKE_DLB_ERROR_HANDLER);
 				        return;
@@ -884,7 +882,7 @@ void UDolbyIOSubsystem::SetAudioOutputDevice(const FString& InNativeId)
 		return;
 	}
 
-	DLB_UE_LOG("Setting audio output device to %s", *InNativeId);
+	DLB_UE_LOG("Setting audio output device with native ID %s", *InNativeId);
 	Sdk->device_management()
 	    .get_audio_devices()
 	    .then(
@@ -893,7 +891,7 @@ void UDolbyIOSubsystem::SetAudioOutputDevice(const FString& InNativeId)
 		        for (const audio_device& Device : DvcDevices)
 			        if (Device.direction() & audio_device::direction::output && Device.native_id() == NativeId)
 			        {
-				        DLB_UE_LOG("Set audio output device - %s", *ToString(Device));
+				        DLB_UE_LOG("Setting audio output device to %s", *ToString(Device));
 				        Sdk->device_management().set_preferred_output_audio_device(Device).on_error(
 				            MAKE_DLB_ERROR_HANDLER);
 				        return;
@@ -918,10 +916,9 @@ void UDolbyIOSubsystem::GetVideoDevices()
 	        {
 		        TArray<FDolbyIOVideoDevice> Devices;
 		        Devices.Reserve(DvcDevices.size());
-		        DLB_UE_LOG("Got %d video device(s):", DvcDevices.size());
 		        for (const camera_device& Device : DvcDevices)
 		        {
-			        DLB_UE_LOG(" - video device - display_name: %s, unique_id: %s", *ToFString(Device.display_name),
+			        DLB_UE_LOG("Got video device - display_name: %s unique_id: %s", *ToFString(Device.display_name),
 			                   *ToFString(Device.unique_id));
 			        Devices.Add(ToFDolbyIOVideoDevice(Device));
 		        }
