@@ -753,7 +753,6 @@ void UDolbyIOSubsystem::GetAudioInputDevices()
 	        [this](const std::vector<audio_device>& DvcDevices)
 	        {
 		        TArray<FDolbyIOAudioDevice> Devices;
-		        Devices.Reserve(DvcDevices.size());
 		        for (const audio_device& Device : DvcDevices)
 		        {
 			        if (Device.direction() & audio_device::direction::input)
@@ -782,7 +781,6 @@ void UDolbyIOSubsystem::GetAudioOutputDevices()
 	        [this](const std::vector<audio_device>& DvcDevices)
 	        {
 		        TArray<FDolbyIOAudioDevice> Devices;
-		        Devices.Reserve(DvcDevices.size());
 		        for (const audio_device& Device : DvcDevices)
 		        {
 			        if (Device.direction() & audio_device::direction::output)
