@@ -295,8 +295,8 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 
 	ConnectionMode = ConnMode;
 	SpatialAudioStyle = SpatialStyle;
-	DLB_UE_LOG("Connecting to conference %s as %s with name %s with %s spatial audio", *ConferenceName,
-	           *ToString(ConnectionMode), *UserName, *ToString(SpatialAudioStyle));
+	DLB_UE_LOG("Connecting to conference %s with user name \"%s\" (%s, %s)", *ConferenceName, *UserName,
+	           *UEnum::GetValueAsString(ConnectionMode), *UEnum::GetValueAsString(SpatialAudioStyle));
 
 	services::session::user_info UserInfo{};
 	UserInfo.name = ToStdString(UserName);
@@ -595,8 +595,8 @@ void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source
 		return;
 	}
 
-	DLB_UE_LOG("Starting screenshare using source: ID=%d IsScreen=%d Title=%s ContentType=%d", Source.ID,
-	           Source.bIsScreen, *Source.Title.ToString(), ContentType);
+	DLB_UE_LOG("Starting screenshare using source: ID=%d IsScreen=%d Title=%s ContentType=%s", Source.ID,
+	           Source.bIsScreen, *Source.Title.ToString(), *UEnum::GetValueAsString(ContentType));
 	Sdk->conference()
 	    .start_screen_share(screen_share_source{ToStdString(Source.Title.ToString()), Source.ID,
 	                                            Source.bIsScreen ? screen_share_source::type::screen
@@ -627,7 +627,7 @@ void UDolbyIOSubsystem::ChangeScreenshareContentType(EDolbyIOScreenshareContentT
 		return;
 	}
 
-	DLB_UE_LOG("Changing screenshare content type to %d", ContentType);
+	DLB_UE_LOG("Changing screenshare content type to %s", *UEnum::GetValueAsString(ContentType));
 	Sdk->conference().screen_share_content_type(ToSdkContentType(ContentType)).on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
