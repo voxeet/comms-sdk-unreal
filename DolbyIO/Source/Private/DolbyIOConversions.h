@@ -21,8 +21,6 @@ namespace DolbyIO
 
 	FString ToString(dolbyio::comms::conference_status Status);
 	FString ToString(dolbyio::comms::participant_status Status);
-	FString ToString(EDolbyIOConnectionMode ConnectionMode);
-	FString ToString(EDolbyIOSpatialAudioStyle SpatialAudioStyle);
 	FString ToString(const dolbyio::comms::audio_device& Device);
 	FString ToString(enum dolbyio::comms::audio_device::direction Direction);
 

@@ -78,36 +78,6 @@ namespace DolbyIO
 		};
 	}
 
-	FString ToString(EDolbyIOConnectionMode ConnectionMode)
-	{
-		switch (ConnectionMode)
-		{
-			case EDolbyIOConnectionMode::Active:
-				return "active user";
-			case EDolbyIOConnectionMode::ListenerRegular:
-				return "regular listener";
-			case EDolbyIOConnectionMode::ListenerRTS:
-				return "RTS listener";
-			default:
-				return "unknown";
-		}
-	}
-
-	FString ToString(EDolbyIOSpatialAudioStyle SpatialAudioStyle)
-	{
-		switch (SpatialAudioStyle)
-		{
-			case EDolbyIOSpatialAudioStyle::Disabled:
-				return "disabled";
-			case EDolbyIOSpatialAudioStyle::Individual:
-				return "individual";
-			case EDolbyIOSpatialAudioStyle::Shared:
-				return "shared";
-			default:
-				return "unknown";
-		}
-	}
-
 	FString ToString(enum audio_device::direction Direction)
 	{
 		switch (Direction)
