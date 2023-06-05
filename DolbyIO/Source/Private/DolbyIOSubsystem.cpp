@@ -19,7 +19,7 @@ using namespace DolbyIO;
 
 constexpr auto LocalCameraTrackID = "local-camera";
 constexpr auto LocalScreenshareTrackID = "local-screenshare";
-constexpr bool bIsNone = true;
+constexpr bool bIsDeviceNone = true;
 
 void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -220,9 +220,9 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 				            DLB_UE_LOG("Audio device changed for direction: %s to no device",
 				                       *ToString(Event.utilized_direction));
 				            if (Event.utilized_direction == audio_device::direction::input)
-					            BroadcastEvent(OnCurrentAudioInputDeviceChanged, bIsNone, FDolbyIOAudioDevice{});
+					            BroadcastEvent(OnCurrentAudioInputDeviceChanged, bIsDeviceNone, FDolbyIOAudioDevice{});
 				            else
-					            BroadcastEvent(OnCurrentAudioOutputDeviceChanged, bIsNone, FDolbyIOAudioDevice{});
+					            BroadcastEvent(OnCurrentAudioOutputDeviceChanged, bIsDeviceNone, FDolbyIOAudioDevice{});
 				            return;
 			            }
 			            Sdk->device_management()
@@ -236,10 +236,10 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 						                    DLB_UE_LOG("Audio device changed for direction: %s to device - %s",
 						                               *ToString(Event.utilized_direction), *ToString(Device));
 						                    if (Event.utilized_direction == audio_device::direction::input)
-							                    BroadcastEvent(OnCurrentAudioInputDeviceChanged, !bIsNone,
+							                    BroadcastEvent(OnCurrentAudioInputDeviceChanged, !bIsDeviceNone,
 							                                   ToFDolbyIOAudioDevice(Device));
 						                    else
-							                    BroadcastEvent(OnCurrentAudioOutputDeviceChanged, !bIsNone,
+							                    BroadcastEvent(OnCurrentAudioOutputDeviceChanged, !bIsDeviceNone,
 							                                   ToFDolbyIOAudioDevice(Device));
 						                    return;
 					                    }
@@ -753,7 +753,6 @@ void UDolbyIOSubsystem::GetAudioInputDevices()
 	        [this](const std::vector<audio_device>& DvcDevices)
 	        {
 		        TArray<FDolbyIOAudioDevice> Devices;
-		        Devices.Reserve(DvcDevices.size());
 		        for (const audio_device& Device : DvcDevices)
 		        {
 			        if (Device.direction() & audio_device::direction::input)
@@ -782,7 +781,6 @@ void UDolbyIOSubsystem::GetAudioOutputDevices()
 	        [this](const std::vector<audio_device>& DvcDevices)
 	        {
 		        TArray<FDolbyIOAudioDevice> Devices;
-		        Devices.Reserve(DvcDevices.size());
 		        for (const audio_device& Device : DvcDevices)
 		        {
 			        if (Device.direction() & audio_device::direction::output)
@@ -813,11 +811,11 @@ void UDolbyIOSubsystem::GetCurrentAudioInputDevice()
 		        if (!Device)
 		        {
 			        DLB_UE_LOG("Got current audio input device - none");
-			        BroadcastEvent(OnCurrentAudioInputDeviceReceived, bIsNone, FDolbyIOAudioDevice{});
+			        BroadcastEvent(OnCurrentAudioInputDeviceReceived, bIsDeviceNone, FDolbyIOAudioDevice{});
 			        return;
 		        }
 		        DLB_UE_LOG("Got current audio input device - %s", *ToString(*Device));
-		        BroadcastEvent(OnCurrentAudioInputDeviceReceived, !bIsNone, ToFDolbyIOAudioDevice(*Device));
+		        BroadcastEvent(OnCurrentAudioInputDeviceReceived, !bIsDeviceNone, ToFDolbyIOAudioDevice(*Device));
 	        })
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
@@ -839,11 +837,11 @@ void UDolbyIOSubsystem::GetCurrentAudioOutputDevice()
 		        if (!Device)
 		        {
 			        DLB_UE_LOG("Got current audio output device - none");
-			        BroadcastEvent(OnCurrentAudioOutputDeviceReceived, bIsNone, FDolbyIOAudioDevice{});
+			        BroadcastEvent(OnCurrentAudioOutputDeviceReceived, bIsDeviceNone, FDolbyIOAudioDevice{});
 			        return;
 		        }
 		        DLB_UE_LOG("Got current audio output device - %s", *ToString(*Device));
-		        BroadcastEvent(OnCurrentAudioOutputDeviceReceived, !bIsNone, ToFDolbyIOAudioDevice(*Device));
+		        BroadcastEvent(OnCurrentAudioOutputDeviceReceived, !bIsDeviceNone, ToFDolbyIOAudioDevice(*Device));
 	        })
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }

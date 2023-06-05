@@ -96,6 +96,8 @@ public:
 	 * while opening a session. If a participant uses the same external ID in conferences, the participant's ID also
 	 * remains the same across all sessions.
 	 * @param AvatarURL - The URL of the participant's avatar.
+	 * @param ConnectionMode - Defines whether to connect as an active user or a listener.
+	 * @param SpatialAudioStyle - The spatial audio style of the conference.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void Connect(const FString& ConferenceName = "unreal", const FString& UserName = "", const FString& ExternalID = "",
@@ -146,22 +148,30 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteOutput();
 
-	/** Mutes a given participant for the local user. */
+	/** Mutes a given participant for the local user.
+	 *
+	 * @param ParticipantID - The ID of the remote participant to mute.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void MuteParticipant(const FString& ParticipantID);
 
-	/** Unmutes a given participant for the local user. */
+	/** Unmutes a given participant for the local user.
+	 *
+	 * @param ParticipantID - The ID of the remote participant to unmute.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteParticipant(const FString& ParticipantID);
 
-	/** Enables video streaming from the given video device or the primary one if none passed.
+	/** Enables video streaming from the given video device or the default device if no device is given.
+	 *
+	 * @param VideoDevice - The video device to use.
 	 *
 	 * Triggers On Video Enabled if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms", Meta = (AutoCreateRefTerm = "VideoDevice"))
 	void EnableVideo(const FDolbyIOVideoDevice& VideoDevice);
 
-	/** Disables video streaming from the primary webcam.
+	/** Disables video streaming.
 	 *
 	 * Triggers On Video Disabled if successful.
 	 */
@@ -248,7 +258,8 @@ public:
 	 *
 	 * @param SdkLogLevel - Log level for SDK logs. The default value is Info.
 	 * @param MediaLogLevel - Log level for Media Engine logs. We recommend keeping the Media Engine log level
-	 * at Off, Error, or Warning to avoid spam and only enable more detailed logs when necessary. The default value is Off.
+	 * at Off, Error, or Warning to avoid spam and only enable more detailed logs when necessary. The default value is
+	 * Off.
 	 * @param LogDirectory - The directory to which the logs should be saved. The application must have write access to
 	 * the directory or it must be able to create such a directory. Providing a valid directory implies starting logging
 	 * to a timestamped file. Providing no value or an empty string has no effect. The default value is an empty string.
@@ -288,6 +299,8 @@ public:
 	/** Sets the audio input device.
 	 *
 	 *  Triggers OnCurrentAudioDeviceChanged event when the change has been made.
+	 *
+	 * @param NativeId - The ID of the device to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetAudioInputDevice(const FString& NativeId);
@@ -295,6 +308,8 @@ public:
 	/** Sets the audio output device.
 	 *
 	 *  Triggers OnCurrentAudioDeviceChanged event when the change has been made.
+	 *
+	 * @param NativeId - The ID of the device to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetAudioOutputDevice(const FString& NativeId);

@@ -424,12 +424,18 @@ public:
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Unmute Output"))
 	static void UnmuteOutput(const UObject* WorldContextObject);
 
-	/** Mutes a given participant for the local user. */
+	/** Mutes a given participant for the local user.
+	 *
+	 * @param ParticipantID - The ID of the remote participant to mute.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Mute Participant"))
 	static void MuteParticipant(const UObject* WorldContextObject, const FString& ParticipantID);
 
-	/** Unmutes a given participant for the local user. */
+	/** Unmutes a given participant for the local user.
+	 *
+	 * @param ParticipantID - The ID of the remote participant to unmute.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Unmute Participant"))
 	static void UnmuteParticipant(const UObject* WorldContextObject, const FString& ParticipantID);
@@ -503,7 +509,8 @@ public:
 	 *
 	 * @param SdkLogLevel - Log level for SDK logs. The default value is Info.
 	 * @param MediaLogLevel - Log level for Media Engine logs. We recommend keeping the Media Engine log level
-	 * at Off, Error, or Warning to avoid spam and only enable more detailed logs when necessary. The default value is Off.
+	 * at Off, Error, or Warning to avoid spam and only enable more detailed logs when necessary. The default value is
+	 * Off.
 	 * @param LogDirectory - The directory to which the logs should be saved. The application must have write access to
 	 * the directory or it must be able to create such a directory. Providing a valid directory implies starting logging
 	 * to a timestamped file. Providing no value or an empty string has no effect. The default value is an empty string.
@@ -516,7 +523,7 @@ public:
 
 	/** Sets audio input device.
 	 *
-	 * @param NativeId - The native ID of the requested device.
+	 * @param NativeId - The ID of the device to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Audio Input Device"))
@@ -524,7 +531,7 @@ public:
 
 	/** Sets audio output device.
 	 *
-	 * @param NativeId - The native ID of the requested device.
+	 * @param NativeId - The ID of the device to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Audio Output Device"))
