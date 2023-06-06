@@ -1,8 +1,7 @@
 ---
-sidebar_label: Get Audio Input Devices
-title: Get Audio Input Devices
+sidebar_label: Get Video Devices
+title: Get Video Devices
 ---
-
-Gets a list of all available audio input devices. The function triggers the [On Audio Input Devices Received](../Events/on-audio-input-devices-received) event when ready.
+Gets a list of all available video devices. The function triggers the [On Video Devices Received](../Events/on-video-devices-received) event when successful.
 
 For example usage, see the [device management tutorial](../../tutorial/device-management).

@@ -1,10 +1,7 @@
 ---
-sidebar_label: On Current Audio Input Device Received
-title: On Current Audio Input Device Received
+sidebar_label: On Current Audio Input Device Changed
+title: On Current Audio Input Device Changed
 ---
-Triggered when current audio input device is changed as a result of calling [Set Audio Input Device](../Functions/set-audio-input-device) or of the user's action. The device consists of a name and a native ID. The latter can be passed to the [Set Audio Input Device](../Functions/set-audio-input-device) function to change current audio input device.
-TODO IsDeviceNone...
+Triggered when the current audio input device is changed. Returns the device in question or sets the returned "Is None" flag to true if there is no device currently set.
 
-Example:
-
-...
+For example usage, see the [device management tutorial](../../tutorial/device-management).
