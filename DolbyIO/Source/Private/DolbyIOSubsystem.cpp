@@ -116,6 +116,10 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
 			            DLB_UE_LOG("Participant status added: UserID=%s Name=%s ExternalID=%s Status=%s", *Info.UserID,
 			                       *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
+			            {
+				            FScopeLock Lock{&RemoteParticipantsLock};
+				            RemoteParticipants.Emplace(*Info.UserID, Info);
+			            }
 
 			            return BroadcastEvent(OnParticipantAdded, Info.Status, Info);
 		            });
@@ -133,6 +137,10 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
 			            DLB_UE_LOG("Participant status updated: UserID=%s Name=%s ExternalID=%s Status=%s",
 			                       *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
+			            {
+				            FScopeLock Lock{&RemoteParticipantsLock};
+				            RemoteParticipants.FindOrAdd(*Info.UserID) = Info;
+			            }
 
 			            return BroadcastEvent(OnParticipantUpdated, Info.Status, Info);
 		            });
@@ -506,6 +514,16 @@ void UDolbyIOSubsystem::UnmuteParticipant(const FString& ParticipantID)
 
 	DLB_UE_LOG("Unmuting participant ID %s", *ParticipantID);
 	Sdk->audio().remote().start(ToStdString(ParticipantID)).on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+TArray<FDolbyIOParticipantInfo> UDolbyIOSubsystem::GetParticipants()
+{
+	TArray<FDolbyIOParticipantInfo> Ret;
+	{
+		FScopeLock Lock{&RemoteParticipantsLock};
+		RemoteParticipants.GenerateValueArray(Ret);
+	}
+	return Ret;
 }
 
 void UDolbyIOSubsystem::EnableVideo(const FDolbyIOVideoDevice& VideoDevice)

@@ -498,6 +498,14 @@ void UDolbyIOBlueprintFunctionLibrary::UnmuteParticipant(const UObject* WorldCon
 		DolbyIOSubsystem->UnmuteParticipant(ParticipantID);
 	}
 }
+TArray<FDolbyIOParticipantInfo> UDolbyIOBlueprintFunctionLibrary::GetParticipants(const UObject* WorldContextObject)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		return DolbyIOSubsystem->GetParticipants();
+	}
+	return {};
+}
 void UDolbyIOBlueprintFunctionLibrary::BindMaterial(const UObject* WorldContextObject,
                                                     UMaterialInstanceDynamic* Material, const FString& VideoTrackID)
 {

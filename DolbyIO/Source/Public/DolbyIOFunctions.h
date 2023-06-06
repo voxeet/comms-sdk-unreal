@@ -5,6 +5,7 @@
 #include "DolbyIOConnectionMode.h"
 #include "DolbyIODevices.h"
 #include "DolbyIOLogLevel.h"
+#include "DolbyIOParticipantInfo.h"
 #include "DolbyIOScreenshareSource.h"
 #include "DolbyIOSpatialAudioStyle.h"
 #include "DolbyIOVideoTrack.h"
@@ -439,6 +440,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Unmute Participant"))
 	static void UnmuteParticipant(const UObject* WorldContextObject, const FString& ParticipantID);
+
+	/** Gets a list of all remote participants.
+	 *
+	 * @return An array of current Dolby.io Participant Info's.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Get Participants"))
+	static TArray<FDolbyIOParticipantInfo> GetParticipants(const UObject* WorldContextObject);
 
 	/** Binds a dynamic material instance to hold the frames of the given video track. The plugin will update the
 	 * material's texture parameter named "DolbyIO Frame" with the necessary data, therefore the material should have

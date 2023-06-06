@@ -162,6 +162,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteParticipant(const FString& ParticipantID);
 
+	/** Gets a list of all remote participants.
+	 *
+	 * @return An array of current Dolby.io Participant Info's.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	TArray<FDolbyIOParticipantInfo> GetParticipants();
+
 	/** Enables video streaming from the given video device or the default device if no device is given.
 	 *
 	 * @param VideoDevice - The video device to use.
@@ -395,6 +402,8 @@ private:
 	FString ConferenceID;
 	EDolbyIOConnectionMode ConnectionMode;
 	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
+	TMap<FString, FDolbyIOParticipantInfo> RemoteParticipants;
+	FCriticalSection RemoteParticipantsLock;
 
 	TMap<FString, std::shared_ptr<DolbyIO::FVideoSink>> VideoSinks;
 	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalCameraFrameHandler;
