@@ -270,35 +270,35 @@ public:
 
 	/** Gets a list of all available audio input devices.
 	 *
-	 *  Triggers OnAudioInputDevicesReceived event when ready.
+	 *  Triggers the OnAudioInputDevicesReceived event when ready.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetAudioInputDevices();
 
 	/** Gets a list of all available audio output devices.
 	 *
-	 *  Triggers OnAudioOutputDevicesReceived event when ready.
+	 *  Triggers the OnAudioOutputDevicesReceived event when ready.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetAudioOutputDevices();
 
 	/** Gets the current audio input device.
 	 *
-	 *  Triggers OnCurrentAudioInputDeviceReceived event when ready.
+	 *  Triggers the OnCurrentAudioInputDeviceReceived event when ready.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetCurrentAudioInputDevice();
 
 	/** Gets the current audio output device.
 	 *
-	 *  Triggers OnCurrentAudioOutputDeviceReceived event when ready.
+	 *  Triggers the OnCurrentAudioOutputDeviceReceived event when ready.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetCurrentAudioOutputDevice();
 
 	/** Sets the audio input device.
 	 *
-	 *  Triggers OnCurrentAudioDeviceChanged event when the change has been made.
+	 *  Triggers the OnCurrentAudioDeviceChanged event when the change has been made.
 	 *
 	 * @param NativeId - The ID of the device to use.
 	 */
@@ -307,7 +307,7 @@ public:
 
 	/** Sets the audio output device.
 	 *
-	 *  Triggers OnCurrentAudioDeviceChanged event when the change has been made.
+	 *  Triggers the OnCurrentAudioDeviceChanged event when the change has been made.
 	 *
 	 * @param NativeId - The ID of the device to use.
 	 */
@@ -316,7 +316,7 @@ public:
 
 	/** Gets a list of all available video devices.
 	 *
-	 *  Triggers OnVideoDevicesReceived event when ready.
+	 *  Triggers the OnVideoDevicesReceived event when ready.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetVideoDevices();

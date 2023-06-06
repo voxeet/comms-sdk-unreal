@@ -125,7 +125,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnAudioLevelsChangedDelegate OnAudioLevelsChanged;
 
-	/** Triggered when screenshare sources are received as a result of calling Get Screenshare Sources. */
+	/** Triggered when screen share sources are received as a result of calling Get Screenshare Sources. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnScreenshareSourcesReceivedDelegate OnScreenshareSourcesReceived;
 
@@ -137,11 +137,11 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnAudioOutputDevicesReceivedDelegate OnAudioOutputDevicesReceived;
 
-	/** Triggered when current audio input device is received as a result of calling Get Current Audio Input Device. */
+	/** Triggered when the current audio input device is received as a result of calling Get Current Audio Input Device. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnCurrentAudioInputDeviceReceivedDelegate OnCurrentAudioInputDeviceReceived;
 
-	/** Triggered when current audio output device is received as a result of calling Get Current Audio Output Device.
+	/** Triggered when the current audio output device is received as a result of calling Get Current Audio Output Device.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnCurrentAudioOutputDeviceReceivedDelegate OnCurrentAudioOutputDeviceReceived;
@@ -150,12 +150,12 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnVideoDevicesReceivedDelegate OnVideoDevicesReceived;
 
-	/** Triggered when current audio input device is changed by the user or as a result of calling
+	/** Triggered when the current audio input device is changed by the user or as a result of calling
 	 * Set Current Audio Input Device. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnCurrentAudioInputDeviceChangedDelegate OnCurrentAudioInputDeviceChanged;
 
-	/** Triggered when current audio output device is changed by the user or as a result of calling
+	/** Triggered when the current audio output device is changed by the user or as a result of calling
 	 * Set Current Audio Output Device. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnCurrentAudioOutputDeviceChangedDelegate OnCurrentAudioOutputDeviceChanged;
