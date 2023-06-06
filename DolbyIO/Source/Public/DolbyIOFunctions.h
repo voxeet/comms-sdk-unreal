@@ -521,7 +521,7 @@ public:
 	                           EDolbyIOLogLevel MediaLogLevel = EDolbyIOLogLevel::Off,
 	                           const FString& LogDirectory = "");
 
-	/** Sets audio input device.
+	/** Sets the audio input device.
 	 *
 	 * @param NativeId - The ID of the device to use.
 	 */
@@ -529,7 +529,7 @@ public:
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Audio Input Device"))
 	static void SetAudioInputDevice(const UObject* WorldContextObject, const FString& NativeId);
 
-	/** Sets audio output device.
+	/** Sets the audio output device.
 	 *
 	 * @param NativeId - The ID of the device to use.
 	 */
