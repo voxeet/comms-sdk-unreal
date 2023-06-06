@@ -57,5 +57,25 @@ public class DolbyIO : ModuleRules
             RuntimeDependencies.Add(Path.Combine(LibDir, "libcac_dvdnr.dylib"));
             RuntimeDependencies.Add(Path.Combine(LibDir, "model.dnr"));
         }
+        else if (Target.Platform == UnrealTargetPlatform.Linux)
+        {
+            string[] Libs = new string[] { Path.Combine(LibDir, "libavutil.so.57"),
+                                           Path.Combine(LibDir, "libavcodec.so.59"),
+                                           Path.Combine(LibDir, "libdvclient.so"),
+                                           Path.Combine(LibDir, "libdolbyio_comms_media.so"),
+                                           Path.Combine(LibDir, "libdolbyio_comms_sdk.so") };
+            PublicAdditionalLibraries.AddRange(new string[] {
+                Path.Combine(LibDir, "libdolbyio_comms_media.so"),
+                Path.Combine(LibDir, "libdolbyio_comms_sdk.so"),
+            });
+            PublicDelayLoadDLLs.AddRange(Libs);
+
+            foreach (string Lib in Libs)
+            {
+                RuntimeDependencies.Add(Lib);
+            }
+            RuntimeDependencies.Add(Path.Combine(LibDir, "libcac_dvdnr.so"));
+            RuntimeDependencies.Add(Path.Combine(LibDir, "model.dnr"));
+        }
     }
 }
