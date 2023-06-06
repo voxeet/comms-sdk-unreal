@@ -4,6 +4,7 @@
 
 #include "Components/ActorComponent.h"
 
+#include "DolbyIODevices.h"
 #include "DolbyIOParticipantInfo.h"
 #include "DolbyIOScreenshareSource.h"
 #include "DolbyIOVideoTrack.h"
@@ -32,6 +33,20 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnAudioLevelsChangedDelega
                                              ActiveSpeakers, const TArray<float>&, AudioLevels);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnScreenshareSourcesReceivedDelegate,
                                             const TArray<FDolbyIOScreenshareSource>&, Sources);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnAudioInputDevicesReceivedDelegate,
+                                            const TArray<FDolbyIOAudioDevice>&, Devices);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnAudioOutputDevicesReceivedDelegate,
+                                            const TArray<FDolbyIOAudioDevice>&, Devices);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnCurrentAudioInputDeviceReceivedDelegate, bool, IsNone,
+                                             const FDolbyIOAudioDevice&, OptionalDevice);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnCurrentAudioOutputDeviceReceivedDelegate, bool, IsNone,
+                                             const FDolbyIOAudioDevice&, OptionalDevice);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoDevicesReceivedDelegate, const TArray<FDolbyIOVideoDevice>&,
+                                            Devices);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnCurrentAudioInputDeviceChangedDelegate, bool, IsNone,
+                                             const FDolbyIOAudioDevice&, OptionalDevice);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnCurrentAudioOutputDeviceChangedDelegate, bool, IsNone,
+                                             const FDolbyIOAudioDevice&, OptionalDevice);
 
 UCLASS(ClassGroup = "Dolby.io Comms",
        Meta = (BlueprintSpawnableComponent, DisplayName = "Dolby.io Observer",
@@ -110,9 +125,40 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnAudioLevelsChangedDelegate OnAudioLevelsChanged;
 
-	/** Triggered when screenshare sources are received as a result of calling Get Screenshare Sources. */
+	/** Triggered when screen share sources are received as a result of calling Get Screenshare Sources. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnScreenshareSourcesReceivedDelegate OnScreenshareSourcesReceived;
+
+	/** Triggered when audio input devices are received as a result of calling Get Audio Input Devices. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnAudioInputDevicesReceivedDelegate OnAudioInputDevicesReceived;
+
+	/** Triggered when audio output devices are received as a result of calling Get Audio Output Devices. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnAudioOutputDevicesReceivedDelegate OnAudioOutputDevicesReceived;
+
+	/** Triggered when the current audio input device is received as a result of calling Get Current Audio Input Device. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnCurrentAudioInputDeviceReceivedDelegate OnCurrentAudioInputDeviceReceived;
+
+	/** Triggered when the current audio output device is received as a result of calling Get Current Audio Output Device.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnCurrentAudioOutputDeviceReceivedDelegate OnCurrentAudioOutputDeviceReceived;
+
+	/** Triggered when video devices are received as a result of calling Get Video Devices. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnVideoDevicesReceivedDelegate OnVideoDevicesReceived;
+
+	/** Triggered when the current audio input device is changed by the user or as a result of calling
+	 * Set Current Audio Input Device. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnCurrentAudioInputDeviceChangedDelegate OnCurrentAudioInputDeviceChanged;
+
+	/** Triggered when the current audio output device is changed by the user or as a result of calling
+	 * Set Current Audio Output Device. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnCurrentAudioOutputDeviceChangedDelegate OnCurrentAudioOutputDeviceChanged;
 
 private:
 	void InitializeComponent() override;
@@ -162,6 +208,27 @@ private:
 
 	UFUNCTION()
 	void FwdOnScreenshareSourcesReceived(const TArray<FDolbyIOScreenshareSource>& Sources);
+
+	UFUNCTION()
+	void FwdOnAudioInputDevicesReceived(const TArray<FDolbyIOAudioDevice>& Devices);
+
+	UFUNCTION()
+	void FwdOnAudioOutputDevicesReceived(const TArray<FDolbyIOAudioDevice>& Devices);
+
+	UFUNCTION()
+	void FwdOnCurrentAudioInputDeviceReceived(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice);
+
+	UFUNCTION()
+	void FwdOnCurrentAudioOutputDeviceReceived(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice);
+
+	UFUNCTION()
+	void FwdOnVideoDevicesReceived(const TArray<FDolbyIOVideoDevice>& Devices);
+
+	UFUNCTION()
+	void FwdOnCurrentAudioInputDeviceChanged(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice);
+
+	UFUNCTION()
+	void FwdOnCurrentAudioOutputDeviceChanged(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice);
 
 	template <class TDelegate, class... TArgs> void BroadcastEvent(TDelegate&, TArgs&&...);
 };

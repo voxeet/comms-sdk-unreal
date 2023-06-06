@@ -4,6 +4,7 @@
 
 #include "DolbyIOConnectionMode.h"
 #include "DolbyIOCppSdk.h"
+#include "DolbyIODevices.h"
 #include "DolbyIOLogLevel.h"
 #include "DolbyIOParticipantInfo.h"
 #include "DolbyIOScreenshareSource.h"
@@ -20,8 +21,8 @@ namespace DolbyIO
 
 	FString ToString(dolbyio::comms::conference_status Status);
 	FString ToString(dolbyio::comms::participant_status Status);
-	FString ToString(EDolbyIOConnectionMode ConnectionMode);
-	FString ToString(EDolbyIOSpatialAudioStyle SpatialAudioStyle);
+	FString ToString(const dolbyio::comms::audio_device& Device);
+	FString ToString(enum dolbyio::comms::audio_device::direction Direction);
 
 	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<dolbyio::comms::participant_status> Status);
 	FDolbyIOParticipantInfo ToFDolbyIOParticipantInfo(const dolbyio::comms::participant_info& Info);
@@ -30,4 +31,17 @@ namespace DolbyIO
 	dolbyio::comms::spatial_audio_style ToSdkSpatialAudioStyle(EDolbyIOSpatialAudioStyle SpatialAudioStyle);
 	dolbyio::comms::screen_share_content_type ToSdkContentType(EDolbyIOScreenshareContentType Type);
 	dolbyio::comms::log_level ToSdkLogLevel(EDolbyIOLogLevel Level);
+	dolbyio::comms::camera_device ToSdkVideoDevice(const FDolbyIOVideoDevice& VideoDevice);
+
+	using FSdkNativeDeviceId =
+#if PLATFORM_WINDOWS
+	    std::string;
+#else
+	    unsigned;
+#endif
+	FSdkNativeDeviceId ToSdkNativeDeviceId(const FString& Id);
+	FString ToUnrealDeviceId(const FSdkNativeDeviceId& Id);
+
+	FDolbyIOAudioDevice ToFDolbyIOAudioDevice(const dolbyio::comms::audio_device& Device);
+	FDolbyIOVideoDevice ToFDolbyIOVideoDevice(const dolbyio::comms::camera_device& Device);
 }

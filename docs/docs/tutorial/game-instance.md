@@ -1,5 +1,5 @@
 ---
-sidebar_position: 4
+sidebar_position: 8
 sidebar_label: Game Instance Usage
 title: Game Instance Usage
 ---

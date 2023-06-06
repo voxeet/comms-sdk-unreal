@@ -4,6 +4,11 @@
 
 #include "Misc/Base64.h"
 
+struct FSdkId
+{
+	dolbyio::comms::audio_device::identity SdkIdentity;
+};
+
 namespace DolbyIO
 {
 	using namespace dolbyio::comms;
@@ -73,34 +78,26 @@ namespace DolbyIO
 		};
 	}
 
-	FString ToString(EDolbyIOConnectionMode ConnectionMode)
+	FString ToString(enum audio_device::direction Direction)
 	{
-		switch (ConnectionMode)
+		switch (Direction)
 		{
-			case EDolbyIOConnectionMode::Active:
-				return "active user";
-			case EDolbyIOConnectionMode::ListenerRegular:
-				return "regular listener";
-			case EDolbyIOConnectionMode::ListenerRTS:
-				return "RTS listener";
+			case audio_device::input:
+				return "input";
+			case audio_device::output:
+				return "output";
+			case audio_device::input_and_output:
+				return "input&output";
+			case audio_device::none:
 			default:
-				return "unknown";
+				return "none";
 		}
 	}
 
-	FString ToString(EDolbyIOSpatialAudioStyle SpatialAudioStyle)
+	FString ToString(const audio_device& Device)
 	{
-		switch (SpatialAudioStyle)
-		{
-			case EDolbyIOSpatialAudioStyle::Disabled:
-				return "disabled";
-			case EDolbyIOSpatialAudioStyle::Individual:
-				return "individual";
-			case EDolbyIOSpatialAudioStyle::Shared:
-				return "shared";
-			default:
-				return "unknown";
-		}
+		return FString::Printf(TEXT("%s, direction: %s, native_id: %s"), *ToFText(Device.name()).ToString(),
+		                       *ToString(Device.direction()), *ToUnrealDeviceId(Device.native_id()));
 	}
 
 	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<participant_status> Status)
@@ -228,5 +225,41 @@ namespace DolbyIO
 			default:
 				return log_level::OFF;
 		}
+	}
+
+	FSdkNativeDeviceId ToSdkNativeDeviceId(const FString& Id)
+	{
+#if PLATFORM_WINDOWS
+		return ToStdString(Id);
+#else
+		unsigned Ret;
+		TTypeFromString<unsigned>::FromString(Ret, *Id);
+		return Ret;
+#endif
+	}
+
+	FString ToUnrealDeviceId(const FSdkNativeDeviceId& Id)
+	{
+#if PLATFORM_WINDOWS
+		return ToFString(Id);
+#else
+		return ToFString(std::to_string(Id));
+#endif
+	}
+
+	FDolbyIOAudioDevice ToFDolbyIOAudioDevice(const audio_device& Device)
+	{
+		return FDolbyIOAudioDevice{ToFText(Device.name()), ToUnrealDeviceId(Device.native_id()),
+		                           MakeShared<FSdkId>(FSdkId{Device.get_identity()})};
+	}
+
+	FDolbyIOVideoDevice ToFDolbyIOVideoDevice(const camera_device& Device)
+	{
+		return FDolbyIOVideoDevice{ToFText(Device.display_name), ToFString(Device.unique_id)};
+	}
+
+	camera_device ToSdkVideoDevice(const FDolbyIOVideoDevice& VideoDevice)
+	{
+		return camera_device{ToStdString(VideoDevice.Name.ToString()), ToStdString(VideoDevice.UniqueId)};
 	}
 }

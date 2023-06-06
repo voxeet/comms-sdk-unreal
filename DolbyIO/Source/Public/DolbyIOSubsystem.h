@@ -5,6 +5,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 
 #include "DolbyIOConnectionMode.h"
+#include "DolbyIODevices.h"
 #include "DolbyIOLogLevel.h"
 #include "DolbyIOParticipantInfo.h"
 #include "DolbyIOScreenshareSource.h"
@@ -39,6 +40,20 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnAudioLevelsChangedDeleg
                                              ActiveSpeakers, const TArray<float>&, AudioLevels);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnScreenshareSourcesReceivedDelegate,
                                             const TArray<FDolbyIOScreenshareSource>&, Sources);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnAudioInputDevicesReceivedDelegate,
+                                            const TArray<FDolbyIOAudioDevice>&, Devices);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnAudioOutputDevicesReceivedDelegate,
+                                            const TArray<FDolbyIOAudioDevice>&, Devices);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnCurrentAudioInputDeviceReceivedDelegate, bool, IsNone,
+                                             const FDolbyIOAudioDevice&, OptionalDevice);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnCurrentAudioOutputDeviceReceivedDelegate, bool, IsNone,
+                                             const FDolbyIOAudioDevice&, OptionalDevice);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoDevicesReceivedDelegate,
+                                            const TArray<FDolbyIOVideoDevice>&, Devices);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnCurrentAudioInputDeviceChangedDelegate, bool, IsNone,
+                                             const FDolbyIOAudioDevice&, OptionalDevice);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnCurrentAudioOutputDeviceChangedDelegate, bool, IsNone,
+                                             const FDolbyIOAudioDevice&, OptionalDevice);
 
 namespace dolbyio::comms
 {
@@ -81,6 +96,8 @@ public:
 	 * while opening a session. If a participant uses the same external ID in conferences, the participant's ID also
 	 * remains the same across all sessions.
 	 * @param AvatarURL - The URL of the participant's avatar.
+	 * @param ConnectionMode - Defines whether to connect as an active user or a listener.
+	 * @param SpatialAudioStyle - The spatial audio style of the conference.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void Connect(const FString& ConferenceName = "unreal", const FString& UserName = "", const FString& ExternalID = "",
@@ -131,22 +148,30 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteOutput();
 
-	/** Mutes a given participant for the local user. */
+	/** Mutes a given participant for the local user.
+	 *
+	 * @param ParticipantID - The ID of the remote participant to mute.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void MuteParticipant(const FString& ParticipantID);
 
-	/** Unmutes a given participant for the local user. */
+	/** Unmutes a given participant for the local user.
+	 *
+	 * @param ParticipantID - The ID of the remote participant to unmute.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteParticipant(const FString& ParticipantID);
 
-	/** Enables video streaming from the primary webcam.
+	/** Enables video streaming from the given video device or the default device if no device is given.
+	 *
+	 * @param VideoDevice - The video device to use.
 	 *
 	 * Triggers On Video Enabled if successful.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void EnableVideo();
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms", Meta = (AutoCreateRefTerm = "VideoDevice"))
+	void EnableVideo(const FDolbyIOVideoDevice& VideoDevice);
 
-	/** Disables video streaming from the primary webcam.
+	/** Disables video streaming.
 	 *
 	 * Triggers On Video Disabled if successful.
 	 */
@@ -233,7 +258,8 @@ public:
 	 *
 	 * @param SdkLogLevel - Log level for SDK logs. The default value is Info.
 	 * @param MediaLogLevel - Log level for Media Engine logs. We recommend keeping the Media Engine log level
-	 * at Off, Error, or Warning to avoid spam and only enable more detailed logs when necessary. The default value is Off.
+	 * at Off, Error, or Warning to avoid spam and only enable more detailed logs when necessary. The default value is
+	 * Off.
 	 * @param LogDirectory - The directory to which the logs should be saved. The application must have write access to
 	 * the directory or it must be able to create such a directory. Providing a valid directory implies starting logging
 	 * to a timestamped file. Providing no value or an empty string has no effect. The default value is an empty string.
@@ -241,6 +267,59 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetLogSettings(EDolbyIOLogLevel SdkLogLevel = EDolbyIOLogLevel::Info,
 	                    EDolbyIOLogLevel MediaLogLevel = EDolbyIOLogLevel::Off, const FString& LogDirectory = "");
+
+	/** Gets a list of all available audio input devices.
+	 *
+	 *  Triggers the OnAudioInputDevicesReceived event when ready.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void GetAudioInputDevices();
+
+	/** Gets a list of all available audio output devices.
+	 *
+	 *  Triggers the OnAudioOutputDevicesReceived event when ready.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void GetAudioOutputDevices();
+
+	/** Gets the current audio input device.
+	 *
+	 *  Triggers the OnCurrentAudioInputDeviceReceived event when ready.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void GetCurrentAudioInputDevice();
+
+	/** Gets the current audio output device.
+	 *
+	 *  Triggers the OnCurrentAudioOutputDeviceReceived event when ready.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void GetCurrentAudioOutputDevice();
+
+	/** Sets the audio input device.
+	 *
+	 *  Triggers the OnCurrentAudioDeviceChanged event when the change has been made.
+	 *
+	 * @param NativeId - The ID of the device to use.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void SetAudioInputDevice(const FString& NativeId);
+
+	/** Sets the audio output device.
+	 *
+	 *  Triggers the OnCurrentAudioDeviceChanged event when the change has been made.
+	 *
+	 * @param NativeId - The ID of the device to use.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void SetAudioOutputDevice(const FString& NativeId);
+
+	/** Gets a list of all available video devices.
+	 *
+	 *  Triggers the OnVideoDevicesReceived event when ready.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void GetVideoDevices();
 
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnTokenNeededDelegate OnTokenNeeded;
@@ -272,6 +351,20 @@ public:
 	FSubsystemOnAudioLevelsChangedDelegate OnAudioLevelsChanged;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnScreenshareSourcesReceivedDelegate OnScreenshareSourcesReceived;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnAudioInputDevicesReceivedDelegate OnAudioInputDevicesReceived;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnAudioOutputDevicesReceivedDelegate OnAudioOutputDevicesReceived;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnCurrentAudioInputDeviceReceivedDelegate OnCurrentAudioInputDeviceReceived;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnCurrentAudioOutputDeviceReceivedDelegate OnCurrentAudioOutputDeviceReceived;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnVideoDevicesReceivedDelegate OnVideoDevicesReceived;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnCurrentAudioInputDeviceChangedDelegate OnCurrentAudioInputDeviceChanged;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnCurrentAudioOutputDeviceChangedDelegate OnCurrentAudioOutputDeviceChanged;
 
 private:
 	void Initialize(FSubsystemCollectionBase&) override;

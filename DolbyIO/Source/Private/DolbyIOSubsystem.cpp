@@ -19,6 +19,7 @@ using namespace DolbyIO;
 
 constexpr auto LocalCameraTrackID = "local-camera";
 constexpr auto LocalScreenshareTrackID = "local-screenshare";
+constexpr bool bIsDeviceNone = true;
 
 void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -72,7 +73,7 @@ void UDolbyIOSubsystem::SetToken(const FString& Token)
 		{
 			MAKE_DLB_ERROR_HANDLER.HandleError();
 		}
-		RefreshTokenCb.Reset(); // RefreshToken callback can only be called once
+		RefreshTokenCb.Reset(); // RefreshToken callback can be called only once
 	}
 }
 
@@ -95,7 +96,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		return;
 	}
 
-	Sdk->register_component_version("unreal_sdk", "1.1.0-beta.5")
+	Sdk->register_component_version("unreal_sdk", "1.1.0-beta.6")
 	    .then(
 	        [this]
 	        {
@@ -208,6 +209,44 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            BroadcastEvent(OnVideoTrackRemoved, VideoTrack);
 		            });
 	        })
+	    .then(
+	        [this](event_handler_id)
+	        {
+		        return Sdk->device_management().add_event_handler(
+		            [this](const audio_device_changed& Event)
+		            {
+			            if (!Event.device)
+			            {
+				            DLB_UE_LOG("Audio device changed for direction: %s to no device",
+				                       *ToString(Event.utilized_direction));
+				            if (Event.utilized_direction == audio_device::direction::input)
+					            BroadcastEvent(OnCurrentAudioInputDeviceChanged, bIsDeviceNone, FDolbyIOAudioDevice{});
+				            else
+					            BroadcastEvent(OnCurrentAudioOutputDeviceChanged, bIsDeviceNone, FDolbyIOAudioDevice{});
+				            return;
+			            }
+			            Sdk->device_management()
+			                .get_audio_devices()
+			                .then(
+			                    [this, Event](const std::vector<audio_device>& DvcDevices)
+			                    {
+				                    for (const audio_device& Device : DvcDevices)
+					                    if (*Event.device == Device.get_identity())
+					                    {
+						                    DLB_UE_LOG("Audio device changed for direction: %s to device - %s",
+						                               *ToString(Event.utilized_direction), *ToString(Device));
+						                    if (Event.utilized_direction == audio_device::direction::input)
+							                    BroadcastEvent(OnCurrentAudioInputDeviceChanged, !bIsDeviceNone,
+							                                   ToFDolbyIOAudioDevice(Device));
+						                    else
+							                    BroadcastEvent(OnCurrentAudioOutputDeviceChanged, !bIsDeviceNone,
+							                                   ToFDolbyIOAudioDevice(Device));
+						                    return;
+					                    }
+			                    })
+			                .on_error(MAKE_DLB_ERROR_HANDLER);
+		            });
+	        })
 	    .then([this](event_handler_id)
 #if PLATFORM_WINDOWS
 	          { return Sdk->device_management().set_default_audio_device_policy(default_audio_device_policy::output); })
@@ -256,8 +295,8 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 
 	ConnectionMode = ConnMode;
 	SpatialAudioStyle = SpatialStyle;
-	DLB_UE_LOG("Connecting to conference %s as %s with name %s with %s spatial audio", *ConferenceName,
-	           *ToString(ConnectionMode), *UserName, *ToString(SpatialAudioStyle));
+	DLB_UE_LOG("Connecting to conference %s with user name \"%s\" (%s, %s)", *ConferenceName, *UserName,
+	           *UEnum::GetValueAsString(ConnectionMode), *UEnum::GetValueAsString(SpatialAudioStyle));
 
 	services::session::user_info UserInfo{};
 	UserInfo.name = ToStdString(UserName);
@@ -469,7 +508,7 @@ void UDolbyIOSubsystem::UnmuteParticipant(const FString& ParticipantID)
 	Sdk->audio().remote().start(ToStdString(ParticipantID)).on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
-void UDolbyIOSubsystem::EnableVideo()
+void UDolbyIOSubsystem::EnableVideo(const FDolbyIOVideoDevice& VideoDevice)
 {
 	if (!Sdk)
 	{
@@ -481,7 +520,7 @@ void UDolbyIOSubsystem::EnableVideo()
 	static const camera_device DefaultCamera{};
 	Sdk->video()
 	    .local()
-	    .start(DefaultCamera, LocalCameraFrameHandler)
+	    .start(ToSdkVideoDevice(VideoDevice), LocalCameraFrameHandler)
 	    .then(
 	        [this]
 	        {
@@ -556,8 +595,8 @@ void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source
 		return;
 	}
 
-	DLB_UE_LOG("Starting screenshare using source: ID=%d IsScreen=%d Title=%s ContentType=%d", Source.ID,
-	           Source.bIsScreen, *Source.Title.ToString(), ContentType);
+	DLB_UE_LOG("Starting screenshare using source: ID=%d IsScreen=%d Title=%s ContentType=%s", Source.ID,
+	           Source.bIsScreen, *Source.Title.ToString(), *UEnum::GetValueAsString(ContentType));
 	Sdk->conference()
 	    .start_screen_share(screen_share_source{ToStdString(Source.Title.ToString()), Source.ID,
 	                                            Source.bIsScreen ? screen_share_source::type::screen
@@ -588,7 +627,7 @@ void UDolbyIOSubsystem::ChangeScreenshareContentType(EDolbyIOScreenshareContentT
 		return;
 	}
 
-	DLB_UE_LOG("Changing screenshare content type to %d", ContentType);
+	DLB_UE_LOG("Changing screenshare content type to %s", *UEnum::GetValueAsString(ContentType));
 	Sdk->conference().screen_share_content_type(ToSdkContentType(ContentType)).on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
@@ -697,6 +736,193 @@ void UDolbyIOSubsystem::SetLogSettings(EDolbyIOLogLevel SdkLogLevel, EDolbyIOLog
 	LogSettings.media_log_level = ToSdkLogLevel(MediaLogLevel);
 	LogSettings.log_directory = ToStdString(LogDirectory);
 	sdk::set_log_settings(LogSettings);
+}
+
+void UDolbyIOSubsystem::GetAudioInputDevices()
+{
+	if (!Sdk)
+	{
+		DLB_UE_WARN("Cannot get audio input devices - not initialized");
+		return;
+	}
+
+	DLB_UE_LOG("Getting audio input devices");
+	Sdk->device_management()
+	    .get_audio_devices()
+	    .then(
+	        [this](const std::vector<audio_device>& DvcDevices)
+	        {
+		        TArray<FDolbyIOAudioDevice> Devices;
+		        for (const audio_device& Device : DvcDevices)
+		        {
+			        if (Device.direction() & audio_device::direction::input)
+			        {
+				        DLB_UE_LOG("Got audio input device: %s", *ToString(Device));
+				        Devices.Add(ToFDolbyIOAudioDevice(Device));
+			        }
+		        }
+		        BroadcastEvent(OnAudioInputDevicesReceived, Devices);
+	        })
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::GetAudioOutputDevices()
+{
+	if (!Sdk)
+	{
+		DLB_UE_WARN("Cannot get audio output devices - not initialized");
+		return;
+	}
+
+	DLB_UE_LOG("Getting audio output devices");
+	Sdk->device_management()
+	    .get_audio_devices()
+	    .then(
+	        [this](const std::vector<audio_device>& DvcDevices)
+	        {
+		        TArray<FDolbyIOAudioDevice> Devices;
+		        for (const audio_device& Device : DvcDevices)
+		        {
+			        if (Device.direction() & audio_device::direction::output)
+			        {
+				        DLB_UE_LOG("Got audio output device: %s", *ToString(Device));
+				        Devices.Add(ToFDolbyIOAudioDevice(Device));
+			        }
+		        }
+		        BroadcastEvent(OnAudioOutputDevicesReceived, Devices);
+	        })
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::GetCurrentAudioInputDevice()
+{
+	if (!Sdk)
+	{
+		DLB_UE_WARN("Cannot get current audio input device - not initialized");
+		return;
+	}
+
+	DLB_UE_LOG("Getting current audio input device");
+	Sdk->device_management()
+	    .get_current_audio_input_device()
+	    .then(
+	        [this](std::optional<audio_device> Device)
+	        {
+		        if (!Device)
+		        {
+			        DLB_UE_LOG("Got current audio input device - none");
+			        BroadcastEvent(OnCurrentAudioInputDeviceReceived, bIsDeviceNone, FDolbyIOAudioDevice{});
+			        return;
+		        }
+		        DLB_UE_LOG("Got current audio input device - %s", *ToString(*Device));
+		        BroadcastEvent(OnCurrentAudioInputDeviceReceived, !bIsDeviceNone, ToFDolbyIOAudioDevice(*Device));
+	        })
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::GetCurrentAudioOutputDevice()
+{
+	if (!Sdk)
+	{
+		DLB_UE_WARN("Cannot get current audio output device - not initialized");
+		return;
+	}
+
+	DLB_UE_LOG("Getting current audio output device");
+	Sdk->device_management()
+	    .get_current_audio_output_device()
+	    .then(
+	        [this](std::optional<audio_device> Device)
+	        {
+		        if (!Device)
+		        {
+			        DLB_UE_LOG("Got current audio output device - none");
+			        BroadcastEvent(OnCurrentAudioOutputDeviceReceived, bIsDeviceNone, FDolbyIOAudioDevice{});
+			        return;
+		        }
+		        DLB_UE_LOG("Got current audio output device - %s", *ToString(*Device));
+		        BroadcastEvent(OnCurrentAudioOutputDeviceReceived, !bIsDeviceNone, ToFDolbyIOAudioDevice(*Device));
+	        })
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::SetAudioInputDevice(const FString& InNativeId)
+{
+	if (!Sdk)
+	{
+		DLB_UE_WARN("Cannot set audio input device - not initialized");
+		return;
+	}
+
+	DLB_UE_LOG("Setting audio input device with native ID %s", *InNativeId);
+	Sdk->device_management()
+	    .get_audio_devices()
+	    .then(
+	        [this, NativeId = ToSdkNativeDeviceId(InNativeId)](const std::vector<audio_device>& DvcDevices)
+	        {
+		        for (const audio_device& Device : DvcDevices)
+			        if (Device.direction() & audio_device::direction::input && Device.native_id() == NativeId)
+			        {
+				        DLB_UE_LOG("Setting audio input device to %s", *ToString(Device));
+				        Sdk->device_management().set_preferred_input_audio_device(Device).on_error(
+				            MAKE_DLB_ERROR_HANDLER);
+				        return;
+			        }
+	        })
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::SetAudioOutputDevice(const FString& InNativeId)
+{
+	if (!Sdk)
+	{
+		DLB_UE_WARN("Cannot set audio output device - not initialized");
+		return;
+	}
+
+	DLB_UE_LOG("Setting audio output device with native ID %s", *InNativeId);
+	Sdk->device_management()
+	    .get_audio_devices()
+	    .then(
+	        [this, NativeId = ToSdkNativeDeviceId(InNativeId)](const std::vector<audio_device>& DvcDevices)
+	        {
+		        for (const audio_device& Device : DvcDevices)
+			        if (Device.direction() & audio_device::direction::output && Device.native_id() == NativeId)
+			        {
+				        DLB_UE_LOG("Setting audio output device to %s", *ToString(Device));
+				        Sdk->device_management().set_preferred_output_audio_device(Device).on_error(
+				            MAKE_DLB_ERROR_HANDLER);
+				        return;
+			        }
+	        })
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::GetVideoDevices()
+{
+	if (!Sdk)
+	{
+		DLB_UE_WARN("Cannot get video devices - not initialized");
+		return;
+	}
+
+	DLB_UE_LOG("Getting video devices");
+	Sdk->device_management()
+	    .get_video_devices()
+	    .then(
+	        [this](const std::vector<camera_device>& DvcDevices)
+	        {
+		        TArray<FDolbyIOVideoDevice> Devices;
+		        Devices.Reserve(DvcDevices.size());
+		        for (const camera_device& Device : DvcDevices)
+		        {
+			        DLB_UE_LOG("Got video device - display_name: %s unique_id: %s", *ToFString(Device.display_name),
+			                   *ToFString(Device.unique_id));
+			        Devices.Add(ToFDolbyIOVideoDevice(Device));
+		        }
+		        BroadcastEvent(OnVideoDevicesReceived, Devices);
+	        })
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
 template <class TDelegate, class... TArgs> void UDolbyIOSubsystem::BroadcastEvent(TDelegate& Event, TArgs&&... Args)
