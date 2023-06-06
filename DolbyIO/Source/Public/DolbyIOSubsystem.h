@@ -385,6 +385,7 @@ private:
 	void Initialize(const FString& Token);
 	void UpdateStatus(dolbyio::comms::conference_status);
 
+	void EmptyRemoteParticipants();
 	void SetSpatialEnvironment();
 
 	void ToggleInputMute();

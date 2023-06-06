@@ -281,6 +281,7 @@ void UDolbyIOSubsystem::UpdateStatus(conference_status Status)
 		case conference_status::left:
 		case conference_status::error:
 			BroadcastEvent(OnDisconnected);
+			EmptyRemoteParticipants();
 			break;
 	}
 }
@@ -310,6 +311,7 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 	UserInfo.name = ToStdString(UserName);
 	UserInfo.externalId = ToStdString(ExternalID);
 	UserInfo.avatarUrl = ToStdString(AvatarURL);
+	EmptyRemoteParticipants();
 
 	Sdk->session()
 	    .open(MoveTemp(UserInfo))
@@ -385,6 +387,12 @@ bool UDolbyIOSubsystem::IsSpatialAudio() const
 	return SpatialAudioStyle != EDolbyIOSpatialAudioStyle::Disabled;
 }
 
+void UDolbyIOSubsystem::EmptyRemoteParticipants()
+{
+	FScopeLock Lock{&RemoteParticipantsLock};
+	RemoteParticipants.Empty();
+}
+
 void UDolbyIOSubsystem::SetSpatialEnvironment()
 {
 	if (!IsConnectedAsActive() || !IsSpatialAudio())
@@ -425,9 +433,10 @@ void UDolbyIOSubsystem::DemoConference()
 		return;
 	}
 
+	DLB_UE_LOG("Connecting to demo conference");
 	ConnectionMode = EDolbyIOConnectionMode::Active;
 	SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared;
-	DLB_UE_LOG("Connecting to demo conference");
+	EmptyRemoteParticipants();
 
 	Sdk->session()
 	    .open({})
