@@ -215,7 +215,9 @@ public:
 	                  DisplayName = "Dolby.io Start Screenshare"))
 	static UDolbyIOStartScreenshare* DolbyIOStartScreenshare(
 	    const UObject* WorldContextObject, const FDolbyIOScreenshareSource& Source,
-	    EDolbyIOScreenshareContentType ContentType = EDolbyIOScreenshareContentType::Unspecified);
+	    EDolbyIOScreenshareEncoderHint EncoderHint = EDolbyIOScreenshareEncoderHint::Detailed,
+	    EDolbyIOScreenshareMaxResolution MaxResolution = EDolbyIOScreenshareMaxResolution::ActualCaptured,
+	    EDolbyIOScreenshareDownscaleQuality DownscaleQuality = EDolbyIOScreenshareDownscaleQuality::Low);
 
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIOStartScreenshareOutputPin OnScreenshareStarted;
@@ -228,7 +230,9 @@ private:
 
 	const UObject* WorldContextObject;
 	FDolbyIOScreenshareSource Source;
-	EDolbyIOScreenshareContentType ContentType;
+	EDolbyIOScreenshareEncoderHint EncoderHint;
+	EDolbyIOScreenshareMaxResolution MaxResolution;
+	EDolbyIOScreenshareDownscaleQuality DownscaleQuality;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOStopScreenshareOutputPin, const FString&, VideoTrackID);
@@ -474,11 +478,20 @@ public:
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Get Texture"))
 	static class UTexture2D* GetTexture(const UObject* WorldContextObject, const FString& VideoTrackID);
 
-	/** Changes the screenshare content type if already sharing screen. */
+	/** Changes the screen sharing parameters if already sharing screen.
+	 *
+	 * @param EncoderHint - Provides a hint to the plugin as to what type of content is being captured by the screen
+	 * share.
+	 * @param MaxResolution - The maximum resolution for the capture screen content to be shared as.
+	 * @param DownscaleQuality - The quality for the downscaling algorithm to be used.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
-	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Change Screenshare Content Type"))
-	static void ChangeScreenshareContentType(const UObject* WorldContextObject,
-	                                         EDolbyIOScreenshareContentType ContentType);
+	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Change Screenshare Parameters"))
+	static void ChangeScreenshareParameters(
+	    const UObject* WorldContextObject,
+	    EDolbyIOScreenshareEncoderHint EncoderHint = EDolbyIOScreenshareEncoderHint::Detailed,
+	    EDolbyIOScreenshareMaxResolution MaxResolution = EDolbyIOScreenshareMaxResolution::ActualCaptured,
+	    EDolbyIOScreenshareDownscaleQuality DownscaleQuality = EDolbyIOScreenshareDownscaleQuality::Low);
 
 	/** Updates the location of the listener for spatial audio purposes.
 	 *

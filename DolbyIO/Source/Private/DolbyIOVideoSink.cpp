@@ -4,9 +4,6 @@
 
 #include "DolbyIOLogging.h"
 
-#if PLATFORM_MAC
-#include <dolbyio/comms/media_engine/video_frame_macos.h>
-#endif
 #include <dolbyio/comms/media_engine/video_utils.h>
 
 #include "Async/Async.h"
@@ -17,6 +14,8 @@
 
 namespace DolbyIO
 {
+	using namespace dolbyio::comms;
+
 	UTexture2D* FVideoSink::GetTexture()
 	{
 		return Texture;
@@ -70,11 +69,13 @@ namespace DolbyIO
 #define PLATFORM_DATA GetPlatformData()
 #endif
 
-	void FVideoSink::Convert(dolbyio::comms::video_frame& VideoFrame)
+	void FVideoSink::Convert(const video_frame& VideoFrame)
 	{
 		constexpr int Stride = 4;
-		struct FTextureBuffer
+
+		class FTextureBuffer
 		{
+		public:
 			FTextureBuffer(UTexture2D* Texture)
 			    : Texture(Texture),
 			      Buffer(reinterpret_cast<uint8_t*>(Texture->PLATFORM_DATA->Mips[0].BulkData.Lock(LOCK_READ_WRITE)))
@@ -94,58 +95,94 @@ namespace DolbyIO
 			UTexture2D* const Texture;
 			uint8_t* const Buffer;
 		};
-#if PLATFORM_WINDOWS
-		if (dolbyio::comms::video_frame_i420* FrameI420 = VideoFrame.get_i420_frame())
+
+		std::shared_ptr<video_frame_buffer> VideoFrameBuffer = VideoFrame.video_frame_buffer();
+
+		if (!VideoFrameBuffer)
 		{
-			dolbyio::comms::video_utils::format_converter::i420_to_argb(
-			    FrameI420->get_y(), FrameI420->stride_y(), FrameI420->get_u(), FrameI420->stride_u(),
-			    FrameI420->get_v(), FrameI420->stride_v(), FTextureBuffer(Texture), VideoFrame.width() * Stride,
-			    VideoFrame.width(), VideoFrame.height());
+			return;
 		}
-#elif PLATFORM_MAC
-		class FLockedCVPixelBuffer
+
+		enum video_frame_buffer::type VideoFrameBufferType = VideoFrameBuffer->type();
+
+		if (VideoFrameBufferType == video_frame_buffer::type::argb)
 		{
-		public:
-			FLockedCVPixelBuffer(CVPixelBufferRef PixelBuffer) : PixelBuffer(PixelBuffer)
+			if (const video_frame_buffer_argb_interface* FrameARGB = VideoFrameBuffer->get_argb())
 			{
-				CVPixelBufferLockBaseAddress(PixelBuffer, kCVPixelBufferLock_ReadOnly);
+				FTextureBuffer TexBuffer{Texture};
+				memcpy(TexBuffer, FrameARGB->data(), VideoFrame.width() * VideoFrame.height() * Stride);
 			}
-			~FLockedCVPixelBuffer()
-			{
-				CVPixelBufferUnlockBaseAddress(PixelBuffer, kCVPixelBufferLock_ReadOnly);
-			}
-
-			operator CVPixelBufferRef() const
-			{
-				return PixelBuffer;
-			}
-
-		private:
-			CVPixelBufferRef PixelBuffer;
-		};
-
-		if (dolbyio::comms::video_frame_macos* FrameMac = VideoFrame.get_native_frame())
+		}
+		else if (VideoFrameBufferType == video_frame_buffer::type::i420)
 		{
-			FLockedCVPixelBuffer PixelBuffer{FrameMac->get_buffer()};
-			dolbyio::comms::video_utils::format_converter::nv12_to_argb(
-			    static_cast<uint8*>(CVPixelBufferGetBaseAddressOfPlane(PixelBuffer, 0)),
-			    CVPixelBufferGetBytesPerRowOfPlane(PixelBuffer, 0),
-			    static_cast<uint8*>(CVPixelBufferGetBaseAddressOfPlane(PixelBuffer, 1)),
-			    CVPixelBufferGetBytesPerRowOfPlane(PixelBuffer, 1), FTextureBuffer(Texture),
-			    VideoFrame.width() * Stride, VideoFrame.width(), VideoFrame.height());
+			if (const video_frame_buffer_i420_interface* FrameI420 = VideoFrameBuffer->get_i420())
+			{
+				video_utils::format_converter::i420_to_argb(
+				    FrameI420->data_y(), FrameI420->stride_y(), FrameI420->data_u(), FrameI420->stride_u(),
+				    FrameI420->data_v(), FrameI420->stride_v(), FTextureBuffer{Texture}, VideoFrame.width() * Stride,
+				    VideoFrame.width(), VideoFrame.height());
+			}
+		}
+		else if (VideoFrameBufferType == video_frame_buffer::type::nv12)
+		{
+			if (const video_frame_buffer_nv12_interface* FrameNV12 = VideoFrameBuffer->get_nv12())
+			{
+				video_utils::format_converter::nv12_to_argb(
+				    FrameNV12->data_y(), FrameNV12->stride_y(), FrameNV12->data_uv(), FrameNV12->stride_uv(),
+				    FTextureBuffer(Texture), VideoFrame.width() * Stride, VideoFrame.width(), VideoFrame.height());
+			}
+		}
+#if PLATFORM_MAC
+		else if (VideoFrameBufferType == video_frame_buffer::type::native)
+		{
+			class FLockedCVPixelBuffer
+			{
+			public:
+				FLockedCVPixelBuffer(CVPixelBufferRef PixelBuffer) : PixelBuffer(PixelBuffer)
+				{
+					CVPixelBufferLockBaseAddress(PixelBuffer, kCVPixelBufferLock_ReadOnly);
+				}
+				~FLockedCVPixelBuffer()
+				{
+					CVPixelBufferUnlockBaseAddress(PixelBuffer, kCVPixelBufferLock_ReadOnly);
+				}
+
+				operator CVPixelBufferRef() const
+				{
+					return PixelBuffer;
+				}
+
+			private:
+				CVPixelBufferRef PixelBuffer;
+			};
+
+			if (const video_frame_buffer_native_interface* FrameNative = VideoFrameBuffer->get_native())
+			{
+				FLockedCVPixelBuffer PixelBuffer{FrameNative->cv_pixel_buffer_ref()};
+				video_utils::format_converter::nv12_to_argb(
+				    static_cast<uint8*>(CVPixelBufferGetBaseAddressOfPlane(PixelBuffer, 0)),
+				    CVPixelBufferGetBytesPerRowOfPlane(PixelBuffer, 0),
+				    static_cast<uint8*>(CVPixelBufferGetBaseAddressOfPlane(PixelBuffer, 1)),
+				    CVPixelBufferGetBytesPerRowOfPlane(PixelBuffer, 1), FTextureBuffer{Texture},
+				    VideoFrame.width() * Stride, VideoFrame.width(), VideoFrame.height());
+			}
 		}
 #endif
+		else
+		{
+			DLB_UE_WARN("Unsupported video frame buffer type %d", VideoFrameBufferType);
+		}
 	}
 
-	void FVideoSink::handle_frame(std::unique_ptr<dolbyio::comms::video_frame> VideoFrame)
+	void FVideoSink::handle_frame(const video_frame& VideoFrame)
 	{
 		AsyncTask(ENamedThreads::GameThread,
-		          [WeakThis = weak_from_this(), VideoFrame = MoveTemp(VideoFrame)]
+		          [WeakThis = weak_from_this(), Frame = VideoFrame]
 		          {
 			          if (std::shared_ptr<FVideoSink> SharedThis = WeakThis.lock())
 			          {
-				          SharedThis->RecreateIfNeeded(VideoFrame->width(), VideoFrame->height());
-				          SharedThis->Convert(*VideoFrame);
+				          SharedThis->RecreateIfNeeded(Frame.width(), Frame.height());
+				          SharedThis->Convert(Frame);
 			          }
 		          });
 	}

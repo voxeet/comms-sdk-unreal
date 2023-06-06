@@ -39,7 +39,7 @@ public class DolbyIO : ModuleRules
 			{
 				RuntimeDependencies.Add(Path.Combine(BinDir, Dll));
 			}
-			RuntimeDependencies.Add(Path.Combine(BinDir, "dvdnr.dll"));
+			RuntimeDependencies.Add(Path.Combine(BinDir, "cac_dvdnr.dll"));
 			RuntimeDependencies.Add(Path.Combine(BinDir, "model.dnr"));
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
@@ -54,7 +54,7 @@ public class DolbyIO : ModuleRules
 			{
 				RuntimeDependencies.Add(Lib);
 			}
-			RuntimeDependencies.Add(Path.Combine(LibDir, "libdvdnr.dylib"));
+			RuntimeDependencies.Add(Path.Combine(LibDir, "libcac_dvdnr.dylib"));
 			RuntimeDependencies.Add(Path.Combine(LibDir, "model.dnr"));
 		}
 	}

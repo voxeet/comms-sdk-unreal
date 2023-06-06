@@ -29,7 +29,9 @@ namespace DolbyIO
 	FDolbyIOVideoTrack ToFDolbyIOVideoTrack(const dolbyio::comms::video_track& Track);
 
 	dolbyio::comms::spatial_audio_style ToSdkSpatialAudioStyle(EDolbyIOSpatialAudioStyle SpatialAudioStyle);
-	dolbyio::comms::screen_share_content_type ToSdkContentType(EDolbyIOScreenshareContentType Type);
+	dolbyio::comms::screen_share_content_info ToSdkContentInfo(EDolbyIOScreenshareEncoderHint EncoderHint,
+	                                                           EDolbyIOScreenshareMaxResolution MaxResolution,
+	                                                           EDolbyIOScreenshareDownscaleQuality DownscaleQuality);
 	dolbyio::comms::log_level ToSdkLogLevel(EDolbyIOLogLevel Level);
 	dolbyio::comms::camera_device ToSdkVideoDevice(const FDolbyIOVideoDevice& VideoDevice);
 

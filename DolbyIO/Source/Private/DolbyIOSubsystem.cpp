@@ -98,7 +98,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 
 	Sdk->register_component_version("unreal_sdk", "1.1.0-beta.6")
 	    .then(
-	        [this]
+	        [this](sdk::component_data)
 	        {
 		        return Sdk->conference().add_event_handler([this](const conference_status_updated& Event)
 		                                                   { UpdateStatus(Event.status); });
@@ -107,9 +107,9 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	        [this](event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
-		            [this](const participant_added& Event)
+		            [this](const remote_participant_added& Event)
 		            {
-			            if (!Event.participant.status || Event.participant.user_id == ToStdString(LocalParticipantID))
+			            if (!Event.participant.status)
 			            {
 				            return;
 			            }
@@ -124,9 +124,9 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	        [this](event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
-		            [this](const participant_updated& Event)
+		            [this](const remote_participant_updated& Event)
 		            {
-			            if (!Event.participant.status || Event.participant.user_id == ToStdString(LocalParticipantID))
+			            if (!Event.participant.status)
 			            {
 				            return;
 			            }
@@ -171,13 +171,8 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	        [this](event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
-		            [this](const video_track_added& Event)
+		            [this](const remote_video_track_added& Event)
 		            {
-			            if (!Event.track.remote)
-			            {
-				            return;
-			            }
-
 			            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
 			            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s StreamID=%s", *VideoTrack.TrackID,
 			                       *VideoTrack.ParticipantID, *ToFString(Event.track.stream_id));
@@ -194,13 +189,8 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	        [this](event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
-		            [this](const video_track_removed& Event)
+		            [this](const remote_video_track_removed& Event)
 		            {
-			            if (!Event.track.remote)
-			            {
-				            return;
-			            }
-
 			            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
 			            DLB_UE_LOG("Video track removed: TrackID=%s ParticipantID=%s StreamID=%s", *VideoTrack.TrackID,
 			                       *VideoTrack.ParticipantID, *ToFString(Event.track.stream_id));
@@ -587,7 +577,9 @@ void UDolbyIOSubsystem::GetScreenshareSources()
 }
 
 void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source,
-                                         EDolbyIOScreenshareContentType ContentType)
+                                         EDolbyIOScreenshareEncoderHint EncoderHint,
+                                         EDolbyIOScreenshareMaxResolution MaxResolution,
+                                         EDolbyIOScreenshareDownscaleQuality DownscaleQuality)
 {
 	if (!IsConnectedAsActive())
 	{
@@ -595,13 +587,15 @@ void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source
 		return;
 	}
 
-	DLB_UE_LOG("Starting screenshare using source: ID=%d IsScreen=%d Title=%s ContentType=%s", Source.ID,
-	           Source.bIsScreen, *Source.Title.ToString(), *UEnum::GetValueAsString(ContentType));
+	DLB_UE_LOG("Starting screenshare using source: ID=%d IsScreen=%d Title=%s %s %s %s", Source.ID, Source.bIsScreen,
+	           *Source.Title.ToString(), *UEnum::GetValueAsString(EncoderHint), *UEnum::GetValueAsString(MaxResolution),
+	           *UEnum::GetValueAsString(DownscaleQuality));
 	Sdk->conference()
 	    .start_screen_share(screen_share_source{ToStdString(Source.Title.ToString()), Source.ID,
 	                                            Source.bIsScreen ? screen_share_source::type::screen
 	                                                             : screen_share_source::type::window},
-	                        LocalScreenshareFrameHandler, ToSdkContentType(ContentType))
+	                        LocalScreenshareFrameHandler,
+	                        ToSdkContentInfo(EncoderHint, MaxResolution, DownscaleQuality))
 	    .then([this] { OnScreenshareStarted.Broadcast(LocalScreenshareTrackID); })
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
@@ -620,15 +614,19 @@ void UDolbyIOSubsystem::StopScreenshare()
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
-void UDolbyIOSubsystem::ChangeScreenshareContentType(EDolbyIOScreenshareContentType ContentType)
+void UDolbyIOSubsystem::ChangeScreenshareParameters(EDolbyIOScreenshareEncoderHint EncoderHint,
+                                                    EDolbyIOScreenshareMaxResolution MaxResolution,
+                                                    EDolbyIOScreenshareDownscaleQuality DownscaleQuality)
 {
 	if (!IsConnectedAsActive())
 	{
 		return;
 	}
-
-	DLB_UE_LOG("Changing screenshare content type to %s", *UEnum::GetValueAsString(ContentType));
-	Sdk->conference().screen_share_content_type(ToSdkContentType(ContentType)).on_error(MAKE_DLB_ERROR_HANDLER);
+	DLB_UE_LOG("Changing screenshare parameters to %s %s %s", *UEnum::GetValueAsString(EncoderHint),
+	           *UEnum::GetValueAsString(MaxResolution), *UEnum::GetValueAsString(DownscaleQuality));
+	Sdk->conference()
+	    .screen_share_content_info(ToSdkContentInfo(EncoderHint, MaxResolution, DownscaleQuality))
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
 void UDolbyIOSubsystem::BindMaterial(UMaterialInstanceDynamic* Material, const FString& VideoTrackID)
