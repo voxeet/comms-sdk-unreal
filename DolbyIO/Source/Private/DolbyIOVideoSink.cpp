@@ -109,8 +109,7 @@ namespace DolbyIO
 		{
 			if (const video_frame_buffer_argb_interface* FrameARGB = VideoFrameBuffer->get_argb())
 			{
-				FTextureBuffer TexBuffer{Texture};
-				memcpy(TexBuffer, FrameARGB->data(), VideoFrame.width() * VideoFrame.height() * Stride);
+				memcpy(FTextureBuffer{Texture}, FrameARGB->data(), VideoFrame.width() * VideoFrame.height() * Stride);
 			}
 		}
 		else if (VideoFrameBufferType == video_frame_buffer::type::i420)
