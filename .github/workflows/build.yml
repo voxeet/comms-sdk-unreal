@@ -12,7 +12,7 @@ env:
   RETENTION: 7
 
 jobs:
-  build-macos:
+  build-macos-x86:
     strategy:
       fail-fast: false
       matrix:
@@ -45,7 +45,8 @@ jobs:
           -Plugin=$(pwd)/DolbyIO/DolbyIO.uplugin \
           -TargetPlatforms=Mac \
           -Package=$(pwd)/${{ env.UNREAL_PLUGIN_OUTPUT }} \
-          -StrictIncludes
+          -StrictIncludes \
+          -Architecture_Mac=x64
       - name: Sign DolbyIO Unreal Plugin
         env:
           DOLBYIO_KEYCHAIN_PASSWORD: ${{ secrets.VOXEET_KEYCHAIN_PASSWORD }}
@@ -56,7 +57,57 @@ jobs:
       - name: Archive DolbyIO Unreal Plugin
         uses: actions/upload-artifact@v3
         with:
-          name: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}
+          name: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}_x86
+          path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
+          retention-days: ${{ env.RETENTION }}
+
+
+  build-macos-arm:
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["5.2"]
+    runs-on: ["self-hosted", "X64", "macOS"]
+    env:
+      BUILD_PLATFORM: 'macos64'
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v3
+      - name: Download C++ SDK release asset
+        uses: ./.github/actions/download_cpp/bash
+        with:
+          url: ${{ env.CPP_SDK_URL }}
+          tag: ${{ env.CPP_SDK_TAG }}
+          asset_name: "cppsdk-${{ env.CPP_SDK_TAG }}-${{ env.BUILD_PLATFORM }}.zip"
+      - name: Remove symlinks from cpp sdk libs
+        env:
+          LIB_PATH_ARM: "${{ github.workspace }}/${{ env.CPP_SDK_DESTINATION }}/sdk-release-arm/lib"
+          LIB_PATH_X86: "${{ github.workspace }}/${{ env.CPP_SDK_DESTINATION }}/sdk-release-x86/lib"
+        run: |
+          echo "Removing symlinks from ${LIB_PATH_ARM}"
+          find ${LIB_PATH_ARM} -type l -delete
+          echo "Removing symlinks from ${LIB_PATH_X86}"
+          find ${LIB_PATH_X86} -type l -delete
+      - name: Run Build
+        run: |
+          /Users/Shared/Epic\ Games/UE_${{ matrix.version }}/Engine/Build/BatchFiles/RunUAT.sh BuildPlugin \
+          -Rocket \
+          -Plugin=$(pwd)/DolbyIO/DolbyIO.uplugin \
+          -TargetPlatforms=Mac \
+          -Package=$(pwd)/${{ env.UNREAL_PLUGIN_OUTPUT }} \
+          -StrictIncludes \
+          -Architecture_Mac=arm64
+      - name: Sign DolbyIO Unreal Plugin
+        env:
+          DOLBYIO_KEYCHAIN_PASSWORD: ${{ secrets.VOXEET_KEYCHAIN_PASSWORD }}
+        uses: ./.github/actions/sign/mac
+        with:
+          path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
+          platform: 'macos'
+      - name: Archive DolbyIO Unreal Plugin
+        uses: actions/upload-artifact@v3
+        with:
+          name: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}_arm
           path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
           retention-days: ${{ env.RETENTION }}
 
