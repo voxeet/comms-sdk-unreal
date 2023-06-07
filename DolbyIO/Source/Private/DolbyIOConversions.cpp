@@ -4,11 +4,6 @@
 
 #include "Misc/Base64.h"
 
-struct FSdkId
-{
-	dolbyio::comms::audio_device::identity SdkIdentity;
-};
-
 namespace DolbyIO
 {
 	using namespace dolbyio::comms;
@@ -249,8 +244,7 @@ namespace DolbyIO
 
 	FDolbyIOAudioDevice ToFDolbyIOAudioDevice(const audio_device& Device)
 	{
-		return FDolbyIOAudioDevice{ToFText(Device.name()), ToUnrealDeviceId(Device.native_id()),
-		                           MakeShared<FSdkId>(FSdkId{Device.get_identity()})};
+		return FDolbyIOAudioDevice{ToFText(Device.name()), ToUnrealDeviceId(Device.native_id())};
 	}
 
 	FDolbyIOVideoDevice ToFDolbyIOVideoDevice(const camera_device& Device)
