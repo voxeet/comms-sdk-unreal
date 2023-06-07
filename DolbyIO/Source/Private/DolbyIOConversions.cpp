@@ -232,10 +232,10 @@ namespace DolbyIO
 				Ret.quality = screen_share_content_info::downscale_quality::medium;
 				break;
 			case EDolbyIOScreenshareDownscaleQuality::High:
-				Ret.quality = screen_share_content_info::downscale_quality::highest;
+				Ret.quality = screen_share_content_info::downscale_quality::high;
 				break;
 			case EDolbyIOScreenshareDownscaleQuality::Highest:
-				Ret.quality = screen_share_content_info::downscale_quality::high;
+				Ret.quality = screen_share_content_info::downscale_quality::highest;
 				break;
 			default:
 				Ret.quality = screen_share_content_info::downscale_quality::low;
