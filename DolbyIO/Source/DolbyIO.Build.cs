@@ -18,6 +18,13 @@ public class DolbyIO : ModuleRules
         string ReleaseDir = "sdk-release";
         if (Target.Platform == UnrealTargetPlatform.Mac)
         {
+#if UE_5_2_OR_LATER
+            if (Target.Architecture == UnrealArch.Arm64)
+            {
+                ReleaseDir += "-arm";
+            }
+            else
+#endif
             ReleaseDir += "-x86";
         }
         string SdkDir = Path.Combine("$(PluginDir)", ReleaseDir);
