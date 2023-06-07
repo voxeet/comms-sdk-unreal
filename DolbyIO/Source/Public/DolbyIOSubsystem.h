@@ -219,13 +219,26 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetScreenshareSources();
 
-	/** Starts screen sharing using a given source and content type.
+	/** Starts screen sharing using a given source.
+	 *
+	 * Users should make use of the parameters to optimize for the content they are sharing. For example, for sharing
+	 * dynamic content like a YouTube video, the ideal settings are MaxResolution=DownscaleTo1080p, EncoderHint=Fluid,
+	 * DownscaleQuality=High.
+	 *
+	 * @param Source - The source to use.
+	 * @param EncoderHint - Provides a hint to the plugin as to what type of content is being captured by the screen
+	 * share.
+	 * @param MaxResolution - The maximum resolution for the capture screen content to be shared as.
+	 * @param DownscaleQuality - The quality for the downscaling algorithm to be used.
 	 *
 	 * Triggers On Screenshare Started if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void StartScreenshare(const FDolbyIOScreenshareSource& Source,
-	                      EDolbyIOScreenshareContentType ContentType = EDolbyIOScreenshareContentType::Unspecified);
+	void StartScreenshare(
+	    const FDolbyIOScreenshareSource& Source,
+	    EDolbyIOScreenshareEncoderHint EncoderHint = EDolbyIOScreenshareEncoderHint::Detailed,
+	    EDolbyIOScreenshareMaxResolution MaxResolution = EDolbyIOScreenshareMaxResolution::ActualCaptured,
+	    EDolbyIOScreenshareDownscaleQuality DownscaleQuality = EDolbyIOScreenshareDownscaleQuality::Low);
 
 	/** Stops screen sharing.
 	 *
@@ -234,9 +247,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void StopScreenshare();
 
-	/** Changes the screenshare content type if already sharing screen. */
+	/** Changes the screen sharing parameters if already sharing screen.
+	 *
+	 * @param EncoderHint - Provides a hint to the plugin as to what type of content is being captured by the screen
+	 * share.
+	 * @param MaxResolution - The maximum resolution for the capture screen content to be shared as.
+	 * @param DownscaleQuality - The quality for the downscaling algorithm to be used.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void ChangeScreenshareContentType(EDolbyIOScreenshareContentType ContentType);
+	void ChangeScreenshareParameters(
+	    EDolbyIOScreenshareEncoderHint EncoderHint = EDolbyIOScreenshareEncoderHint::Detailed,
+	    EDolbyIOScreenshareMaxResolution MaxResolution = EDolbyIOScreenshareMaxResolution::ActualCaptured,
+	    EDolbyIOScreenshareDownscaleQuality DownscaleQuality = EDolbyIOScreenshareDownscaleQuality::Low);
 
 	/** Updates the location of the listener for spatial audio purposes.
 	 *

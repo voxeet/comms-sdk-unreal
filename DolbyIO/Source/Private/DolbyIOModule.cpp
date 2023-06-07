@@ -27,6 +27,12 @@ public:
 		LoadDll(BaseDir, "lib/libdvclient.dylib");
 		LoadDll(BaseDir, "lib/libdolbyio_comms_media.dylib");
 		LoadDll(BaseDir, "lib/libdolbyio_comms_sdk.dylib");
+#elif PLATFORM_LINUX
+		LoadDll(BaseDir, "lib/libavutil.so.57");
+		LoadDll(BaseDir, "lib/libavcodec.so.59");
+		LoadDll(BaseDir, "lib/libdvclient.so");
+		LoadDll(BaseDir, "lib/libdolbyio_comms_media.so");
+		LoadDll(BaseDir, "lib/libdolbyio_comms_sdk.so");
 #endif
 	}
 

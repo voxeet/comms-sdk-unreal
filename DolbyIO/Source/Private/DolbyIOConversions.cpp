@@ -193,19 +193,55 @@ namespace DolbyIO
 		}
 	}
 
-	screen_share_content_type ToSdkContentType(EDolbyIOScreenshareContentType Type)
+	screen_share_content_info ToSdkContentInfo(EDolbyIOScreenshareEncoderHint EncoderHint,
+	                                           EDolbyIOScreenshareMaxResolution MaxResolution,
+	                                           EDolbyIOScreenshareDownscaleQuality DownscaleQuality)
 	{
-		switch (Type)
+		screen_share_content_info Ret;
+
+		switch (EncoderHint)
 		{
-			case EDolbyIOScreenshareContentType::Detailed:
-				return screen_share_content_type::detailed;
-			case EDolbyIOScreenshareContentType::Text:
-				return screen_share_content_type::text;
-			case EDolbyIOScreenshareContentType::Fluid:
-				return screen_share_content_type::fluid;
+			case EDolbyIOScreenshareEncoderHint::Detailed:
+				Ret.hint = screen_share_content_info::encoder_hint::detailed;
+				break;
+			case EDolbyIOScreenshareEncoderHint::Text:
+				Ret.hint = screen_share_content_info::encoder_hint::text;
+				break;
+			case EDolbyIOScreenshareEncoderHint::Fluid:
+				Ret.hint = screen_share_content_info::encoder_hint::fluid;
+				break;
 			default:
-				return screen_share_content_type::unspecified;
+				Ret.hint = screen_share_content_info::encoder_hint::unspecified;
 		}
+
+		switch (MaxResolution)
+		{
+			case EDolbyIOScreenshareMaxResolution::DownscaleTo1080p:
+				Ret.resolution = screen_share_content_info::max_resolution::downscale_to_1080p;
+				break;
+			case EDolbyIOScreenshareMaxResolution::DownscaleTo1440p:
+				Ret.resolution = screen_share_content_info::max_resolution::downscale_to_1440p;
+				break;
+			default:
+				Ret.resolution = screen_share_content_info::max_resolution::actual_captured;
+		}
+
+		switch (DownscaleQuality)
+		{
+			case EDolbyIOScreenshareDownscaleQuality::Medium:
+				Ret.quality = screen_share_content_info::downscale_quality::medium;
+				break;
+			case EDolbyIOScreenshareDownscaleQuality::High:
+				Ret.quality = screen_share_content_info::downscale_quality::high;
+				break;
+			case EDolbyIOScreenshareDownscaleQuality::Highest:
+				Ret.quality = screen_share_content_info::downscale_quality::highest;
+				break;
+			default:
+				Ret.quality = screen_share_content_info::downscale_quality::low;
+		}
+
+		return Ret;
 	}
 
 	log_level ToSdkLogLevel(EDolbyIOLogLevel Level)

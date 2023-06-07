@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  CPP_SDK_TAG: "2.4.3"
+  CPP_SDK_TAG: "2.5.0"
   CPP_SDK_DESTINATION: "DolbyIO"
   CPP_SDK_URL: "https://github.com/DolbyIO/comms-sdk-cpp/releases/download"
   UNREAL_PLUGIN_OUTPUT: "Build/DolbyIO"
@@ -35,9 +35,9 @@ jobs:
           LIB_PATH_X86: "${{ github.workspace }}/${{ env.CPP_SDK_DESTINATION }}/sdk-release-x86/lib"
         run: |
           echo "Removing symlinks from ${LIB_PATH_ARM}"
-          rm ${LIB_PATH_ARM}/libav*.dylib
+          find ${LIB_PATH_ARM} -type l -delete
           echo "Removing symlinks from ${LIB_PATH_X86}"
-          rm ${LIB_PATH_X86}/libav*.dylib
+          find ${LIB_PATH_X86} -type l -delete
       - name: Run Build
         run: |
           /Users/Shared/Epic\ Games/UE_${{ matrix.version }}/Engine/Build/BatchFiles/RunUAT.sh BuildPlugin \
@@ -97,3 +97,41 @@ jobs:
           name: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}
           path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
           retention-days: ${{ env.RETENTION }}
+
+
+  # build-linux:
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       version: ["4.27", "5.2"]
+  #   runs-on: ["self-hosted", "X64", "Windows"]
+  #   env:
+  #     BUILD_PLATFORM: 'linux64'
+  #   steps:
+  #     - name: Code checkout
+  #       uses: actions/checkout@v3
+  #     - name: Download C++ SDK release asset for Windows
+  #       id: download_cpp_win
+  #       uses: ./.github/actions/download_cpp/powershell
+  #       with:
+  #         url: ${{ env.CPP_SDK_URL }}
+  #         tag: ${{ env.CPP_SDK_TAG }}
+  #         asset_name: "cppsdk-${{ env.CPP_SDK_TAG }}-windows64.zip"
+  #     - name: Download C++ SDK release asset
+  #       id: download_cpp
+  #       uses: ./.github/actions/download_cpp/powershell
+  #       with:
+  #         url: ${{ env.CPP_SDK_URL }}
+  #         tag: ${{ env.CPP_SDK_TAG }}
+  #         asset_name: "cppsdk-${{ env.CPP_SDK_TAG }}-${{ env.BUILD_PLATFORM }}.zip"
+  #     - name: Run Build
+  #       run: |
+  #         Write-Output "UE_${{ matrix.version }}"
+  #         $UERunUAT = "C:\\Program Files\\Epic Games\\UE_${{ matrix.version }}\\Engine\\Build\\BatchFiles\\RunUAT.bat"
+  #         & $UERunUAT BuildPlugin -Rocket -Plugin="$(pwd)\\DolbyIO\\DolbyIO.uplugin" -TargetPlatforms=Linux -Package="$(pwd)\\Build\\DolbyIO" -StrictIncludes -VS2019 -NoTurnKeyVariables
+  #     - name: Archive DolbyIO Plugin
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}
+  #         path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
+  #         retention-days: ${{ env.RETENTION }}

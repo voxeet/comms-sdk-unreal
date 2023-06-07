@@ -11,7 +11,7 @@ permissions:
   packages: write
 
 env:
-  CPP_SDK_TAG: "2.4.3"
+  CPP_SDK_TAG: "2.5.0"
   CPP_SDK_DESTINATION: "DolbyIO"
   CPP_SDK_URL: "https://github.com/DolbyIO/comms-sdk-cpp/releases/download"
   UNREAL_PLUGIN_OUTPUT: "Build/DolbyIO"
@@ -43,9 +43,9 @@ jobs:
           LIB_PATH_X86: "${{ github.workspace }}/${{ env.CPP_SDK_DESTINATION }}/sdk-release-x86/lib"
         run: |
           echo "Removing symlinks from ${LIB_PATH_ARM}"
-          rm ${LIB_PATH_ARM}/libav*.dylib
+          find ${LIB_PATH_ARM} -type l -delete
           echo "Removing symlinks from ${LIB_PATH_X86}"
-          rm ${LIB_PATH_X86}/libav*.dylib
+          find ${LIB_PATH_X86} -type l -delete
       - name: Run Build
         run: |
           /Users/Shared/Epic\ Games/UE_${{ matrix.version }}/Engine/Build/BatchFiles/RunUAT.sh BuildPlugin \

@@ -232,14 +232,17 @@ void UDolbyIOGetScreenshareSources::OnScreenshareSourcesReceivedImpl(const TArra
 
 // --------------------------------------------------------------------------------------------------------------------
 
-UDolbyIOStartScreenshare* UDolbyIOStartScreenshare::DolbyIOStartScreenshare(const UObject* WorldContextObject,
-                                                                            const FDolbyIOScreenshareSource& Source,
-                                                                            EDolbyIOScreenshareContentType ContentType)
+UDolbyIOStartScreenshare* UDolbyIOStartScreenshare::DolbyIOStartScreenshare(
+    const UObject* WorldContextObject, const FDolbyIOScreenshareSource& Source,
+    EDolbyIOScreenshareEncoderHint EncoderHint, EDolbyIOScreenshareMaxResolution MaxResolution,
+    EDolbyIOScreenshareDownscaleQuality DownscaleQuality)
 {
 	UDolbyIOStartScreenshare* Self = NewObject<UDolbyIOStartScreenshare>();
 	Self->WorldContextObject = WorldContextObject;
 	Self->Source = Source;
-	Self->ContentType = ContentType;
+	Self->EncoderHint = EncoderHint;
+	Self->MaxResolution = MaxResolution;
+	Self->DownscaleQuality = DownscaleQuality;
 	return Self;
 }
 
@@ -248,7 +251,7 @@ void UDolbyIOStartScreenshare::Activate()
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
 		DolbyIOSubsystem->OnScreenshareStarted.AddDynamic(this, &UDolbyIOStartScreenshare::OnScreenshareStartedImpl);
-		DolbyIOSubsystem->StartScreenshare(Source, ContentType);
+		DolbyIOSubsystem->StartScreenshare(Source, EncoderHint, MaxResolution, DownscaleQuality);
 	}
 }
 
@@ -530,12 +533,14 @@ UTexture2D* UDolbyIOBlueprintFunctionLibrary::GetTexture(const UObject* WorldCon
 	}
 	return nullptr;
 }
-void UDolbyIOBlueprintFunctionLibrary::ChangeScreenshareContentType(const UObject* WorldContextObject,
-                                                                    EDolbyIOScreenshareContentType ContentType)
+void UDolbyIOBlueprintFunctionLibrary::ChangeScreenshareParameters(const UObject* WorldContextObject,
+                                                                   EDolbyIOScreenshareEncoderHint EncoderHint,
+                                                                   EDolbyIOScreenshareMaxResolution MaxResolution,
+                                                                   EDolbyIOScreenshareDownscaleQuality DownscaleQuality)
 {
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
-		DolbyIOSubsystem->ChangeScreenshareContentType(ContentType);
+		DolbyIOSubsystem->ChangeScreenshareParameters(EncoderHint, MaxResolution, DownscaleQuality);
 	}
 }
 void UDolbyIOBlueprintFunctionLibrary::SetLocalPlayerLocation(const UObject* WorldContextObject,

@@ -19,11 +19,11 @@ namespace DolbyIO
 		void UnbindMaterial(UMaterialInstanceDynamic* Material);
 
 	private:
-		void handle_frame(std::unique_ptr<dolbyio::comms::video_frame>) override;
+		void handle_frame(const dolbyio::comms::video_frame&) override;
 
 		void RecreateIfNeeded(int Width, int Height);
 		void UpdateMaterial(UMaterialInstanceDynamic* Material);
-		void Convert(dolbyio::comms::video_frame& VideoFrame);
+		void Convert(const dolbyio::comms::video_frame& VideoFrame);
 
 		UTexture2D* Texture{};
 		TSet<UMaterialInstanceDynamic*> Materials;
