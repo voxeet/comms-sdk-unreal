@@ -27,6 +27,10 @@ public class DolbyIO : ModuleRules
 #endif
             ReleaseDir += "-x86";
         }
+        else if (Target.Platform == UnrealTargetPlatform.Linux)
+        {
+            ReleaseDir += "-ubuntu-20.04-clang10-libc++10";
+        }
         string SdkDir = Path.Combine("$(PluginDir)", ReleaseDir);
         PublicIncludePaths.Add(Path.Combine(SdkDir, "include"));
         string LibDir = Path.Combine(SdkDir, "lib");
@@ -68,6 +72,7 @@ public class DolbyIO : ModuleRules
         {
             string[] Libs = new string[] { Path.Combine(LibDir, "libavutil.so.57"),
                                            Path.Combine(LibDir, "libavcodec.so.59"),
+                                           Path.Combine(LibDir, "libavformat.so.59"),
                                            Path.Combine(LibDir, "libdvclient.so"),
                                            Path.Combine(LibDir, "libdolbyio_comms_media.so"),
                                            Path.Combine(LibDir, "libdolbyio_comms_sdk.so") };
