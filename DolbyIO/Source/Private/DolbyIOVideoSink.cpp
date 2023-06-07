@@ -128,7 +128,7 @@ namespace DolbyIO
 			{
 				video_utils::format_converter::nv12_to_argb(
 				    FrameNV12->data_y(), FrameNV12->stride_y(), FrameNV12->data_uv(), FrameNV12->stride_uv(),
-				    FTextureBuffer(Texture), VideoFrame.width() * Stride, VideoFrame.width(), VideoFrame.height());
+				    FTextureBuffer{Texture}, VideoFrame.width() * Stride, VideoFrame.width(), VideoFrame.height());
 			}
 		}
 #if PLATFORM_MAC
