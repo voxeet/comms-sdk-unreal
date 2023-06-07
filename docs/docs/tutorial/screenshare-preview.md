@@ -20,15 +20,27 @@ Before you start, follow the [common setup](common-setup) tutorial.
 
 ![](../../static/img/video-plane-result.png)
 
-If you launch the game now, assuming there is no conflicting screen share going on, you should see your screen share feed on the plane when you press "Z" and the plane should go blank when you press "X". This is because `BP_DolbyIOStarter` handles these key events as follows:
+3. Open the sample menu by pressing "M".
 
-![](../../static/img/screenshare-preview-toggle.png)
-
-This particular example will always share the first available screen share source, which is likely going to be the primary monitor screen. Selecting a screen share source is out of the scope of this tutorial as it requires some UI to parse the available screen share sources, received using [`Dolby.io Get Screenshare Sources`](../blueprints/Functions/get-screenshare-sources), into some sort of menu. The general flow however remains the same and requires getting screen share sources, choosing the desired source from the list, and starting screen share using this source.
+4. Open the "Screenshare sources" combo box and select the desired source. Assuming there is no conflicting screen share going on, you should see your screen share feed on the plane after pressing the "Start screenshare" button and the plane should disappear when you press "Stop screenshare".
 
 ![](../../static/img/screenshare-preview-result.png)
 
 ## How it works
+
+`W_DolbyIOSampleMenu` is a sample widget whose "Screenshare sources" combo box is filled using [`Get Screenshare Sources`](../blueprints/Functions/get-screenshare-sources) each time the widget becomes visible. We also save the sources in a variable.
+
+![](../../static/img/screenshare-preview-combobox.png)
+
+When you click "Start screenshare", we match the selected source from the combo box with the corresponding source from the variable, get other parameters from their combo boxes and [`Start Screenshare`](../blueprints/Functions/start-screenshare).
+
+![](../../static/img/screenshare-preview-start.png)
+
+Additionally, whenever you change the screen share parameters using their combo boxes, we call [`Change Screenshare Parameters`](../blueprints/Functions/change-screenshare-parameters). It is safe to call this function whenever a combo box selection changes even when screen share is not started, because it does nothing in that case.
+
+Finally, we simply [`Stop Screenshare`](../blueprints/Functions/stop-screenshare) when the "Stop screenshare" button is pressed.
+
+![](../../static/img/screenshare-preview-stop.png)
 
 `BP_DolbyIOScreensharePreviewPlane` is a sample Blueprint with a simple `Event Graph`, which handles [`On Screenshare Started`](../blueprints/Events/on-screenshare-started) and [`On Screenshare Stopped`](../blueprints/Events/on-screenshare-stopped).
 
