@@ -23,12 +23,6 @@ public:
 		LoadDll(BaseDir, "bin/dolbyio_comms_media.dll");
 		LoadDll(BaseDir, "bin/dolbyio_comms_sdk.dll");
 #elif PLATFORM_MAC
-		BaseDir +=
-#if PLATFORM_MAC_X86
-		    "-x86";
-#elif PLATFORM_MAC_ARM64
-		    "-arm";
-#endif
 		LoadDll(BaseDir, "lib/libdvclient.dylib");
 		LoadDll(BaseDir, "lib/libdolbyio_comms_media.dylib");
 		LoadDll(BaseDir, "lib/libdolbyio_comms_sdk.dylib");
