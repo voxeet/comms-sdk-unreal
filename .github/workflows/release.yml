@@ -36,7 +36,7 @@ jobs:
         with:
           url: ${{ env.CPP_SDK_URL }}
           tag: ${{ env.CPP_SDK_TAG }}
-          asset_name: "cppsdk-${{ env.CPP_SDK_TAG }}-${{ env.BUILD_PLATFORM }}.zip"
+          asset_name: "cppsdk-${{ env.CPP_SDK_TAG }}-${{ env.BUILD_PLATFORM }}-universal.zip"
       - name: Remove symlinks from cpp sdk libs
         env:
           LIB_PATH_UNIVERSAL: "${{ github.workspace }}/${{ env.CPP_SDK_DESTINATION }}/sdk-release/lib"
