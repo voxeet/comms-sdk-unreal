@@ -109,13 +109,6 @@ jobs:
     steps:
       - name: Code checkout
         uses: actions/checkout@v3
-      - name: Download C++ SDK release asset for Windows
-        id: download_cpp_win
-        uses: ./.github/actions/download_cpp/powershell
-        with:
-          url: ${{ env.CPP_SDK_URL }}
-          tag: ${{ env.CPP_SDK_TAG }}
-          asset_name: "cppsdk-${{ env.CPP_SDK_TAG }}-windows64.zip"
       - name: Download C++ SDK release asset
         id: download_cpp
         uses: ./.github/actions/download_cpp/powershell
@@ -128,7 +121,7 @@ jobs:
           Write-Output "${{ env.LINUX_MULTIARCH_ROOT }}"
           Write-Output "UE_${{ matrix.version }}"
           $UERunUAT = "C:\\Program Files\\Epic Games\\UE_${{ matrix.version }}\\Engine\\Build\\BatchFiles\\RunUAT.bat"
-          & $UERunUAT BuildPlugin -Rocket -Plugin="$(pwd)\\DolbyIO\\DolbyIO.uplugin" -TargetPlatforms=Linux -Package="$(pwd)\\Build\\DolbyIO" -StrictIncludes -VS2019 -NoTurnKeyVariables
+          & $UERunUAT BuildPlugin -Rocket -Plugin="$(pwd)\\DolbyIO\\DolbyIO.uplugin" -TargetPlatforms=Linux -Package="$(pwd)\\Build\\DolbyIO" -StrictIncludes -NoHostPlatform -NoTurnKeyVariables
       - name: Archive DolbyIO Plugin
         uses: actions/upload-artifact@v3
         with:
