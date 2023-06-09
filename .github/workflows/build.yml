@@ -115,6 +115,13 @@ jobs:
           url: ${{ env.CPP_SDK_URL }}
           tag: ${{ env.CPP_SDK_TAG }}
           asset_name: "cppsdk-${{ env.CPP_SDK_TAG }}-ubuntu-20.04-clang10-libc++10.zip"
+      - name: Unlink cpp sdk libs
+        env:
+          LIB_PATH_UBUNTU: "${{ github.workspace }}\\${{ env.CPP_SDK_DESTINATION }}\\sdk-release-ubuntu-20.04-clang10-libc++10\\lib"
+        run: |
+          Move-Item -Force "${{ env.LIB_PATH_UBUNTU }}\\libavcodec.so.59.33.100" "${{ env.LIB_PATH_UBUNTU }}\\libavcodec.so.59"
+          Move-Item -Force "${{ env.LIB_PATH_UBUNTU }}\\libavformat.so.59.25.100" "${{ env.LIB_PATH_UBUNTU }}\\libavformat.so.59"
+          Move-Item -Force "${{ env.LIB_PATH_UBUNTU }}\\libavutil.so.57.27.100" "${{ env.LIB_PATH_UBUNTU }}\\libavutil.so.57"
       - name: Run Build
         run: |
           if(${{ matrix.version }} -eq "4.27"){
