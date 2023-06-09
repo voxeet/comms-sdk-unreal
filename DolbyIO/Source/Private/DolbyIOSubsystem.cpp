@@ -49,7 +49,13 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void UDolbyIOSubsystem::Deinitialize()
 {
+#if WITH_EDITOR && PLATFORM_WINDOWS
+	// on Windows, closing the game while sharing an Unreal Editor window results in a deadlock if SDK is destroyed on
+	// main thread
+	AsyncTask(ENamedThreads::ActualRenderingThread, [MovedSdk = MoveTemp(Sdk)] {});
+#else
 	Sdk.Reset(); // make sure Sdk is dead so it doesn't call handle_frame on VideoSink during game destruction
+#endif
 	Super::Deinitialize();
 }
 
