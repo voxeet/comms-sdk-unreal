@@ -27,3 +27,9 @@ Before you start, follow the [common setup](common-setup) tutorial.
 When you select a device from the combo box, we get a corresponding device from a variable and use [`Set Audio Input Device`](../blueprints/Functions/set-audio-input-device) or [`Set Audio Output Device`](../blueprints/Functions/set-audio-output-device).
 
 ![](../../static/img/device-management-selection.png)
+
+## Using the same audio output device as Unreal Engine 5
+
+In Unreal Engine 5, you can ensure the plugin uses the same audio output device as the engine itself by handling the engine's `Audio Device Notification Subsystem`'s `Device Switched` event as shown below:
+
+![](../../static/img/device-management-follow.png)
