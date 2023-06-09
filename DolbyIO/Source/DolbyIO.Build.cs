@@ -16,18 +16,7 @@ public class DolbyIO : ModuleRules
             new string[] { "Core", "CoreUObject", "Engine", "HTTP", "Json", "Projects", "RenderCore" });
 
         string ReleaseDir = "sdk-release";
-        if (Target.Platform == UnrealTargetPlatform.Mac)
-        {
-#if UE_5_2_OR_LATER
-            if (Target.Architecture == UnrealArch.Arm64)
-            {
-                ReleaseDir += "-arm";
-            }
-            else
-#endif
-            ReleaseDir += "-x86";
-        }
-        else if (Target.Platform == UnrealTargetPlatform.Linux)
+        if (Target.Platform == UnrealTargetPlatform.Linux)
         {
             ReleaseDir += "-ubuntu-20.04-clang10-libc++10";
         }
