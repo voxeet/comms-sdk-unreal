@@ -71,7 +71,7 @@ void UDolbyIOConnect::Activate()
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
 		DolbyIOSubsystem->OnConnected.AddDynamic(this, &UDolbyIOConnect::OnConnectedImpl);
-		DolbyIOSubsystem->Connect(ConferenceName, UserName, ExternalID, AvatarURL);
+		DolbyIOSubsystem->Connect(ConferenceName, UserName, ExternalID, AvatarURL, ConnectionMode, SpatialAudioStyle);
 	}
 }
 
