@@ -35,8 +35,8 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	ConferenceStatus = conference_status::destroyed;
 
-	VideoSinks.Emplace(LocalCameraTrackID, std::make_shared<FVideoSink>());
-	VideoSinks.Emplace(LocalScreenshareTrackID, std::make_shared<FVideoSink>());
+	VideoSinks.Emplace(LocalCameraTrackID, std::make_shared<FVideoSink>(LocalCameraTrackID));
+	VideoSinks.Emplace(LocalScreenshareTrackID, std::make_shared<FVideoSink>(LocalScreenshareTrackID));
 	LocalCameraFrameHandler = std::make_shared<FVideoFrameHandler>(VideoSinks[LocalCameraTrackID]);
 	LocalScreenshareFrameHandler = std::make_shared<FVideoFrameHandler>(VideoSinks[LocalScreenshareTrackID]);
 
@@ -191,7 +191,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s StreamID=%s", *VideoTrack.TrackID,
 			                       *VideoTrack.ParticipantID, *ToFString(Event.track.stream_id));
 
-			            VideoSinks.Emplace(VideoTrack.TrackID, std::make_shared<FVideoSink>());
+			            VideoSinks.Emplace(VideoTrack.TrackID, std::make_shared<FVideoSink>(VideoTrack.TrackID));
 			            Sdk->video()
 			                .remote()
 			                .set_video_sink(Event.track, VideoSinks[VideoTrack.TrackID])
@@ -209,6 +209,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            DLB_UE_LOG("Video track removed: TrackID=%s ParticipantID=%s StreamID=%s", *VideoTrack.TrackID,
 			                       *VideoTrack.ParticipantID, *ToFString(Event.track.stream_id));
 
+			            VideoSinks[VideoTrack.TrackID]->UnbindAllMaterials();
 			            VideoSinks.Remove(VideoTrack.TrackID);
 			            BroadcastEvent(OnVideoTrackRemoved, VideoTrack);
 		            });
