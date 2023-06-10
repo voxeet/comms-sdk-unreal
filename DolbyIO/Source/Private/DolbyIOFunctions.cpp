@@ -2,8 +2,6 @@
 
 #include "DolbyIOFunctions.h"
 
-#include "DolbyIOSubsystem.h"
-
 #include "Engine/GameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -53,7 +51,8 @@ void UDolbyIOSetToken::OnInitializedImpl()
 UDolbyIOConnect* UDolbyIOConnect::DolbyIOConnect(const UObject* WorldContextObject, const FString& ConferenceName,
                                                  const FString& UserName, const FString& ExternalID,
                                                  const FString& AvatarURL, EDolbyIOConnectionMode ConnectionMode,
-                                                 EDolbyIOSpatialAudioStyle SpatialAudioStyle)
+                                                 EDolbyIOSpatialAudioStyle SpatialAudioStyle, int MaxVideoStreams,
+                                                 EDolbyIOVideoForwardingStrategy VideoForwardingStrategy)
 {
 	UDolbyIOConnect* Self = NewObject<UDolbyIOConnect>();
 	Self->WorldContextObject = WorldContextObject;
@@ -63,6 +62,8 @@ UDolbyIOConnect* UDolbyIOConnect::DolbyIOConnect(const UObject* WorldContextObje
 	Self->AvatarURL = AvatarURL;
 	Self->ConnectionMode = ConnectionMode;
 	Self->SpatialAudioStyle = SpatialAudioStyle;
+	Self->MaxVideoStreams = MaxVideoStreams;
+	Self->VideoForwardingStrategy = VideoForwardingStrategy;
 	return Self;
 }
 
@@ -71,7 +72,8 @@ void UDolbyIOConnect::Activate()
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
 		DolbyIOSubsystem->OnConnected.AddDynamic(this, &UDolbyIOConnect::OnConnectedImpl);
-		DolbyIOSubsystem->Connect(ConferenceName, UserName, ExternalID, AvatarURL);
+		DolbyIOSubsystem->Connect(ConferenceName, UserName, ExternalID, AvatarURL, ConnectionMode, SpatialAudioStyle,
+		                          MaxVideoStreams, VideoForwardingStrategy);
 	}
 }
 

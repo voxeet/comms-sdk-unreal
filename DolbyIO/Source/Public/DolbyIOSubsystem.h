@@ -10,6 +10,7 @@
 #include "DolbyIOParticipantInfo.h"
 #include "DolbyIOScreenshareSource.h"
 #include "DolbyIOSpatialAudioStyle.h"
+#include "DolbyIOVideoForwardingStrategy.h"
 #include "DolbyIOVideoTrack.h"
 
 #include <memory>
@@ -98,11 +99,17 @@ public:
 	 * @param AvatarURL - The URL of the participant's avatar.
 	 * @param ConnectionMode - Defines whether to connect as an active user or a listener.
 	 * @param SpatialAudioStyle - The spatial audio style of the conference.
+	 * @param MaxVideoStreams - Sets the maximum number of video streams that may be transmitted to the user. Valid
+	 * parameter values are between 0 and 25.
+	 * @param VideoForwardingStrategy - Defines how the plugin should select conference participants whose videos will
+	 * be transmitted to the local participant.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void Connect(const FString& ConferenceName = "unreal", const FString& UserName = "", const FString& ExternalID = "",
-	             const FString& AvatarURL = "", EDolbyIOConnectionMode ConnectionMode = EDolbyIOConnectionMode::Active,
-	             EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared);
+	void Connect(
+	    const FString& ConferenceName = "unreal", const FString& UserName = "", const FString& ExternalID = "",
+	    const FString& AvatarURL = "", EDolbyIOConnectionMode ConnectionMode = EDolbyIOConnectionMode::Active,
+	    EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared, int MaxVideoStreams = 25,
+	    EDolbyIOVideoForwardingStrategy VideoForwardingStrategy = EDolbyIOVideoForwardingStrategy::LastSpeaker);
 
 	/** Connects to a demo conference.
 	 *

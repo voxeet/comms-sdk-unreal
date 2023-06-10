@@ -284,7 +284,8 @@ void UDolbyIOSubsystem::UpdateStatus(conference_status Status)
 
 void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& UserName, const FString& ExternalID,
                                 const FString& AvatarURL, EDolbyIOConnectionMode ConnMode,
-                                EDolbyIOSpatialAudioStyle SpatialStyle)
+                                EDolbyIOSpatialAudioStyle SpatialStyle, int MaxVideoStreams,
+                                EDolbyIOVideoForwardingStrategy VideoForwardingStrategy)
 {
 	using namespace dolbyio::comms::services;
 
@@ -322,7 +323,7 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 		        return Sdk->conference().create(Options);
 	        })
 	    .then(
-	        [this](conference_info&& ConferenceInfo)
+	        [this, MaxVideoStreams, VideoForwardingStrategy](conference_info&& ConferenceInfo)
 	        {
 		        ConferenceID = ToFString(ConferenceInfo.id);
 		        if (ConnectionMode == EDolbyIOConnectionMode::Active)
@@ -331,6 +332,11 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 			        Options.constraints.audio = true;
 			        Options.constraints.video = bIsVideoEnabled;
 			        Options.connection.spatial_audio = IsSpatialAudio();
+			        Options.connection.max_video_forwarding = MaxVideoStreams;
+			        Options.connection.forwarding_strategy =
+			            VideoForwardingStrategy == EDolbyIOVideoForwardingStrategy::LastSpeaker
+			                ? video_forwarding_strategy::last_speaker
+			                : video_forwarding_strategy::closest_user;
 			        return Sdk->conference().join(ConferenceInfo, Options);
 		        }
 		        else
