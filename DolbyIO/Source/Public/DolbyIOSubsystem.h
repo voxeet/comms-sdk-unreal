@@ -280,6 +280,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetLocalPlayerRotation(const FRotator& Rotation);
 
+	/** Updates the location of the given remote participant for spatial audio purposes.
+	 *
+	 * This is only applicable when the spatial audio style of the conference is set to "Individual".
+	 *
+	 * Calling this function with the local participant ID has no effect. Use Set Local Player Location instead.
+	 *
+	 * @param ParticipantID - The ID of the remote participant.
+	 * @param Location - The location of the remote participant.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void SetRemotePlayerLocation(const FString& ParticipantID, const FVector& Location);
+
 	/** Sets what and how to log in the Dolby.io C++ SDK.
 	 *
 	 * This function should be called before the first call to Set Token if the user needs logs about the plugin's
