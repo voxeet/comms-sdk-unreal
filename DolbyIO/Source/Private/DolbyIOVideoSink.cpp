@@ -65,8 +65,12 @@ namespace DolbyIO
 		{
 			UTexture2D* Ret = UTexture2D::CreateTransient(1, 1, EPixelFormat::PF_B8G8R8A8);
 			Ret->AddToRoot();
-			FLockedTexture Tex{*Ret};
-			FMemory::Memzero(Tex, Stride);
+			AsyncTask(ENamedThreads::GameThread,
+			          [Ret]
+			          {
+				          FLockedTexture Tex{*Ret};
+				          FMemory::Memzero(Tex, Stride);
+			          });
 			return Ret;
 		}
 	}
@@ -105,7 +109,8 @@ namespace DolbyIO
 			}
 			DLB_UE_LOG("Unbinding material %u from video track ID %s texture %u", Material->GetUniqueID(),
 			           *VideoTrackID, Texture->GetUniqueID());
-			Material->SetTextureParameterValue(TexParamName, EmptyTexture);
+			AsyncTask(ENamedThreads::GameThread,
+			          [Material] { Material->SetTextureParameterValue(TexParamName, EmptyTexture); });
 		}
 	}
 
