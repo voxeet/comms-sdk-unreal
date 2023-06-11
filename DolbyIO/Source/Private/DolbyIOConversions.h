@@ -11,6 +11,8 @@
 #include "DolbyIOSpatialAudioStyle.h"
 #include "DolbyIOVideoTrack.h"
 
+#include <dolbyio/comms/utils/vfs_event.h>
+
 namespace DolbyIO
 {
 	constexpr int ScaleCenti = 100;
@@ -27,6 +29,8 @@ namespace DolbyIO
 	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<dolbyio::comms::participant_status> Status);
 	FDolbyIOParticipantInfo ToFDolbyIOParticipantInfo(const dolbyio::comms::participant_info& Info);
 	FDolbyIOVideoTrack ToFDolbyIOVideoTrack(const dolbyio::comms::video_track& Track);
+	FDolbyIOVideoTrack ToFDolbyIOVideoTrack(
+	    const dolbyio::comms::utils::participant_track_map::value_type& TrackMapItem);
 
 	dolbyio::comms::spatial_audio_style ToSdkSpatialAudioStyle(EDolbyIOSpatialAudioStyle SpatialAudioStyle);
 	dolbyio::comms::screen_share_content_info ToSdkContentInfo(EDolbyIOScreenshareEncoderHint EncoderHint,

@@ -27,6 +27,8 @@ void UDolbyIOObserver::InitializeComponent()
 		DolbyIOSubsystem->OnParticipantUpdated.AddDynamic(this, &UDolbyIOObserver::FwdOnParticipantUpdated);
 		DolbyIOSubsystem->OnVideoTrackAdded.AddDynamic(this, &UDolbyIOObserver::FwdOnVideoTrackAdded);
 		DolbyIOSubsystem->OnVideoTrackRemoved.AddDynamic(this, &UDolbyIOObserver::FwdOnVideoTrackRemoved);
+		DolbyIOSubsystem->OnVideoTrackEnabled.AddDynamic(this, &UDolbyIOObserver::FwdOnVideoTrackEnabled);
+		DolbyIOSubsystem->OnVideoTrackDisabled.AddDynamic(this, &UDolbyIOObserver::FwdOnVideoTrackDisabled);
 		DolbyIOSubsystem->OnVideoEnabled.AddDynamic(this, &UDolbyIOObserver::FwdOnVideoEnabled);
 		DolbyIOSubsystem->OnVideoDisabled.AddDynamic(this, &UDolbyIOObserver::FwdOnVideoDisabled);
 		DolbyIOSubsystem->OnScreenshareStarted.AddDynamic(this, &UDolbyIOObserver::FwdOnScreenshareStarted);
@@ -85,6 +87,14 @@ void UDolbyIOObserver::FwdOnVideoTrackAdded(const FDolbyIOVideoTrack& VideoTrack
 void UDolbyIOObserver::FwdOnVideoTrackRemoved(const FDolbyIOVideoTrack& VideoTrack)
 {
 	BroadcastEvent(OnVideoTrackRemoved, VideoTrack);
+}
+void UDolbyIOObserver::FwdOnVideoTrackEnabled(const FDolbyIOVideoTrack& VideoTrack)
+{
+	BroadcastEvent(OnVideoTrackEnabled, VideoTrack);
+}
+void UDolbyIOObserver::FwdOnVideoTrackDisabled(const FDolbyIOVideoTrack& VideoTrack)
+{
+	BroadcastEvent(OnVideoTrackDisabled, VideoTrack);
 }
 void UDolbyIOObserver::FwdOnVideoEnabled(const FString& VideoTrackID)
 {

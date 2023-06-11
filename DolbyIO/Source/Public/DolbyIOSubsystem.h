@@ -31,6 +31,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnParticipantUpdatedDeleg
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackAddedDelegate, const FDolbyIOVideoTrack&, VideoTrack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackRemovedDelegate, const FDolbyIOVideoTrack&,
                                             VideoTrack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackEnabledDelegate, const FDolbyIOVideoTrack&,
+                                            VideoTrack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackDisabledDelegate, const FDolbyIOVideoTrack&,
+                                            VideoTrack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoEnabledDelegate, const FString&, VideoTrackID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoDisabledDelegate, const FString&, VideoTrackID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnScreenshareStartedDelegate, const FString&, VideoTrackID);
@@ -385,6 +389,10 @@ public:
 	FSubsystemOnVideoTrackAddedDelegate OnVideoTrackAdded;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnVideoTrackRemovedDelegate OnVideoTrackRemoved;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnVideoTrackEnabledDelegate OnVideoTrackEnabled;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnVideoTrackDisabledDelegate OnVideoTrackDisabled;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnVideoEnabledDelegate OnVideoEnabled;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
