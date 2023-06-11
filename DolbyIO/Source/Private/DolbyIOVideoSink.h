@@ -14,18 +14,21 @@ namespace DolbyIO
 	class FVideoSink final : public dolbyio::comms::video_sink, public std::enable_shared_from_this<FVideoSink>
 	{
 	public:
+		FVideoSink(const FString& VideoTrackID);
+		~FVideoSink();
+
 		UTexture2D* GetTexture();
 		void BindMaterial(UMaterialInstanceDynamic* Material);
 		void UnbindMaterial(UMaterialInstanceDynamic* Material);
+		void UnbindAllMaterials();
 
 	private:
 		void handle_frame(const dolbyio::comms::video_frame&) override;
 
-		void RecreateIfNeeded(int Width, int Height);
-		void UpdateMaterial(UMaterialInstanceDynamic* Material);
-		void Convert(const dolbyio::comms::video_frame& VideoFrame);
+		void HandleFrameImpl(const dolbyio::comms::video_frame& VideoFrame);
 
-		UTexture2D* Texture{};
+		UTexture2D* const Texture{};
 		TSet<UMaterialInstanceDynamic*> Materials;
+		const FString VideoTrackID;
 	};
 }

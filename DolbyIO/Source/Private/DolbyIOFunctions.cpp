@@ -561,6 +561,14 @@ void UDolbyIOBlueprintFunctionLibrary::SetLocalPlayerRotation(const UObject* Wor
 		DolbyIOSubsystem->SetLocalPlayerRotation(Rotation);
 	}
 }
+void UDolbyIOBlueprintFunctionLibrary::SetRemotePlayerLocation(const UObject* WorldContextObject,
+                                                               const FString& ParticipantID, const FVector& Location)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->SetRemotePlayerLocation(ParticipantID, Location);
+	}
+}
 void UDolbyIOBlueprintFunctionLibrary::SetLogSettings(const UObject* WorldContextObject, EDolbyIOLogLevel SdkLogLevel,
                                                       EDolbyIOLogLevel MediaLogLevel, const FString& LogDirectory)
 {
