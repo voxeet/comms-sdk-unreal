@@ -111,3 +111,48 @@ jobs:
          ${{ github.workspace }}\\.github\\actions\\upload_assets\\upload_release_asset.ps1 -File DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
 
 
+  build-linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["4.27", "5.2"]
+    runs-on: ["self-hosted", "X64", "Windows"]
+    env:
+      BUILD_PLATFORM: 'linux64'
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v3
+      - name: Download C++ SDK release asset
+        id: download_cpp
+        uses: ./.github/actions/download_cpp/powershell
+        with:
+          url: ${{ env.CPP_SDK_URL }}
+          tag: ${{ env.CPP_SDK_TAG }}
+          asset_name: "cppsdk-${{ env.CPP_SDK_TAG }}-ubuntu-20.04-clang10-libc++10.zip"
+      - name: Unlink cpp sdk libs
+        env:
+          LIB_PATH_UBUNTU: "${{ github.workspace }}\\${{ env.CPP_SDK_DESTINATION }}\\sdk-release-ubuntu-20.04-clang10-libc++10\\lib"
+        run: |
+          Move-Item -Force "${{ env.LIB_PATH_UBUNTU }}\\libavcodec.so.59.33.100" "${{ env.LIB_PATH_UBUNTU }}\\libavcodec.so.59"
+          Move-Item -Force "${{ env.LIB_PATH_UBUNTU }}\\libavformat.so.59.25.100" "${{ env.LIB_PATH_UBUNTU }}\\libavformat.so.59"
+          Move-Item -Force "${{ env.LIB_PATH_UBUNTU }}\\libavutil.so.57.27.100" "${{ env.LIB_PATH_UBUNTU }}\\libavutil.so.57"
+      - name: Run Build
+        run: |
+          if(${{ matrix.version }} -eq "4.27"){
+            $env:LINUX_MULTIARCH_ROOT="C:\\UnrealToolchains\\v19_clang-11.0.1-centos7"
+          } else {
+            $env:LINUX_MULTIARCH_ROOT="C:\\UnrealToolchains\\v21_clang-15.0.1-centos7"
+          }
+          Write-Output "UE_${{ matrix.version }}"
+          $UERunUAT = "C:\\Program Files\\Epic Games\\UE_${{ matrix.version }}\\Engine\\Build\\BatchFiles\\RunUAT.bat"
+          & $UERunUAT BuildPlugin -Rocket -Plugin="$(pwd)\\DolbyIO\\DolbyIO.uplugin" -TargetPlatforms=Linux -Package="$(pwd)\\Build\\DolbyIO" -StrictIncludes -NoHostPlatform -NoTurnKeyVariables
+      - name: Zip of assets of DolbyIO Unreal Plugin
+        working-directory: ${{ env.UNREAL_PLUGIN_OUTPUT }}
+        run: |
+          Compress-Archive -Path . -DestinationPath DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip 
+      - name: Send assets of DolbyIO Unreal Plugin 🎉
+        id: upload_release_asset
+        working-directory: ${{ env.UNREAL_PLUGIN_OUTPUT }}
+        run: | 
+          ${{ github.workspace }}\\.github\\actions\\upload_assets\\upload_release_asset.ps1 -File DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
