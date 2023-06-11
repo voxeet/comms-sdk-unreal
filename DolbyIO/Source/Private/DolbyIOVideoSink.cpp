@@ -16,6 +16,72 @@ namespace DolbyIO
 {
 	using namespace dolbyio::comms;
 
+	namespace
+	{
+		constexpr auto TexParamName = "DolbyIO Frame";
+		constexpr int Stride = 4;
+
+		class FLockedTexture
+		{
+		public:
+			FLockedTexture(UTexture2D& Tex)
+			    : Tex(Tex), PlatformData(*Tex.
+#if ENGINE_MAJOR_VERSION == 4
+			                              PlatformData
+#else
+			                              GetPlatformData()
+#endif
+			                             ),
+			      Mip(PlatformData.Mips[0]), Buffer(Mip.BulkData.Lock(LOCK_READ_WRITE))
+			{
+			}
+
+			~FLockedTexture()
+			{
+				Mip.BulkData.Unlock();
+				Tex.UpdateResource();
+			}
+
+			void Resize(int Width, int Height)
+			{
+				Mip.SizeX = PlatformData.SizeX = Width;
+				Mip.SizeY = PlatformData.SizeY = Height;
+				Buffer = Mip.BulkData.Realloc(Width * Height * Stride);
+			}
+
+			operator uint8*()
+			{
+				return static_cast<uint8*>(Buffer);
+			}
+
+		private:
+			UTexture2D& Tex;
+			FTexturePlatformData& PlatformData;
+			FTexture2DMipMap& Mip;
+			void* Buffer;
+		};
+
+		UTexture2D* CreateEmptyTexture()
+		{
+			UTexture2D* Ret = UTexture2D::CreateTransient(1, 1, EPixelFormat::PF_B8G8R8A8);
+			Ret->AddToRoot();
+			AsyncTask(ENamedThreads::GameThread,
+			          [Ret]
+			          {
+				          FLockedTexture Tex{*Ret};
+				          FMemory::Memzero(Tex, Stride);
+			          });
+			return Ret;
+		}
+	}
+
+	FVideoSink::FVideoSink(const FString& VideoTrackID) : Texture(CreateEmptyTexture()), VideoTrackID(VideoTrackID) {}
+
+	FVideoSink::~FVideoSink()
+	{
+		Texture->RemoveFromRoot();
+	}
+
 	UTexture2D* FVideoSink::GetTexture()
 	{
 		return Texture;
@@ -23,78 +89,65 @@ namespace DolbyIO
 
 	void FVideoSink::BindMaterial(UMaterialInstanceDynamic* Material)
 	{
-		Materials.Add(Material);
-		UpdateMaterial(Material);
+		if (IsValid(Material))
+		{
+			DLB_UE_LOG("Binding material %u to video track ID %s texture %u", Material->GetUniqueID(), *VideoTrackID,
+			           Texture->GetUniqueID());
+			Materials.Add(Material);
+			Material->SetTextureParameterValue(TexParamName, Texture);
+		}
 	}
 
 	void FVideoSink::UnbindMaterial(UMaterialInstanceDynamic* Material)
 	{
 		if (Materials.Remove(Material) && IsValid(Material))
 		{
-			Material->SetTextureParameterValue("DolbyIO Frame", UTexture2D::CreateTransient(1, 1, PF_B8G8R8A8));
+			static UTexture2D* EmptyTexture = nullptr;
+			if (!EmptyTexture)
+			{
+				EmptyTexture = CreateEmptyTexture();
+			}
+			DLB_UE_LOG("Unbinding material %u from video track ID %s texture %u", Material->GetUniqueID(),
+			           *VideoTrackID, Texture->GetUniqueID());
+			AsyncTask(ENamedThreads::GameThread,
+			          [Material] { Material->SetTextureParameterValue(TexParamName, EmptyTexture); });
 		}
 	}
 
-	void FVideoSink::RecreateIfNeeded(int Width, int Height)
+	void FVideoSink::UnbindAllMaterials()
 	{
-		if (Texture)
+		TArray<UMaterialInstanceDynamic*> MaterialsArray = Materials.Array();
+		for (UMaterialInstanceDynamic* Material : MaterialsArray)
 		{
-			if (Texture->GetSizeX() == Width && Texture->GetSizeY() == Height)
-			{
-				return;
-			}
-			else
-			{
-				DLB_UE_LOG("Recreating texture: old %dx%d new %dx%d", Texture->GetSizeX(), Texture->GetSizeY(), Width,
-				           Height);
-				Texture->RemoveFromRoot();
-			}
-		}
-		else
-		{
-			DLB_UE_LOG("Creating texture: %dx%d", Width, Height);
-		}
-		Texture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
-		Texture->AddToRoot();
-
-		for (UMaterialInstanceDynamic* Material : Materials)
-		{
-			UpdateMaterial(Material);
+			UnbindMaterial(Material);
 		}
 	}
 
-#if ENGINE_MAJOR_VERSION == 4
-#define PLATFORM_DATA PlatformData
-#else
-#define PLATFORM_DATA GetPlatformData()
-#endif
-
-	void FVideoSink::Convert(const video_frame& VideoFrame)
+	void FVideoSink::handle_frame(const video_frame& VideoFrame)
 	{
-		constexpr int Stride = 4;
+		AsyncTask(ENamedThreads::GameThread,
+		          [WeakThis = weak_from_this(), Frame = VideoFrame]
+		          {
+			          if (std::shared_ptr<FVideoSink> SharedThis = WeakThis.lock())
+			          {
+				          SharedThis->HandleFrameImpl(Frame);
+			          }
+		          });
+	}
 
-		class FTextureBuffer
+	void FVideoSink::HandleFrameImpl(const video_frame& VideoFrame)
+	{
+		const int Width = VideoFrame.width();
+		const int Height = VideoFrame.height();
+
+		FLockedTexture Tex{*Texture};
+
+		if (Texture->GetSizeX() != Width || Texture->GetSizeY() != Height)
 		{
-		public:
-			FTextureBuffer(UTexture2D* Texture)
-			    : Texture(Texture),
-			      Buffer(reinterpret_cast<uint8_t*>(Texture->PLATFORM_DATA->Mips[0].BulkData.Lock(LOCK_READ_WRITE)))
-			{
-			}
-			~FTextureBuffer()
-			{
-				Texture->PLATFORM_DATA->Mips[0].BulkData.Unlock();
-				Texture->UpdateResource();
-			}
-			operator uint8_t*()
-			{
-				return Buffer;
-			}
-
-		private:
-			UTexture2D* const Texture;
-			uint8_t* const Buffer;
-		};
+			DLB_UE_LOG("Resizing texture %u for video track ID %s: old %dx%d new %dx%d", Texture->GetUniqueID(),
+			           *VideoTrackID, Texture->GetSizeX(), Texture->GetSizeY(), Width, Height);
+			Tex.Resize(Width, Height);
+		}
 
 		std::shared_ptr<video_frame_buffer> VideoFrameBuffer = VideoFrame.video_frame_buffer();
 
@@ -109,9 +162,8 @@ namespace DolbyIO
 		{
 			if (const video_frame_buffer_argb_interface* FrameARGB = VideoFrameBuffer->get_argb())
 			{
-				video_utils::format_converter::argb_copy(FrameARGB->data(), FrameARGB->stride(),
-				                                         FTextureBuffer{Texture}, VideoFrame.width() * Stride,
-				                                         VideoFrame.width(), VideoFrame.height());
+				video_utils::format_converter::argb_copy(FrameARGB->data(), FrameARGB->stride(), Tex, Width * Stride,
+				                                         Width, Height);
 			}
 		}
 		else if (VideoFrameBufferType == video_frame_buffer::type::i420)
@@ -120,17 +172,16 @@ namespace DolbyIO
 			{
 				video_utils::format_converter::i420_to_argb(
 				    FrameI420->data_y(), FrameI420->stride_y(), FrameI420->data_u(), FrameI420->stride_u(),
-				    FrameI420->data_v(), FrameI420->stride_v(), FTextureBuffer{Texture}, VideoFrame.width() * Stride,
-				    VideoFrame.width(), VideoFrame.height());
+				    FrameI420->data_v(), FrameI420->stride_v(), Tex, Width * Stride, Width, Height);
 			}
 		}
 		else if (VideoFrameBufferType == video_frame_buffer::type::nv12)
 		{
 			if (const video_frame_buffer_nv12_interface* FrameNV12 = VideoFrameBuffer->get_nv12())
 			{
-				video_utils::format_converter::nv12_to_argb(
-				    FrameNV12->data_y(), FrameNV12->stride_y(), FrameNV12->data_uv(), FrameNV12->stride_uv(),
-				    FTextureBuffer{Texture}, VideoFrame.width() * Stride, VideoFrame.width(), VideoFrame.height());
+				video_utils::format_converter::nv12_to_argb(FrameNV12->data_y(), FrameNV12->stride_y(),
+				                                            FrameNV12->data_uv(), FrameNV12->stride_uv(), Tex,
+				                                            Width * Stride, Width, Height);
 			}
 		}
 #if PLATFORM_MAC
@@ -164,35 +215,9 @@ namespace DolbyIO
 				    static_cast<uint8*>(CVPixelBufferGetBaseAddressOfPlane(PixelBuffer, 0)),
 				    CVPixelBufferGetBytesPerRowOfPlane(PixelBuffer, 0),
 				    static_cast<uint8*>(CVPixelBufferGetBaseAddressOfPlane(PixelBuffer, 1)),
-				    CVPixelBufferGetBytesPerRowOfPlane(PixelBuffer, 1), FTextureBuffer{Texture},
-				    VideoFrame.width() * Stride, VideoFrame.width(), VideoFrame.height());
+				    CVPixelBufferGetBytesPerRowOfPlane(PixelBuffer, 1), Tex, Width * Stride, Width, Height);
 			}
 		}
 #endif
-		else
-		{
-			DLB_UE_WARN("Unsupported video frame buffer type %d", VideoFrameBufferType);
-		}
-	}
-
-	void FVideoSink::handle_frame(const video_frame& VideoFrame)
-	{
-		AsyncTask(ENamedThreads::GameThread,
-		          [WeakThis = weak_from_this(), Frame = VideoFrame]
-		          {
-			          if (std::shared_ptr<FVideoSink> SharedThis = WeakThis.lock())
-			          {
-				          SharedThis->RecreateIfNeeded(Frame.width(), Frame.height());
-				          SharedThis->Convert(Frame);
-			          }
-		          });
-	}
-
-	void FVideoSink::UpdateMaterial(UMaterialInstanceDynamic* Material)
-	{
-		if (IsValid(Material))
-		{
-			Material->SetTextureParameterValue("DolbyIO Frame", Texture);
-		}
 	}
 }
