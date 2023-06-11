@@ -732,6 +732,19 @@ void UDolbyIOSubsystem::SetLocalPlayerRotationImpl(const FRotator& Rotation)
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
+void UDolbyIOSubsystem::SetRemotePlayerLocation(const FString& ParticipantID, const FVector& Location)
+{
+	if (!IsConnectedAsActive() || SpatialAudioStyle != EDolbyIOSpatialAudioStyle::Individual ||
+	    ParticipantID == LocalParticipantID)
+	{
+		return;
+	}
+
+	Sdk->conference()
+	    .set_spatial_position(ToStdString(ParticipantID), {Location.X, Location.Y, Location.Z})
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
 void UDolbyIOSubsystem::SetLocationUsingFirstPlayer()
 {
 	if (UWorld* World = GetGameInstance()->GetWorld())

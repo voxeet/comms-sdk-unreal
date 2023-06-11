@@ -71,7 +71,7 @@ void UDolbyIOConnect::Activate()
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
 		DolbyIOSubsystem->OnConnected.AddDynamic(this, &UDolbyIOConnect::OnConnectedImpl);
-		DolbyIOSubsystem->Connect(ConferenceName, UserName, ExternalID, AvatarURL);
+		DolbyIOSubsystem->Connect(ConferenceName, UserName, ExternalID, AvatarURL, ConnectionMode, SpatialAudioStyle);
 	}
 }
 
@@ -557,6 +557,14 @@ void UDolbyIOBlueprintFunctionLibrary::SetLocalPlayerRotation(const UObject* Wor
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
 		DolbyIOSubsystem->SetLocalPlayerRotation(Rotation);
+	}
+}
+void UDolbyIOBlueprintFunctionLibrary::SetRemotePlayerLocation(const UObject* WorldContextObject,
+                                                               const FString& ParticipantID, const FVector& Location)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->SetRemotePlayerLocation(ParticipantID, Location);
 	}
 }
 void UDolbyIOBlueprintFunctionLibrary::SetLogSettings(const UObject* WorldContextObject, EDolbyIOLogLevel SdkLogLevel,
