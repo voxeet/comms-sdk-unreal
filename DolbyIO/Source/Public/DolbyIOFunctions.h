@@ -2,13 +2,7 @@
 
 #pragma once
 
-#include "DolbyIOConnectionMode.h"
-#include "DolbyIODevices.h"
-#include "DolbyIOLogLevel.h"
-#include "DolbyIOParticipantInfo.h"
-#include "DolbyIOScreenshareSource.h"
-#include "DolbyIOSpatialAudioStyle.h"
-#include "DolbyIOVideoTrack.h"
+#include "DolbyIOSubsystem.h"
 
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
@@ -57,7 +51,8 @@ public:
 	    const UObject* WorldContextObject, const FString& ConferenceName = "unreal", const FString& UserName = "",
 	    const FString& ExternalID = "", const FString& AvatarURL = "",
 	    EDolbyIOConnectionMode ConnectionMode = EDolbyIOConnectionMode::Active,
-	    EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared);
+	    EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared, int MaxVideoStreams = 25,
+	    EDolbyIOVideoForwardingStrategy VideoForwardingStrategy = EDolbyIOVideoForwardingStrategy::LastSpeaker);
 
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIOConnectOutputPin OnConnected;
@@ -75,6 +70,8 @@ private:
 	FString AvatarURL;
 	EDolbyIOConnectionMode ConnectionMode;
 	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
+	int MaxVideoStreams;
+	EDolbyIOVideoForwardingStrategy VideoForwardingStrategy;
 };
 
 UCLASS()
