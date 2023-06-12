@@ -809,7 +809,9 @@ void UDolbyIOSubsystem::SetLogSettings(EDolbyIOLogLevel SdkLogLevel, EDolbyIOLog
 	sdk::log_settings LogSettings;
 	LogSettings.sdk_log_level = ToSdkLogLevel(SdkLogLevel);
 	LogSettings.media_log_level = ToSdkLogLevel(MediaLogLevel);
+	LogSettings.dvc_log_level = LogSettings.media_log_level;
 	LogSettings.log_directory = ToStdString(LogDirectory);
+	LogSettings.suppress_stdout_logs = true;
 	sdk::set_log_settings(LogSettings);
 }
 
