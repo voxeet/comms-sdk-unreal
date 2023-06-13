@@ -535,24 +535,21 @@ public:
 	static void SetRemotePlayerLocation(const UObject* WorldContextObject, const FString& ParticipantID,
 	                                    const FVector& Location);
 
-	/** Sets what and how to log in the Dolby.io C++ SDK.
+	/** Sets what and how to log in the Dolby.io C++ SDK. The logs will be saved to the default project log directory
+	 * (likely Saved/Logs).
 	 *
 	 * This function should be called before the first call to Set Token if the user needs logs about the plugin's
-	 * operation. Calling more than once has no effect.
+	 * operation. Calling this function more than once has no effect.
 	 *
-	 * @param SdkLogLevel - Log level for SDK logs. The default value is Info.
-	 * @param MediaLogLevel - Log level for Media Engine logs. We recommend keeping the Media Engine log level
-	 * at Off, Error, or Warning to avoid spam and only enable more detailed logs when necessary. The default value is
-	 * Off.
-	 * @param LogDirectory - The directory to which the logs should be saved. The application must have write access to
-	 * the directory or it must be able to create such a directory. Providing a valid directory implies starting logging
-	 * to a timestamped file. Providing no value or an empty string has no effect. The default value is an empty string.
+	 * @param SdkLogLevel - Log level for SDK logs.
+	 * @param MediaLogLevel - Log level for Media Engine logs.
+	 * @param DvcLogLevel - Log level for DVC logs.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Log Settings"))
 	static void SetLogSettings(const UObject* WorldContextObject, EDolbyIOLogLevel SdkLogLevel = EDolbyIOLogLevel::Info,
-	                           EDolbyIOLogLevel MediaLogLevel = EDolbyIOLogLevel::Off,
-	                           const FString& LogDirectory = "");
+	                           EDolbyIOLogLevel MediaLogLevel = EDolbyIOLogLevel::Info,
+	                           EDolbyIOLogLevel DvcLogLevel = EDolbyIOLogLevel::Info);
 
 	/** Sets the audio input device.
 	 *
