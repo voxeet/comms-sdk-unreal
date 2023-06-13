@@ -188,8 +188,9 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		            [this](const remote_video_track_added& Event)
 		            {
 			            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
-			            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s StreamID=%s", *VideoTrack.TrackID,
-			                       *VideoTrack.ParticipantID, *ToFString(Event.track.stream_id));
+			            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s StreamID=%s SDPTrackID=%s",
+			                       *VideoTrack.TrackID, *VideoTrack.ParticipantID, *ToFString(Event.track.stream_id),
+			                       *ToFString(Event.track.sdp_track_id));
 
 			            VideoSinks.Emplace(VideoTrack.TrackID, std::make_shared<FVideoSink>(VideoTrack.TrackID));
 			            Sdk->video()
@@ -206,8 +207,9 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		            [this](const remote_video_track_removed& Event)
 		            {
 			            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
-			            DLB_UE_LOG("Video track removed: TrackID=%s ParticipantID=%s StreamID=%s", *VideoTrack.TrackID,
-			                       *VideoTrack.ParticipantID, *ToFString(Event.track.stream_id));
+			            DLB_UE_LOG("Video track removed: TrackID=%s ParticipantID=%s StreamID=%s SDPTrackID=%s",
+			                       *VideoTrack.TrackID, *VideoTrack.ParticipantID, *ToFString(Event.track.stream_id),
+			                       *ToFString(Event.track.sdp_track_id));
 
 			            VideoSinks[VideoTrack.TrackID]->UnbindAllMaterials();
 			            VideoSinks.Remove(VideoTrack.TrackID);
@@ -259,6 +261,28 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	        [this]
 #endif
 	        {
+		        using namespace dolbyio::comms::utils;
+		        vfs_event::add_event_handler(*Sdk,
+		                                     [this](const vfs_event& Event)
+		                                     {
+			                                     for (const auto& TrackMapItem : Event.new_enabled)
+			                                     {
+				                                     const FDolbyIOVideoTrack VideoTrack =
+				                                         ToFDolbyIOVideoTrack(TrackMapItem);
+				                                     DLB_UE_LOG("Video track ID %s for participant ID %s enabled",
+				                                                *VideoTrack.TrackID, *VideoTrack.ParticipantID);
+				                                     BroadcastEvent(OnVideoTrackEnabled, VideoTrack);
+			                                     }
+			                                     for (const auto& TrackMapItem : Event.new_disabled)
+			                                     {
+				                                     const FDolbyIOVideoTrack VideoTrack =
+				                                         ToFDolbyIOVideoTrack(TrackMapItem);
+				                                     DLB_UE_LOG("Video track ID %s for participant ID %s disabled",
+				                                                *VideoTrack.TrackID, *VideoTrack.ParticipantID);
+				                                     BroadcastEvent(OnVideoTrackDisabled, VideoTrack);
+			                                     }
+		                                     });
+
 		        DLB_UE_LOG("Initialized");
 		        BroadcastEvent(OnInitialized);
 	        })
@@ -785,7 +809,9 @@ void UDolbyIOSubsystem::SetLogSettings(EDolbyIOLogLevel SdkLogLevel, EDolbyIOLog
 	sdk::log_settings LogSettings;
 	LogSettings.sdk_log_level = ToSdkLogLevel(SdkLogLevel);
 	LogSettings.media_log_level = ToSdkLogLevel(MediaLogLevel);
+	LogSettings.dvc_log_level = LogSettings.media_log_level;
 	LogSettings.log_directory = ToStdString(LogDirectory);
+	LogSettings.suppress_stdout_logs = true;
 	sdk::set_log_settings(LogSettings);
 }
 

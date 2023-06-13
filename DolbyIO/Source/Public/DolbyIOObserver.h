@@ -23,6 +23,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnParticipantUpdatedDelega
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackAddedDelegate, const FDolbyIOVideoTrack&, VideoTrack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackRemovedDelegate, const FDolbyIOVideoTrack&,
                                             VideoTrack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackEnabledDelegate, const FDolbyIOVideoTrack&,
+                                            VideoTrack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackDisabledDelegate, const FDolbyIOVideoTrack&,
+                                            VideoTrack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoEnabledDelegate, const FString&, VideoTrackID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoDisabledDelegate, const FString&, VideoTrackID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnScreenshareStartedDelegate, const FString&, VideoTrackID);
@@ -98,6 +102,14 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnVideoTrackRemovedDelegate OnVideoTrackRemoved;
 
+	/** Triggered when a video track is enabled as a result of the video forwarding strategy. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnVideoTrackEnabledDelegate OnVideoTrackEnabled;
+
+	/** Triggered when a video track is disabled as a result of the video forwarding strategy. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnVideoTrackDisabledDelegate OnVideoTrackDisabled;
+
 	/** Triggered when local video is enabled. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnVideoEnabledDelegate OnVideoEnabled;
@@ -137,11 +149,13 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnAudioOutputDevicesReceivedDelegate OnAudioOutputDevicesReceived;
 
-	/** Triggered when the current audio input device is received as a result of calling Get Current Audio Input Device. */
+	/** Triggered when the current audio input device is received as a result of calling Get Current Audio Input Device.
+	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnCurrentAudioInputDeviceReceivedDelegate OnCurrentAudioInputDeviceReceived;
 
-	/** Triggered when the current audio output device is received as a result of calling Get Current Audio Output Device.
+	/** Triggered when the current audio output device is received as a result of calling Get Current Audio Output
+	 * Device.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnCurrentAudioOutputDeviceReceivedDelegate OnCurrentAudioOutputDeviceReceived;
@@ -187,6 +201,12 @@ private:
 
 	UFUNCTION()
 	void FwdOnVideoTrackRemoved(const FDolbyIOVideoTrack& VideoTrack);
+
+	UFUNCTION()
+	void FwdOnVideoTrackEnabled(const FDolbyIOVideoTrack& VideoTrack);
+
+	UFUNCTION()
+	void FwdOnVideoTrackDisabled(const FDolbyIOVideoTrack& VideoTrack);
 
 	UFUNCTION()
 	void FwdOnVideoEnabled(const FString& VideoTrackID);
