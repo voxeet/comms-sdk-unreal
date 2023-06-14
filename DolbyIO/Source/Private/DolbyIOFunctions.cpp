@@ -570,11 +570,11 @@ void UDolbyIOBlueprintFunctionLibrary::SetRemotePlayerLocation(const UObject* Wo
 	}
 }
 void UDolbyIOBlueprintFunctionLibrary::SetLogSettings(const UObject* WorldContextObject, EDolbyIOLogLevel SdkLogLevel,
-                                                      EDolbyIOLogLevel MediaLogLevel, const FString& LogDirectory)
+                                                      EDolbyIOLogLevel MediaLogLevel, EDolbyIOLogLevel DvcLogLevel)
 {
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
-		DolbyIOSubsystem->SetLogSettings(SdkLogLevel, MediaLogLevel, LogDirectory);
+		DolbyIOSubsystem->SetLogSettings(SdkLogLevel, MediaLogLevel, DvcLogLevel);
 	}
 }
 

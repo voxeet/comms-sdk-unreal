@@ -12,6 +12,7 @@
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
+#include "Misc/Paths.h"
 #include "TimerManager.h"
 
 using namespace dolbyio::comms;
@@ -802,13 +803,16 @@ void UDolbyIOSubsystem::SetRotationUsingFirstPlayer()
 }
 
 void UDolbyIOSubsystem::SetLogSettings(EDolbyIOLogLevel SdkLogLevel, EDolbyIOLogLevel MediaLogLevel,
-                                       const FString& LogDirectory)
+                                       EDolbyIOLogLevel DvcLogLevel)
 {
+	const FString& LogDir = FPaths::ProjectLogDir();
+	DLB_UE_LOG("Logs will be saved in directory %s", *LogDir);
+
 	sdk::log_settings LogSettings;
 	LogSettings.sdk_log_level = ToSdkLogLevel(SdkLogLevel);
 	LogSettings.media_log_level = ToSdkLogLevel(MediaLogLevel);
-	LogSettings.dvc_log_level = LogSettings.media_log_level;
-	LogSettings.log_directory = ToStdString(LogDirectory);
+	LogSettings.dvc_log_level = ToSdkLogLevel(DvcLogLevel);
+	LogSettings.log_directory = ToStdString(LogDir);
 	LogSettings.suppress_stdout_logs = true;
 	sdk::set_log_settings(LogSettings);
 }
