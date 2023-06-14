@@ -694,16 +694,17 @@ void UDolbyIOSubsystem::ChangeScreenshareParameters(EDolbyIOScreenshareEncoderHi
 
 void UDolbyIOSubsystem::BindMaterial(UMaterialInstanceDynamic* Material, const FString& VideoTrackID)
 {
-	for (const auto& Sink : VideoSinks)
+	for (auto& Sink : VideoSinks)
 	{
-		if (Sink.Key == VideoTrackID)
-		{
-			Sink.Value->BindMaterial(Material);
-		}
-		else
+		if (Sink.Key != VideoTrackID)
 		{
 			Sink.Value->UnbindMaterial(Material);
 		}
+	}
+
+	if (const std::shared_ptr<DolbyIO::FVideoSink>* Sink = VideoSinks.Find(VideoTrackID))
+	{
+		(*Sink)->BindMaterial(Material);
 	}
 }
 
