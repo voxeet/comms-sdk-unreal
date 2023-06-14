@@ -127,7 +127,7 @@ public:
 
 	/** Disconnects from the current conference.
 	 *
-	 * Triggers On Disconnected when complete.
+	 * Triggers On Disconnected if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void Disconnect();
@@ -182,9 +182,9 @@ public:
 
 	/** Enables video streaming from the given video device or the default device if no device is given.
 	 *
-	 * @param VideoDevice - The video device to use.
-	 *
 	 * Triggers On Video Enabled if successful.
+	 *
+	 * @param VideoDevice - The video device to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms", Meta = (AutoCreateRefTerm = "VideoDevice"))
 	void EnableVideo(const FDolbyIOVideoDevice& VideoDevice);
@@ -220,12 +220,14 @@ public:
 	/** Gets the texture to which video from a given track is being rendered.
 	 *
 	 * @param VideoTrackID - The ID of the video track.
-	 * @return The texture holding the video tracks's frame or NULL if no such texture exists.
+	 * @return The texture holding the video track's frame or NULL if no such texture exists.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	class UTexture2D* GetTexture(const FString& VideoTrackID);
 
 	/** Gets a list of all possible screen sharing sources. These can be entire screens or specific application windows.
+	 *
+	 * Triggers On Screenshare Sources Received if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetScreenshareSources();
@@ -236,13 +238,13 @@ public:
 	 * dynamic content like a YouTube video, the ideal settings are MaxResolution=DownscaleTo1080p, EncoderHint=Fluid,
 	 * DownscaleQuality=High.
 	 *
+	 * Triggers On Screenshare Started if successful.
+	 *
 	 * @param Source - The source to use.
 	 * @param EncoderHint - Provides a hint to the plugin as to what type of content is being captured by the screen
 	 * share.
 	 * @param MaxResolution - The maximum resolution for the capture screen content to be shared as.
 	 * @param DownscaleQuality - The quality for the downscaling algorithm to be used.
-	 *
-	 * Triggers On Screenshare Started if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void StartScreenshare(
@@ -303,8 +305,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetRemotePlayerLocation(const FString& ParticipantID, const FVector& Location);
 
-	/** Sets what and how to log in the Dolby.io C++ SDK. The logs will be saved to the default project log directory
-	 * (likely Saved/Logs).
+	/** Sets what to log in the Dolby.io C++ SDK. The logs will be saved to the default project log directory (likely
+	 * Saved/Logs).
 	 *
 	 * This function should be called before the first call to Set Token if the user needs logs about the plugin's
 	 * operation. Calling this function more than once has no effect.
@@ -320,53 +322,53 @@ public:
 
 	/** Gets a list of all available audio input devices.
 	 *
-	 *  Triggers the OnAudioInputDevicesReceived event when ready.
+	 * Triggers On Audio Input Devices Received if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetAudioInputDevices();
 
 	/** Gets a list of all available audio output devices.
 	 *
-	 *  Triggers the OnAudioOutputDevicesReceived event when ready.
+	 * Triggers On Audio Output Devices Received if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetAudioOutputDevices();
 
 	/** Gets the current audio input device.
 	 *
-	 *  Triggers the OnCurrentAudioInputDeviceReceived event when ready.
+	 * Triggers On Current Audio Input Device Received if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetCurrentAudioInputDevice();
 
 	/** Gets the current audio output device.
 	 *
-	 *  Triggers the OnCurrentAudioOutputDeviceReceived event when ready.
+	 * Triggers On Current Audio Output Device Received if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetCurrentAudioOutputDevice();
 
 	/** Sets the audio input device.
 	 *
-	 *  Triggers the OnCurrentAudioDeviceChanged event when the change has been made.
+	 * Triggers On Current Audio Input Device Changed if successful.
 	 *
-	 * @param NativeId - The ID of the device to use.
+	 * @param NativeID - The ID of the device to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void SetAudioInputDevice(const FString& NativeId);
+	void SetAudioInputDevice(const FString& NativeID);
 
 	/** Sets the audio output device.
 	 *
-	 *  Triggers the OnCurrentAudioDeviceChanged event when the change has been made.
+	 * Triggers On Current Audio Output Device Changed if successful.
 	 *
-	 * @param NativeId - The ID of the device to use.
+	 * @param NativeID - The ID of the device to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void SetAudioOutputDevice(const FString& NativeId);
+	void SetAudioOutputDevice(const FString& NativeID);
 
 	/** Gets a list of all available video devices.
 	 *
-	 *  Triggers the OnVideoDevicesReceived event when ready.
+	 * Triggers On Video Devices Received if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetVideoDevices();

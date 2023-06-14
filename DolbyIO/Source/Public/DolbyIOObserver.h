@@ -65,13 +65,13 @@ public:
 	/** Triggered when an initial or refreshed client access token
 	 * (https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) is needed, which
 	 * happens when the Dolby.io Subsystem is initialized or when a refresh token is requested. After receiving this
-	 * event, obtain a token for your Dolby.io application and call the Dolby.io Subsystem's Set Token function.
+	 * event, obtain a token for your Dolby.io application and call the Dolby.io Set Token function.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnTokenNeededDelegate OnTokenNeeded;
 
 	/** Triggered when the plugin is successfully initialized after calling the Set Token function. After receiving this
-	 * event, the plugin is ready for use. You can now, for example, call the Dolby.io Subsystem's Connect function.
+	 * event, the plugin is ready for use. You can now, for example, call the Dolby.io Connect function.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnInitializedDelegate OnInitialized;

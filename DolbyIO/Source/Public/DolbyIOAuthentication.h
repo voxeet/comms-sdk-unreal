@@ -19,10 +19,12 @@ public:
 	/** Gets a Dolby.io client access token.
 	 *
 	 * For convenience during early development and prototyping, this function is provided to acquire an client access
-	 * token directly from the game. However, please note **we do not recommend** using this mechanism in the production
-	 * software for security best practices
-	 * (https://docs.dolby.io/communications-apis/docs/guides-client-authentication). The app secret needs to be
-	 * protected and not included in the application.
+	 * token directly from the game.
+	 *
+	 * Using this function effectively distributes the permanent app credential with your Unreal application, which is
+	 * not safe for production deployment. Follow our security best practices
+	 * (https://docs.dolby.io/communications-apis/docs/guides-client-authentication) to set up a server through which
+	 * you can acquire a temporary client access token.
 	 *
 	 * @param AppKey - The app key.
 	 * @param AppSecret - The app secret.

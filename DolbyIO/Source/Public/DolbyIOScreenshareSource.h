@@ -26,7 +26,8 @@ struct DOLBYIO_API FDolbyIOScreenshareSource
 /** The encoder hint provides a hint to the plugin as to what type of content is being captured by the screen share.
  * This can be used to help when making decisions for choosing encoder settings based on what aspects of the content are
  * important. For instance, if network conditions worsen is it more important to keep a higher resolution of screen
- * share or frame rate to keep the motion more fluid. */
+ * share or frame rate to keep the motion more fluid.
+ */
 UENUM(BlueprintType, DisplayName = "Dolby.io Screenshare Encoder Hint")
 enum class EDolbyIOScreenshareEncoderHint : uint8
 {
@@ -44,7 +45,8 @@ enum class EDolbyIOScreenshareEncoderHint : uint8
  * the set max resolution the plugin will downscale to the max resolution. The plugin captures screen content based on
  * the chosen display's resolution. The max resolution will also be downscaled if the captured resolution is higher,
  * otherwise this has no effect. Therefore the screen content will never be shared at a resolution higher than the one
- * set here, but if the captured display has lower resolution the content will not be upscaled. */
+ * set here, but if the captured display has lower resolution the content will not be upscaled.
+ */
 UENUM(BlueprintType, DisplayName = "Dolby.io Screenshare Max Resolution")
 enum class EDolbyIOScreenshareMaxResolution : uint8
 {
@@ -59,7 +61,8 @@ enum class EDolbyIOScreenshareMaxResolution : uint8
 };
 
 /** The quality for the downscaling algorithm to be used. The higher the quality, the clearer the picture will be, but
- * the higher the CPU usage will be. */
+ * the higher the CPU usage will be.
+ */
 UENUM(BlueprintType, DisplayName = "Dolby.io Screenshare Downscale Quality")
 enum class EDolbyIOScreenshareDownscaleQuality : uint8
 {
@@ -68,9 +71,11 @@ enum class EDolbyIOScreenshareDownscaleQuality : uint8
 	/** Use the linear filter algorithm used mainly for horizontal scaling. */
 	Medium,
 	/** Use the bilinear filter algorithm, faster than highest, but quality not as good. If downscaling fluid screen
-	 * content from 4K to 1080p this option should be used.*/
+	 * content from 4K to 1080p this option should be used.
+	 */
 	High,
 	/** Use the box filter algorithm, uses the most CPU and is the slowest but produces the best quality. If downscaling
-	 * detailed screen content from 4K to 2K this option should be used. */
+	 * detailed screen content from 4K to 2K this option should be used.
+	 */
 	Highest,
 };

@@ -39,14 +39,14 @@ namespace DolbyIO
 	dolbyio::comms::log_level ToSdkLogLevel(EDolbyIOLogLevel Level);
 	dolbyio::comms::camera_device ToSdkVideoDevice(const FDolbyIOVideoDevice& VideoDevice);
 
-	using FSdkNativeDeviceId =
+	using FSdkNativeDeviceID =
 #if PLATFORM_WINDOWS
 	    std::string;
 #else
 	    unsigned;
 #endif
-	FSdkNativeDeviceId ToSdkNativeDeviceId(const FString& Id);
-	FString ToUnrealDeviceId(const FSdkNativeDeviceId& Id);
+	FSdkNativeDeviceID ToSdkNativeDeviceID(const FString& ID);
+	FString ToUnrealDeviceID(const FSdkNativeDeviceID& ID);
 
 	FDolbyIOAudioDevice ToFDolbyIOAudioDevice(const dolbyio::comms::audio_device& Device);
 	FDolbyIOVideoDevice ToFDolbyIOVideoDevice(const dolbyio::comms::camera_device& Device);
