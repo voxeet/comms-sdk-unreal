@@ -2,12 +2,7 @@
 
 #pragma once
 
-#include "DolbyIOConnectionMode.h"
-#include "DolbyIODevices.h"
-#include "DolbyIOLogLevel.h"
-#include "DolbyIOScreenshareSource.h"
-#include "DolbyIOSpatialAudioStyle.h"
-#include "DolbyIOVideoTrack.h"
+#include "DolbyIOSubsystem.h"
 
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
@@ -22,6 +17,15 @@ class DOLBYIO_API UDolbyIOSetToken : public UBlueprintAsyncActionBase
 	GENERATED_BODY()
 
 public:
+	/** Initializes or refreshes the client access token. Initializes the plugin unless already initialized.
+	 *
+	 * Successful initialization triggers the On Initialized event.
+	 *
+	 * For quick testing, you can manually obtain a token from the Dolby.io dashboard (https://dashboard.dolby.io) and
+	 * paste it directly into the node or use the Get Dolby.io Token function.
+	 *
+	 * @param Token - The client access token.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
 	                  DisplayName = "Dolby.io Set Token"))
@@ -49,6 +53,23 @@ class DOLBYIO_API UDolbyIOConnect : public UBlueprintAsyncActionBase
 	GENERATED_BODY()
 
 public:
+	/** Connects to a conference.
+	 *
+	 * Triggers On Connected if successful.
+	 *
+	 * @param ConferenceName - The conference name. Must not be empty.
+	 * @param UserName - The name of the participant.
+	 * @param ExternalID - The external unique identifier that the customer's application can add to the participant
+	 * while opening a session. If a participant uses the same external ID in conferences, the participant's ID also
+	 * remains the same across all sessions.
+	 * @param AvatarURL - The URL of the participant's avatar.
+	 * @param ConnectionMode - Defines whether to connect as an active user or a listener.
+	 * @param SpatialAudioStyle - The spatial audio style of the conference.
+	 * @param MaxVideoStreams - Sets the maximum number of video streams that may be transmitted to the user. Valid
+	 * parameter values are between 0 and 25.
+	 * @param VideoForwardingStrategy - Defines how the plugin should select conference participants whose videos will
+	 * be transmitted to the local participant.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
 	                  DisplayName = "Dolby.io Connect"))
@@ -56,7 +77,8 @@ public:
 	    const UObject* WorldContextObject, const FString& ConferenceName = "unreal", const FString& UserName = "",
 	    const FString& ExternalID = "", const FString& AvatarURL = "",
 	    EDolbyIOConnectionMode ConnectionMode = EDolbyIOConnectionMode::Active,
-	    EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared);
+	    EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared, int MaxVideoStreams = 25,
+	    EDolbyIOVideoForwardingStrategy VideoForwardingStrategy = EDolbyIOVideoForwardingStrategy::LastSpeaker);
 
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIOConnectOutputPin OnConnected;
@@ -74,6 +96,8 @@ private:
 	FString AvatarURL;
 	EDolbyIOConnectionMode ConnectionMode;
 	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
+	int MaxVideoStreams;
+	EDolbyIOVideoForwardingStrategy VideoForwardingStrategy;
 };
 
 UCLASS()
@@ -82,6 +106,13 @@ class DOLBYIO_API UDolbyIODemoConference : public UBlueprintAsyncActionBase
 	GENERATED_BODY()
 
 public:
+	/** Connects to a demo conference.
+	 *
+	 * The demo automatically brings in 3 invisible bots into the conference as a quick way to validate the connection
+	 * to the service with audio functionality. The bots are placed at point {0, 0, 0}.
+	 *
+	 * Triggers On Connected if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
 	                  DisplayName = "Dolby.io Demo Conference"))
@@ -107,6 +138,10 @@ class DOLBYIO_API UDolbyIODisconnect : public UBlueprintAsyncActionBase
 	GENERATED_BODY()
 
 public:
+	/** Disconnects from the current conference.
+	 *
+	 * Triggers On Disconnected if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
 	                  DisplayName = "Dolby.io Disconnect"))
@@ -132,6 +167,12 @@ class DOLBYIO_API UDolbyIOEnableVideo : public UBlueprintAsyncActionBase
 	GENERATED_BODY()
 
 public:
+	/** Enables video streaming from the given video device or the default device if no device is given.
+	 *
+	 * Triggers On Video Enabled if successful.
+	 *
+	 * @param VideoDevice - The video device to use.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
 	                  DisplayName = "Dolby.io Enable Video", AutoCreateRefTerm = "VideoDevice"))
@@ -159,6 +200,10 @@ class DOLBYIO_API UDolbyIODisableVideo : public UBlueprintAsyncActionBase
 	GENERATED_BODY()
 
 public:
+	/** Disables video streaming.
+	 *
+	 * Triggers On Video Disabled if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
 	                  DisplayName = "Dolby.io Disable Video"))
@@ -185,6 +230,10 @@ class DOLBYIO_API UDolbyIOGetScreenshareSources : public UBlueprintAsyncActionBa
 	GENERATED_BODY()
 
 public:
+	/** Gets a list of all possible screen sharing sources. These can be entire screens or specific application windows.
+	 *
+	 * Triggers On Screenshare Sources Received if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
 	                  DisplayName = "Dolby.io Get Screenshare Sources"))
@@ -210,12 +259,28 @@ class DOLBYIO_API UDolbyIOStartScreenshare : public UBlueprintAsyncActionBase
 	GENERATED_BODY()
 
 public:
+	/** Starts screen sharing using a given source.
+	 *
+	 * Users should make use of the parameters to optimize for the content they are sharing. For example, for sharing
+	 * dynamic content like a YouTube video, the ideal settings are MaxResolution=DownscaleTo1080p, EncoderHint=Fluid,
+	 * DownscaleQuality=High.
+	 *
+	 * Triggers On Screenshare Started if successful.
+	 *
+	 * @param Source - The source to use.
+	 * @param EncoderHint - Provides a hint to the plugin as to what type of content is being captured by the screen
+	 * share.
+	 * @param MaxResolution - The maximum resolution for the capture screen content to be shared as.
+	 * @param DownscaleQuality - The quality for the downscaling algorithm to be used.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
 	                  DisplayName = "Dolby.io Start Screenshare"))
 	static UDolbyIOStartScreenshare* DolbyIOStartScreenshare(
 	    const UObject* WorldContextObject, const FDolbyIOScreenshareSource& Source,
-	    EDolbyIOScreenshareContentType ContentType = EDolbyIOScreenshareContentType::Unspecified);
+	    EDolbyIOScreenshareEncoderHint EncoderHint = EDolbyIOScreenshareEncoderHint::Detailed,
+	    EDolbyIOScreenshareMaxResolution MaxResolution = EDolbyIOScreenshareMaxResolution::ActualCaptured,
+	    EDolbyIOScreenshareDownscaleQuality DownscaleQuality = EDolbyIOScreenshareDownscaleQuality::Low);
 
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIOStartScreenshareOutputPin OnScreenshareStarted;
@@ -228,7 +293,9 @@ private:
 
 	const UObject* WorldContextObject;
 	FDolbyIOScreenshareSource Source;
-	EDolbyIOScreenshareContentType ContentType;
+	EDolbyIOScreenshareEncoderHint EncoderHint;
+	EDolbyIOScreenshareMaxResolution MaxResolution;
+	EDolbyIOScreenshareDownscaleQuality DownscaleQuality;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOStopScreenshareOutputPin, const FString&, VideoTrackID);
@@ -239,6 +306,10 @@ class DOLBYIO_API UDolbyIOStopScreenshare : public UBlueprintAsyncActionBase
 	GENERATED_BODY()
 
 public:
+	/** Stops screen sharing.
+	 *
+	 * Triggers On Screenshare Stopped if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
 	                  DisplayName = "Dolby.io Stop Screenshare"))
@@ -265,6 +336,10 @@ class DOLBYIO_API UDolbyIOGetAudioInputDevices : public UBlueprintAsyncActionBas
 	GENERATED_BODY()
 
 public:
+	/** Gets a list of all available audio input devices.
+	 *
+	 * Triggers On Audio Input Devices Received if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
 	                  DisplayName = "Dolby.io Get Audio Input Devices"))
@@ -291,6 +366,10 @@ class DOLBYIO_API UDolbyIOGetAudioOutputDevices : public UBlueprintAsyncActionBa
 	GENERATED_BODY()
 
 public:
+	/** Gets a list of all available audio output devices.
+	 *
+	 * Triggers On Audio Output Devices Received if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
 	                  DisplayName = "Dolby.io Get Audio Output Devices"))
@@ -317,6 +396,10 @@ class DOLBYIO_API UDolbyIOGetCurrentAudioInputDevice : public UBlueprintAsyncAct
 	GENERATED_BODY()
 
 public:
+	/** Gets the current audio input device.
+	 *
+	 * Triggers On Current Audio Input Device Received if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
 	                  DisplayName = "Dolby.io Get Current Audio Input Device"))
@@ -343,6 +426,10 @@ class DOLBYIO_API UDolbyIOGetCurrentAudioOutputDevice : public UBlueprintAsyncAc
 	GENERATED_BODY()
 
 public:
+	/** Gets the current audio output device.
+	 *
+	 * Triggers On Current Audio Output Device Received if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
 	                  DisplayName = "Dolby.io Get Current Audio Output Device"))
@@ -369,6 +456,10 @@ class DOLBYIO_API UDolbyIOGetVideoDevices : public UBlueprintAsyncActionBase
 	GENERATED_BODY()
 
 public:
+	/** Gets a list of all available video devices.
+	 *
+	 * Triggers On Video Devices Received if successful.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
 	                  DisplayName = "Dolby.io Get Video Devices"))
@@ -440,6 +531,14 @@ public:
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Unmute Participant"))
 	static void UnmuteParticipant(const UObject* WorldContextObject, const FString& ParticipantID);
 
+	/** Gets a list of all remote participants.
+	 *
+	 * @return An array of current Dolby.io Participant Info's.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Get Participants"))
+	static TArray<FDolbyIOParticipantInfo> GetParticipants(const UObject* WorldContextObject);
+
 	/** Binds a dynamic material instance to hold the frames of the given video track. The plugin will update the
 	 * material's texture parameter named "DolbyIO Frame" with the necessary data, therefore the material should have
 	 * such a parameter to be usable. Automatically unbinds the material from all other tracks, but it is possible to
@@ -468,17 +567,26 @@ public:
 	/** Gets the texture to which video from a given track is being rendered.
 	 *
 	 * @param VideoTrackID - The ID of the video track.
-	 * @return The texture holding the video tracks's frame or NULL if no such texture exists.
+	 * @return The texture holding the video track's frame or NULL if no such texture exists.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Get Texture"))
 	static class UTexture2D* GetTexture(const UObject* WorldContextObject, const FString& VideoTrackID);
 
-	/** Changes the screenshare content type if already sharing screen. */
+	/** Changes the screen sharing parameters if already sharing screen.
+	 *
+	 * @param EncoderHint - Provides a hint to the plugin as to what type of content is being captured by the screen
+	 * share.
+	 * @param MaxResolution - The maximum resolution for the capture screen content to be shared as.
+	 * @param DownscaleQuality - The quality for the downscaling algorithm to be used.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
-	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Change Screenshare Content Type"))
-	static void ChangeScreenshareContentType(const UObject* WorldContextObject,
-	                                         EDolbyIOScreenshareContentType ContentType);
+	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Change Screenshare Parameters"))
+	static void ChangeScreenshareParameters(
+	    const UObject* WorldContextObject,
+	    EDolbyIOScreenshareEncoderHint EncoderHint = EDolbyIOScreenshareEncoderHint::Detailed,
+	    EDolbyIOScreenshareMaxResolution MaxResolution = EDolbyIOScreenshareMaxResolution::ActualCaptured,
+	    EDolbyIOScreenshareDownscaleQuality DownscaleQuality = EDolbyIOScreenshareDownscaleQuality::Low);
 
 	/** Updates the location of the listener for spatial audio purposes.
 	 *
@@ -502,38 +610,49 @@ public:
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Local Player Rotation"))
 	static void SetLocalPlayerRotation(const UObject* WorldContextObject, const FRotator& Rotation);
 
-	/** Sets what and how to log in the Dolby.io C++ SDK.
+	/** Updates the location of the given remote participant for spatial audio purposes.
+	 *
+	 * This is only applicable when the spatial audio style of the conference is set to "Individual".
+	 *
+	 * Calling this function with the local participant ID has no effect. Use Set Local Player Location instead.
+	 *
+	 * @param ParticipantID - The ID of the remote participant.
+	 * @param Location - The location of the remote participant.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Remote Player Location"))
+	static void SetRemotePlayerLocation(const UObject* WorldContextObject, const FString& ParticipantID,
+	                                    const FVector& Location);
+
+	/** Sets what to log in the Dolby.io C++ SDK. The logs will be saved to the default project log directory (likely
+	 * Saved/Logs).
 	 *
 	 * This function should be called before the first call to Set Token if the user needs logs about the plugin's
-	 * operation. Calling more than once has no effect.
+	 * operation. Calling this function more than once has no effect.
 	 *
-	 * @param SdkLogLevel - Log level for SDK logs. The default value is Info.
-	 * @param MediaLogLevel - Log level for Media Engine logs. We recommend keeping the Media Engine log level
-	 * at Off, Error, or Warning to avoid spam and only enable more detailed logs when necessary. The default value is
-	 * Off.
-	 * @param LogDirectory - The directory to which the logs should be saved. The application must have write access to
-	 * the directory or it must be able to create such a directory. Providing a valid directory implies starting logging
-	 * to a timestamped file. Providing no value or an empty string has no effect. The default value is an empty string.
+	 * @param SdkLogLevel - Log level for SDK logs.
+	 * @param MediaLogLevel - Log level for Media Engine logs.
+	 * @param DvcLogLevel - Log level for DVC logs.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Log Settings"))
 	static void SetLogSettings(const UObject* WorldContextObject, EDolbyIOLogLevel SdkLogLevel = EDolbyIOLogLevel::Info,
-	                           EDolbyIOLogLevel MediaLogLevel = EDolbyIOLogLevel::Off,
-	                           const FString& LogDirectory = "");
+	                           EDolbyIOLogLevel MediaLogLevel = EDolbyIOLogLevel::Info,
+	                           EDolbyIOLogLevel DvcLogLevel = EDolbyIOLogLevel::Info);
 
 	/** Sets the audio input device.
 	 *
-	 * @param NativeId - The ID of the device to use.
+	 * @param NativeID - The ID of the device to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Audio Input Device"))
-	static void SetAudioInputDevice(const UObject* WorldContextObject, const FString& NativeId);
+	static void SetAudioInputDevice(const UObject* WorldContextObject, const FString& NativeID);
 
 	/** Sets the audio output device.
 	 *
-	 * @param NativeId - The ID of the device to use.
+	 * @param NativeID - The ID of the device to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Audio Output Device"))
-	static void SetAudioOutputDevice(const UObject* WorldContextObject, const FString& NativeId);
+	static void SetAudioOutputDevice(const UObject* WorldContextObject, const FString& NativeID);
 };

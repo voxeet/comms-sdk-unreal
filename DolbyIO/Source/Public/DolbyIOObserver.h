@@ -23,6 +23,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnParticipantUpdatedDelega
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackAddedDelegate, const FDolbyIOVideoTrack&, VideoTrack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackRemovedDelegate, const FDolbyIOVideoTrack&,
                                             VideoTrack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackEnabledDelegate, const FDolbyIOVideoTrack&,
+                                            VideoTrack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoTrackDisabledDelegate, const FDolbyIOVideoTrack&,
+                                            VideoTrack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoEnabledDelegate, const FString&, VideoTrackID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnVideoDisabledDelegate, const FString&, VideoTrackID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnScreenshareStartedDelegate, const FString&, VideoTrackID);
@@ -61,13 +65,13 @@ public:
 	/** Triggered when an initial or refreshed client access token
 	 * (https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) is needed, which
 	 * happens when the Dolby.io Subsystem is initialized or when a refresh token is requested. After receiving this
-	 * event, obtain a token for your Dolby.io application and call the Dolby.io Subsystem's Set Token function.
+	 * event, obtain a token for your Dolby.io application and call the Dolby.io Set Token function.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnTokenNeededDelegate OnTokenNeeded;
 
 	/** Triggered when the plugin is successfully initialized after calling the Set Token function. After receiving this
-	 * event, the plugin is ready for use. You can now, for example, call the Dolby.io Subsystem's Connect function.
+	 * event, the plugin is ready for use. You can now, for example, call the Dolby.io Connect function.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnInitializedDelegate OnInitialized;
@@ -97,6 +101,14 @@ public:
 	/** Triggered when a video track is removed. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnVideoTrackRemovedDelegate OnVideoTrackRemoved;
+
+	/** Triggered when a video track is enabled as a result of the video forwarding strategy. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnVideoTrackEnabledDelegate OnVideoTrackEnabled;
+
+	/** Triggered when a video track is disabled as a result of the video forwarding strategy. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnVideoTrackDisabledDelegate OnVideoTrackDisabled;
 
 	/** Triggered when local video is enabled. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
@@ -137,11 +149,13 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnAudioOutputDevicesReceivedDelegate OnAudioOutputDevicesReceived;
 
-	/** Triggered when the current audio input device is received as a result of calling Get Current Audio Input Device. */
+	/** Triggered when the current audio input device is received as a result of calling Get Current Audio Input Device.
+	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnCurrentAudioInputDeviceReceivedDelegate OnCurrentAudioInputDeviceReceived;
 
-	/** Triggered when the current audio output device is received as a result of calling Get Current Audio Output Device.
+	/** Triggered when the current audio output device is received as a result of calling Get Current Audio Output
+	 * Device.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnCurrentAudioOutputDeviceReceivedDelegate OnCurrentAudioOutputDeviceReceived;
@@ -187,6 +201,12 @@ private:
 
 	UFUNCTION()
 	void FwdOnVideoTrackRemoved(const FDolbyIOVideoTrack& VideoTrack);
+
+	UFUNCTION()
+	void FwdOnVideoTrackEnabled(const FDolbyIOVideoTrack& VideoTrack);
+
+	UFUNCTION()
+	void FwdOnVideoTrackDisabled(const FDolbyIOVideoTrack& VideoTrack);
 
 	UFUNCTION()
 	void FwdOnVideoEnabled(const FString& VideoTrackID);

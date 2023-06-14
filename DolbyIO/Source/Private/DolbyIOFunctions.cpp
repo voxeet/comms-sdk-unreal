@@ -2,8 +2,6 @@
 
 #include "DolbyIOFunctions.h"
 
-#include "DolbyIOSubsystem.h"
-
 #include "Engine/GameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -53,7 +51,8 @@ void UDolbyIOSetToken::OnInitializedImpl()
 UDolbyIOConnect* UDolbyIOConnect::DolbyIOConnect(const UObject* WorldContextObject, const FString& ConferenceName,
                                                  const FString& UserName, const FString& ExternalID,
                                                  const FString& AvatarURL, EDolbyIOConnectionMode ConnectionMode,
-                                                 EDolbyIOSpatialAudioStyle SpatialAudioStyle)
+                                                 EDolbyIOSpatialAudioStyle SpatialAudioStyle, int MaxVideoStreams,
+                                                 EDolbyIOVideoForwardingStrategy VideoForwardingStrategy)
 {
 	UDolbyIOConnect* Self = NewObject<UDolbyIOConnect>();
 	Self->WorldContextObject = WorldContextObject;
@@ -63,6 +62,8 @@ UDolbyIOConnect* UDolbyIOConnect::DolbyIOConnect(const UObject* WorldContextObje
 	Self->AvatarURL = AvatarURL;
 	Self->ConnectionMode = ConnectionMode;
 	Self->SpatialAudioStyle = SpatialAudioStyle;
+	Self->MaxVideoStreams = MaxVideoStreams;
+	Self->VideoForwardingStrategy = VideoForwardingStrategy;
 	return Self;
 }
 
@@ -71,7 +72,8 @@ void UDolbyIOConnect::Activate()
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
 		DolbyIOSubsystem->OnConnected.AddDynamic(this, &UDolbyIOConnect::OnConnectedImpl);
-		DolbyIOSubsystem->Connect(ConferenceName, UserName, ExternalID, AvatarURL);
+		DolbyIOSubsystem->Connect(ConferenceName, UserName, ExternalID, AvatarURL, ConnectionMode, SpatialAudioStyle,
+		                          MaxVideoStreams, VideoForwardingStrategy);
 	}
 }
 
@@ -232,14 +234,17 @@ void UDolbyIOGetScreenshareSources::OnScreenshareSourcesReceivedImpl(const TArra
 
 // --------------------------------------------------------------------------------------------------------------------
 
-UDolbyIOStartScreenshare* UDolbyIOStartScreenshare::DolbyIOStartScreenshare(const UObject* WorldContextObject,
-                                                                            const FDolbyIOScreenshareSource& Source,
-                                                                            EDolbyIOScreenshareContentType ContentType)
+UDolbyIOStartScreenshare* UDolbyIOStartScreenshare::DolbyIOStartScreenshare(
+    const UObject* WorldContextObject, const FDolbyIOScreenshareSource& Source,
+    EDolbyIOScreenshareEncoderHint EncoderHint, EDolbyIOScreenshareMaxResolution MaxResolution,
+    EDolbyIOScreenshareDownscaleQuality DownscaleQuality)
 {
 	UDolbyIOStartScreenshare* Self = NewObject<UDolbyIOStartScreenshare>();
 	Self->WorldContextObject = WorldContextObject;
 	Self->Source = Source;
-	Self->ContentType = ContentType;
+	Self->EncoderHint = EncoderHint;
+	Self->MaxResolution = MaxResolution;
+	Self->DownscaleQuality = DownscaleQuality;
 	return Self;
 }
 
@@ -248,7 +253,7 @@ void UDolbyIOStartScreenshare::Activate()
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
 		DolbyIOSubsystem->OnScreenshareStarted.AddDynamic(this, &UDolbyIOStartScreenshare::OnScreenshareStartedImpl);
-		DolbyIOSubsystem->StartScreenshare(Source, ContentType);
+		DolbyIOSubsystem->StartScreenshare(Source, EncoderHint, MaxResolution, DownscaleQuality);
 	}
 }
 
@@ -498,6 +503,14 @@ void UDolbyIOBlueprintFunctionLibrary::UnmuteParticipant(const UObject* WorldCon
 		DolbyIOSubsystem->UnmuteParticipant(ParticipantID);
 	}
 }
+TArray<FDolbyIOParticipantInfo> UDolbyIOBlueprintFunctionLibrary::GetParticipants(const UObject* WorldContextObject)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		return DolbyIOSubsystem->GetParticipants();
+	}
+	return {};
+}
 void UDolbyIOBlueprintFunctionLibrary::BindMaterial(const UObject* WorldContextObject,
                                                     UMaterialInstanceDynamic* Material, const FString& VideoTrackID)
 {
@@ -522,12 +535,14 @@ UTexture2D* UDolbyIOBlueprintFunctionLibrary::GetTexture(const UObject* WorldCon
 	}
 	return nullptr;
 }
-void UDolbyIOBlueprintFunctionLibrary::ChangeScreenshareContentType(const UObject* WorldContextObject,
-                                                                    EDolbyIOScreenshareContentType ContentType)
+void UDolbyIOBlueprintFunctionLibrary::ChangeScreenshareParameters(const UObject* WorldContextObject,
+                                                                   EDolbyIOScreenshareEncoderHint EncoderHint,
+                                                                   EDolbyIOScreenshareMaxResolution MaxResolution,
+                                                                   EDolbyIOScreenshareDownscaleQuality DownscaleQuality)
 {
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
-		DolbyIOSubsystem->ChangeScreenshareContentType(ContentType);
+		DolbyIOSubsystem->ChangeScreenshareParameters(EncoderHint, MaxResolution, DownscaleQuality);
 	}
 }
 void UDolbyIOBlueprintFunctionLibrary::SetLocalPlayerLocation(const UObject* WorldContextObject,
@@ -546,27 +561,35 @@ void UDolbyIOBlueprintFunctionLibrary::SetLocalPlayerRotation(const UObject* Wor
 		DolbyIOSubsystem->SetLocalPlayerRotation(Rotation);
 	}
 }
+void UDolbyIOBlueprintFunctionLibrary::SetRemotePlayerLocation(const UObject* WorldContextObject,
+                                                               const FString& ParticipantID, const FVector& Location)
+{
+	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
+	{
+		DolbyIOSubsystem->SetRemotePlayerLocation(ParticipantID, Location);
+	}
+}
 void UDolbyIOBlueprintFunctionLibrary::SetLogSettings(const UObject* WorldContextObject, EDolbyIOLogLevel SdkLogLevel,
-                                                      EDolbyIOLogLevel MediaLogLevel, const FString& LogDirectory)
+                                                      EDolbyIOLogLevel MediaLogLevel, EDolbyIOLogLevel DvcLogLevel)
 {
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
-		DolbyIOSubsystem->SetLogSettings(SdkLogLevel, MediaLogLevel, LogDirectory);
+		DolbyIOSubsystem->SetLogSettings(SdkLogLevel, MediaLogLevel, DvcLogLevel);
 	}
 }
 
-void UDolbyIOBlueprintFunctionLibrary::SetAudioInputDevice(const UObject* WorldContextObject, const FString& NativeId)
+void UDolbyIOBlueprintFunctionLibrary::SetAudioInputDevice(const UObject* WorldContextObject, const FString& NativeID)
 {
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
-		DolbyIOSubsystem->SetAudioInputDevice(NativeId);
+		DolbyIOSubsystem->SetAudioInputDevice(NativeID);
 	}
 }
 
-void UDolbyIOBlueprintFunctionLibrary::SetAudioOutputDevice(const UObject* WorldContextObject, const FString& NativeId)
+void UDolbyIOBlueprintFunctionLibrary::SetAudioOutputDevice(const UObject* WorldContextObject, const FString& NativeID)
 {
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
-		DolbyIOSubsystem->SetAudioOutputDevice(NativeId);
+		DolbyIOSubsystem->SetAudioOutputDevice(NativeID);
 	}
 }

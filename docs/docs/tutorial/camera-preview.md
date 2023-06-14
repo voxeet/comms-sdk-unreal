@@ -20,13 +20,21 @@ Before you start, [set up](common-setup) your project.
 
 ![](../../static/img/video-plane-result.png)
 
-If you launch the game now, you should see your camera feed on the plane when you press "V" and the plane should go blank when you press "B". This is because `BP_DolbyIOStarter` handles these key events as follows:
+3. Open the sample menu by pressing "M".
 
-![](../../static/img/camera-preview-toggle.png)
+4. Open the "Video devices" combo box and select a device to enable video streaming from that device or select "--- None ---" to disable video streaming. You should see your camera feed on the plane when you select a valid device and the plane should disappear when you select none.
 
 ## How it works
 
-`BP_DolbyIOVideoPreviewPlane` is a sample Blueprint with a simple `Event Graph`, which handles [`On Video Enabled`](../blueprints/Events/on-video-enabled) and [`On Video Disabled`](../blueprints/Events/on-video-enabled).
+`W_DolbyIOSampleMenu` is a sample widget whose "Video devices" combo box is filled using [`Get Video Devices`](../blueprints/functions#dolbyio-get-video-devices) (and an additional "None" device) each time the widget becomes visible. We also save the devices in a variable.
+
+![](../../static/img/video-plane-combobox.png)
+
+When you select a device from the combo box, we get a corresponding device from the variable and use [`Enable Video`](../blueprints/functions#dolbyio-enable-video) to start streaming or [`Disable Video`](../blueprints/functions#dolbyio-disable-video) if the device is "None".
+
+![](../../static/img/video-plane-selection.png)
+
+`BP_DolbyIOVideoPreviewPlane` is a sample Blueprint with a simple `Event Graph`, which handles [`On Video Enabled`](../blueprints/events#on-video-enabled) and [`On Video Disabled`](../blueprints/events#on-video-disabled).
 
 ![](../../static/img/camera-preview-eg.png)
 

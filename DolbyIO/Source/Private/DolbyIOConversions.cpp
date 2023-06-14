@@ -4,11 +4,6 @@
 
 #include "Misc/Base64.h"
 
-struct FSdkId
-{
-	dolbyio::comms::audio_device::identity SdkIdentity;
-};
-
 namespace DolbyIO
 {
 	using namespace dolbyio::comms;
@@ -97,7 +92,7 @@ namespace DolbyIO
 	FString ToString(const audio_device& Device)
 	{
 		return FString::Printf(TEXT("%s, direction: %s, native_id: %s"), *ToFText(Device.name()).ToString(),
-		                       *ToString(Device.direction()), *ToUnrealDeviceId(Device.native_id()));
+		                       *ToString(Device.direction()), *ToUnrealDeviceID(Device.native_id()));
 	}
 
 	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<participant_status> Status)
@@ -174,9 +169,19 @@ namespace DolbyIO
 	FDolbyIOVideoTrack ToFDolbyIOVideoTrack(const dolbyio::comms::video_track& Track)
 	{
 		FDolbyIOVideoTrack Ret;
-		Ret.TrackID = ToFString(Track.track_id);
+		Ret.TrackID = ToFString(Track.sdp_track_id);
 		Ret.ParticipantID = ToFString(Track.peer_id);
 		Ret.bIsScreenshare = Track.is_screenshare;
+		return Ret;
+	}
+
+	FDolbyIOVideoTrack ToFDolbyIOVideoTrack(
+	    const dolbyio::comms::utils::participant_track_map::value_type& TrackMapItem)
+	{
+		FDolbyIOVideoTrack Ret;
+		Ret.TrackID = ToFString(std::get<1>(TrackMapItem.second));
+		Ret.ParticipantID = ToFString(TrackMapItem.first);
+		Ret.bIsScreenshare = false;
 		return Ret;
 	}
 
@@ -193,19 +198,55 @@ namespace DolbyIO
 		}
 	}
 
-	screen_share_content_type ToSdkContentType(EDolbyIOScreenshareContentType Type)
+	screen_share_content_info ToSdkContentInfo(EDolbyIOScreenshareEncoderHint EncoderHint,
+	                                           EDolbyIOScreenshareMaxResolution MaxResolution,
+	                                           EDolbyIOScreenshareDownscaleQuality DownscaleQuality)
 	{
-		switch (Type)
+		screen_share_content_info Ret;
+
+		switch (EncoderHint)
 		{
-			case EDolbyIOScreenshareContentType::Detailed:
-				return screen_share_content_type::detailed;
-			case EDolbyIOScreenshareContentType::Text:
-				return screen_share_content_type::text;
-			case EDolbyIOScreenshareContentType::Fluid:
-				return screen_share_content_type::fluid;
+			case EDolbyIOScreenshareEncoderHint::Detailed:
+				Ret.hint = screen_share_content_info::encoder_hint::detailed;
+				break;
+			case EDolbyIOScreenshareEncoderHint::Text:
+				Ret.hint = screen_share_content_info::encoder_hint::text;
+				break;
+			case EDolbyIOScreenshareEncoderHint::Fluid:
+				Ret.hint = screen_share_content_info::encoder_hint::fluid;
+				break;
 			default:
-				return screen_share_content_type::unspecified;
+				Ret.hint = screen_share_content_info::encoder_hint::unspecified;
 		}
+
+		switch (MaxResolution)
+		{
+			case EDolbyIOScreenshareMaxResolution::DownscaleTo1080p:
+				Ret.resolution = screen_share_content_info::max_resolution::downscale_to_1080p;
+				break;
+			case EDolbyIOScreenshareMaxResolution::DownscaleTo1440p:
+				Ret.resolution = screen_share_content_info::max_resolution::downscale_to_1440p;
+				break;
+			default:
+				Ret.resolution = screen_share_content_info::max_resolution::actual_captured;
+		}
+
+		switch (DownscaleQuality)
+		{
+			case EDolbyIOScreenshareDownscaleQuality::Medium:
+				Ret.quality = screen_share_content_info::downscale_quality::medium;
+				break;
+			case EDolbyIOScreenshareDownscaleQuality::High:
+				Ret.quality = screen_share_content_info::downscale_quality::high;
+				break;
+			case EDolbyIOScreenshareDownscaleQuality::Highest:
+				Ret.quality = screen_share_content_info::downscale_quality::highest;
+				break;
+			default:
+				Ret.quality = screen_share_content_info::downscale_quality::low;
+		}
+
+		return Ret;
 	}
 
 	log_level ToSdkLogLevel(EDolbyIOLogLevel Level)
@@ -227,30 +268,29 @@ namespace DolbyIO
 		}
 	}
 
-	FSdkNativeDeviceId ToSdkNativeDeviceId(const FString& Id)
+	FSdkNativeDeviceID ToSdkNativeDeviceID(const FString& ID)
 	{
 #if PLATFORM_WINDOWS
-		return ToStdString(Id);
+		return ToStdString(ID);
 #else
 		unsigned Ret;
-		TTypeFromString<unsigned>::FromString(Ret, *Id);
+		TTypeFromString<unsigned>::FromString(Ret, *ID);
 		return Ret;
 #endif
 	}
 
-	FString ToUnrealDeviceId(const FSdkNativeDeviceId& Id)
+	FString ToUnrealDeviceID(const FSdkNativeDeviceID& ID)
 	{
 #if PLATFORM_WINDOWS
-		return ToFString(Id);
+		return ToFString(ID);
 #else
-		return ToFString(std::to_string(Id));
+		return ToFString(std::to_string(ID));
 #endif
 	}
 
 	FDolbyIOAudioDevice ToFDolbyIOAudioDevice(const audio_device& Device)
 	{
-		return FDolbyIOAudioDevice{ToFText(Device.name()), ToUnrealDeviceId(Device.native_id()),
-		                           MakeShared<FSdkId>(FSdkId{Device.get_identity()})};
+		return FDolbyIOAudioDevice{ToFText(Device.name()), ToUnrealDeviceID(Device.native_id())};
 	}
 
 	FDolbyIOVideoDevice ToFDolbyIOVideoDevice(const camera_device& Device)
@@ -260,6 +300,6 @@ namespace DolbyIO
 
 	camera_device ToSdkVideoDevice(const FDolbyIOVideoDevice& VideoDevice)
 	{
-		return camera_device{ToStdString(VideoDevice.Name.ToString()), ToStdString(VideoDevice.UniqueId)};
+		return camera_device{ToStdString(VideoDevice.Name.ToString()), ToStdString(VideoDevice.UniqueID)};
 	}
 }

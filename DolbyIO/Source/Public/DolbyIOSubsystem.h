@@ -10,6 +10,7 @@
 #include "DolbyIOParticipantInfo.h"
 #include "DolbyIOScreenshareSource.h"
 #include "DolbyIOSpatialAudioStyle.h"
+#include "DolbyIOVideoForwardingStrategy.h"
 #include "DolbyIOVideoTrack.h"
 
 #include <memory>
@@ -29,6 +30,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnParticipantUpdatedDeleg
                                              Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackAddedDelegate, const FDolbyIOVideoTrack&, VideoTrack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackRemovedDelegate, const FDolbyIOVideoTrack&,
+                                            VideoTrack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackEnabledDelegate, const FDolbyIOVideoTrack&,
+                                            VideoTrack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoTrackDisabledDelegate, const FDolbyIOVideoTrack&,
                                             VideoTrack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoEnabledDelegate, const FString&, VideoTrackID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnVideoDisabledDelegate, const FString&, VideoTrackID);
@@ -98,11 +103,17 @@ public:
 	 * @param AvatarURL - The URL of the participant's avatar.
 	 * @param ConnectionMode - Defines whether to connect as an active user or a listener.
 	 * @param SpatialAudioStyle - The spatial audio style of the conference.
+	 * @param MaxVideoStreams - Sets the maximum number of video streams that may be transmitted to the user. Valid
+	 * parameter values are between 0 and 25.
+	 * @param VideoForwardingStrategy - Defines how the plugin should select conference participants whose videos will
+	 * be transmitted to the local participant.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void Connect(const FString& ConferenceName = "unreal", const FString& UserName = "", const FString& ExternalID = "",
-	             const FString& AvatarURL = "", EDolbyIOConnectionMode ConnectionMode = EDolbyIOConnectionMode::Active,
-	             EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared);
+	void Connect(
+	    const FString& ConferenceName = "unreal", const FString& UserName = "", const FString& ExternalID = "",
+	    const FString& AvatarURL = "", EDolbyIOConnectionMode ConnectionMode = EDolbyIOConnectionMode::Active,
+	    EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared, int MaxVideoStreams = 25,
+	    EDolbyIOVideoForwardingStrategy VideoForwardingStrategy = EDolbyIOVideoForwardingStrategy::LastSpeaker);
 
 	/** Connects to a demo conference.
 	 *
@@ -116,7 +127,7 @@ public:
 
 	/** Disconnects from the current conference.
 	 *
-	 * Triggers On Disconnected when complete.
+	 * Triggers On Disconnected if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void Disconnect();
@@ -162,11 +173,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteParticipant(const FString& ParticipantID);
 
+	/** Gets a list of all remote participants.
+	 *
+	 * @return An array of current Dolby.io Participant Info's.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	TArray<FDolbyIOParticipantInfo> GetParticipants();
+
 	/** Enables video streaming from the given video device or the default device if no device is given.
 	 *
-	 * @param VideoDevice - The video device to use.
-	 *
 	 * Triggers On Video Enabled if successful.
+	 *
+	 * @param VideoDevice - The video device to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms", Meta = (AutoCreateRefTerm = "VideoDevice"))
 	void EnableVideo(const FDolbyIOVideoDevice& VideoDevice);
@@ -202,23 +220,38 @@ public:
 	/** Gets the texture to which video from a given track is being rendered.
 	 *
 	 * @param VideoTrackID - The ID of the video track.
-	 * @return The texture holding the video tracks's frame or NULL if no such texture exists.
+	 * @return The texture holding the video track's frame or NULL if no such texture exists.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	class UTexture2D* GetTexture(const FString& VideoTrackID);
 
 	/** Gets a list of all possible screen sharing sources. These can be entire screens or specific application windows.
+	 *
+	 * Triggers On Screenshare Sources Received if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetScreenshareSources();
 
-	/** Starts screen sharing using a given source and content type.
+	/** Starts screen sharing using a given source.
+	 *
+	 * Users should make use of the parameters to optimize for the content they are sharing. For example, for sharing
+	 * dynamic content like a YouTube video, the ideal settings are MaxResolution=DownscaleTo1080p, EncoderHint=Fluid,
+	 * DownscaleQuality=High.
 	 *
 	 * Triggers On Screenshare Started if successful.
+	 *
+	 * @param Source - The source to use.
+	 * @param EncoderHint - Provides a hint to the plugin as to what type of content is being captured by the screen
+	 * share.
+	 * @param MaxResolution - The maximum resolution for the capture screen content to be shared as.
+	 * @param DownscaleQuality - The quality for the downscaling algorithm to be used.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void StartScreenshare(const FDolbyIOScreenshareSource& Source,
-	                      EDolbyIOScreenshareContentType ContentType = EDolbyIOScreenshareContentType::Unspecified);
+	void StartScreenshare(
+	    const FDolbyIOScreenshareSource& Source,
+	    EDolbyIOScreenshareEncoderHint EncoderHint = EDolbyIOScreenshareEncoderHint::Detailed,
+	    EDolbyIOScreenshareMaxResolution MaxResolution = EDolbyIOScreenshareMaxResolution::ActualCaptured,
+	    EDolbyIOScreenshareDownscaleQuality DownscaleQuality = EDolbyIOScreenshareDownscaleQuality::Low);
 
 	/** Stops screen sharing.
 	 *
@@ -227,9 +260,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void StopScreenshare();
 
-	/** Changes the screenshare content type if already sharing screen. */
+	/** Changes the screen sharing parameters if already sharing screen.
+	 *
+	 * @param EncoderHint - Provides a hint to the plugin as to what type of content is being captured by the screen
+	 * share.
+	 * @param MaxResolution - The maximum resolution for the capture screen content to be shared as.
+	 * @param DownscaleQuality - The quality for the downscaling algorithm to be used.
+	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void ChangeScreenshareContentType(EDolbyIOScreenshareContentType ContentType);
+	void ChangeScreenshareParameters(
+	    EDolbyIOScreenshareEncoderHint EncoderHint = EDolbyIOScreenshareEncoderHint::Detailed,
+	    EDolbyIOScreenshareMaxResolution MaxResolution = EDolbyIOScreenshareMaxResolution::ActualCaptured,
+	    EDolbyIOScreenshareDownscaleQuality DownscaleQuality = EDolbyIOScreenshareDownscaleQuality::Low);
 
 	/** Updates the location of the listener for spatial audio purposes.
 	 *
@@ -251,72 +293,82 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetLocalPlayerRotation(const FRotator& Rotation);
 
-	/** Sets what and how to log in the Dolby.io C++ SDK.
+	/** Updates the location of the given remote participant for spatial audio purposes.
+	 *
+	 * This is only applicable when the spatial audio style of the conference is set to "Individual".
+	 *
+	 * Calling this function with the local participant ID has no effect. Use Set Local Player Location instead.
+	 *
+	 * @param ParticipantID - The ID of the remote participant.
+	 * @param Location - The location of the remote participant.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void SetRemotePlayerLocation(const FString& ParticipantID, const FVector& Location);
+
+	/** Sets what to log in the Dolby.io C++ SDK. The logs will be saved to the default project log directory (likely
+	 * Saved/Logs).
 	 *
 	 * This function should be called before the first call to Set Token if the user needs logs about the plugin's
-	 * operation. Calling more than once has no effect.
+	 * operation. Calling this function more than once has no effect.
 	 *
-	 * @param SdkLogLevel - Log level for SDK logs. The default value is Info.
-	 * @param MediaLogLevel - Log level for Media Engine logs. We recommend keeping the Media Engine log level
-	 * at Off, Error, or Warning to avoid spam and only enable more detailed logs when necessary. The default value is
-	 * Off.
-	 * @param LogDirectory - The directory to which the logs should be saved. The application must have write access to
-	 * the directory or it must be able to create such a directory. Providing a valid directory implies starting logging
-	 * to a timestamped file. Providing no value or an empty string has no effect. The default value is an empty string.
+	 * @param SdkLogLevel - Log level for SDK logs.
+	 * @param MediaLogLevel - Log level for Media Engine logs.
+	 * @param DvcLogLevel - Log level for DVC logs.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetLogSettings(EDolbyIOLogLevel SdkLogLevel = EDolbyIOLogLevel::Info,
-	                    EDolbyIOLogLevel MediaLogLevel = EDolbyIOLogLevel::Off, const FString& LogDirectory = "");
+	                    EDolbyIOLogLevel MediaLogLevel = EDolbyIOLogLevel::Info,
+	                    EDolbyIOLogLevel DvcLogLevel = EDolbyIOLogLevel::Info);
 
 	/** Gets a list of all available audio input devices.
 	 *
-	 *  Triggers the OnAudioInputDevicesReceived event when ready.
+	 * Triggers On Audio Input Devices Received if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetAudioInputDevices();
 
 	/** Gets a list of all available audio output devices.
 	 *
-	 *  Triggers the OnAudioOutputDevicesReceived event when ready.
+	 * Triggers On Audio Output Devices Received if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetAudioOutputDevices();
 
 	/** Gets the current audio input device.
 	 *
-	 *  Triggers the OnCurrentAudioInputDeviceReceived event when ready.
+	 * Triggers On Current Audio Input Device Received if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetCurrentAudioInputDevice();
 
 	/** Gets the current audio output device.
 	 *
-	 *  Triggers the OnCurrentAudioOutputDeviceReceived event when ready.
+	 * Triggers On Current Audio Output Device Received if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetCurrentAudioOutputDevice();
 
 	/** Sets the audio input device.
 	 *
-	 *  Triggers the OnCurrentAudioDeviceChanged event when the change has been made.
+	 * Triggers On Current Audio Input Device Changed if successful.
 	 *
-	 * @param NativeId - The ID of the device to use.
+	 * @param NativeID - The ID of the device to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void SetAudioInputDevice(const FString& NativeId);
+	void SetAudioInputDevice(const FString& NativeID);
 
 	/** Sets the audio output device.
 	 *
-	 *  Triggers the OnCurrentAudioDeviceChanged event when the change has been made.
+	 * Triggers On Current Audio Output Device Changed if successful.
 	 *
-	 * @param NativeId - The ID of the device to use.
+	 * @param NativeID - The ID of the device to use.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void SetAudioOutputDevice(const FString& NativeId);
+	void SetAudioOutputDevice(const FString& NativeID);
 
 	/** Gets a list of all available video devices.
 	 *
-	 *  Triggers the OnVideoDevicesReceived event when ready.
+	 * Triggers On Video Devices Received if successful.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetVideoDevices();
@@ -337,6 +389,10 @@ public:
 	FSubsystemOnVideoTrackAddedDelegate OnVideoTrackAdded;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnVideoTrackRemovedDelegate OnVideoTrackRemoved;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnVideoTrackEnabledDelegate OnVideoTrackEnabled;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnVideoTrackDisabledDelegate OnVideoTrackDisabled;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnVideoEnabledDelegate OnVideoEnabled;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
@@ -378,6 +434,7 @@ private:
 	void Initialize(const FString& Token);
 	void UpdateStatus(dolbyio::comms::conference_status);
 
+	void EmptyRemoteParticipants();
 	void SetSpatialEnvironment();
 
 	void ToggleInputMute();
@@ -395,6 +452,8 @@ private:
 	FString ConferenceID;
 	EDolbyIOConnectionMode ConnectionMode;
 	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
+	TMap<FString, FDolbyIOParticipantInfo> RemoteParticipants;
+	FCriticalSection RemoteParticipantsLock;
 
 	TMap<FString, std::shared_ptr<DolbyIO::FVideoSink>> VideoSinks;
 	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalCameraFrameHandler;

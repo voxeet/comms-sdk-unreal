@@ -11,6 +11,8 @@
 #include "DolbyIOSpatialAudioStyle.h"
 #include "DolbyIOVideoTrack.h"
 
+#include <dolbyio/comms/utils/vfs_event.h>
+
 namespace DolbyIO
 {
 	constexpr int ScaleCenti = 100;
@@ -27,20 +29,24 @@ namespace DolbyIO
 	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<dolbyio::comms::participant_status> Status);
 	FDolbyIOParticipantInfo ToFDolbyIOParticipantInfo(const dolbyio::comms::participant_info& Info);
 	FDolbyIOVideoTrack ToFDolbyIOVideoTrack(const dolbyio::comms::video_track& Track);
+	FDolbyIOVideoTrack ToFDolbyIOVideoTrack(
+	    const dolbyio::comms::utils::participant_track_map::value_type& TrackMapItem);
 
 	dolbyio::comms::spatial_audio_style ToSdkSpatialAudioStyle(EDolbyIOSpatialAudioStyle SpatialAudioStyle);
-	dolbyio::comms::screen_share_content_type ToSdkContentType(EDolbyIOScreenshareContentType Type);
+	dolbyio::comms::screen_share_content_info ToSdkContentInfo(EDolbyIOScreenshareEncoderHint EncoderHint,
+	                                                           EDolbyIOScreenshareMaxResolution MaxResolution,
+	                                                           EDolbyIOScreenshareDownscaleQuality DownscaleQuality);
 	dolbyio::comms::log_level ToSdkLogLevel(EDolbyIOLogLevel Level);
 	dolbyio::comms::camera_device ToSdkVideoDevice(const FDolbyIOVideoDevice& VideoDevice);
 
-	using FSdkNativeDeviceId =
+	using FSdkNativeDeviceID =
 #if PLATFORM_WINDOWS
 	    std::string;
 #else
 	    unsigned;
 #endif
-	FSdkNativeDeviceId ToSdkNativeDeviceId(const FString& Id);
-	FString ToUnrealDeviceId(const FSdkNativeDeviceId& Id);
+	FSdkNativeDeviceID ToSdkNativeDeviceID(const FString& ID);
+	FString ToUnrealDeviceID(const FSdkNativeDeviceID& ID);
 
 	FDolbyIOAudioDevice ToFDolbyIOAudioDevice(const dolbyio::comms::audio_device& Device);
 	FDolbyIOVideoDevice ToFDolbyIOVideoDevice(const dolbyio::comms::camera_device& Device);

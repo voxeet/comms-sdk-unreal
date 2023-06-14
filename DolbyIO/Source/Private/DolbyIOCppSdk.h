@@ -12,6 +12,7 @@
 #pragma warning(disable : 4275)
 #elif PLATFORM_MAC
 #define DOLBYIO_COMMS_SUPPRESS_APPLE_NO_RTTI_WARNING
+#define __NUMBERFORMATTING__ // redefinition of 'FVector'
 #endif
 
 #include <dolbyio/comms/sdk.h>

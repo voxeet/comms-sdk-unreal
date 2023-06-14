@@ -23,10 +23,17 @@ public:
 		LoadDll(BaseDir, "bin/dolbyio_comms_media.dll");
 		LoadDll(BaseDir, "bin/dolbyio_comms_sdk.dll");
 #elif PLATFORM_MAC
-		BaseDir += "-x86";
 		LoadDll(BaseDir, "lib/libdvclient.dylib");
 		LoadDll(BaseDir, "lib/libdolbyio_comms_media.dylib");
 		LoadDll(BaseDir, "lib/libdolbyio_comms_sdk.dylib");
+#elif PLATFORM_LINUX
+		BaseDir += "-ubuntu-20.04-clang10-libc++10";
+		LoadDll(BaseDir, "lib/libavutil.so.57");
+		LoadDll(BaseDir, "lib/libavcodec.so.59");
+		LoadDll(BaseDir, "lib/libavformat.so.59");
+		LoadDll(BaseDir, "lib/libdvclient.so");
+		LoadDll(BaseDir, "lib/libdolbyio_comms_media.so");
+		LoadDll(BaseDir, "lib/libdolbyio_comms_sdk.so");
 #endif
 	}
 

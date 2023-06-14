@@ -12,6 +12,7 @@
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
+#include "Misc/Paths.h"
 #include "TimerManager.h"
 
 using namespace dolbyio::comms;
@@ -35,8 +36,8 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	ConferenceStatus = conference_status::destroyed;
 
-	VideoSinks.Emplace(LocalCameraTrackID, std::make_shared<FVideoSink>());
-	VideoSinks.Emplace(LocalScreenshareTrackID, std::make_shared<FVideoSink>());
+	VideoSinks.Emplace(LocalCameraTrackID, std::make_shared<FVideoSink>(LocalCameraTrackID));
+	VideoSinks.Emplace(LocalScreenshareTrackID, std::make_shared<FVideoSink>(LocalScreenshareTrackID));
 	LocalCameraFrameHandler = std::make_shared<FVideoFrameHandler>(VideoSinks[LocalCameraTrackID]);
 	LocalScreenshareFrameHandler = std::make_shared<FVideoFrameHandler>(VideoSinks[LocalScreenshareTrackID]);
 
@@ -49,7 +50,13 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void UDolbyIOSubsystem::Deinitialize()
 {
+#if WITH_EDITOR && PLATFORM_WINDOWS
+	// on Windows, closing the game while sharing an Unreal Editor window results in a deadlock if SDK is destroyed on
+	// main thread
+	AsyncTask(ENamedThreads::ActualRenderingThread, [MovedSdk = MoveTemp(Sdk)] {});
+#else
 	Sdk.Reset(); // make sure Sdk is dead so it doesn't call handle_frame on VideoSink during game destruction
+#endif
 	Super::Deinitialize();
 }
 
@@ -96,9 +103,9 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		return;
 	}
 
-	Sdk->register_component_version("unreal_sdk", "1.1.0-beta.6")
+	Sdk->register_component_version("unreal_sdk", "1.1.0-beta.7")
 	    .then(
-	        [this]
+	        [this](sdk::component_data)
 	        {
 		        return Sdk->conference().add_event_handler([this](const conference_status_updated& Event)
 		                                                   { UpdateStatus(Event.status); });
@@ -107,15 +114,19 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	        [this](event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
-		            [this](const participant_added& Event)
+		            [this](const remote_participant_added& Event)
 		            {
-			            if (!Event.participant.status || Event.participant.user_id == ToStdString(LocalParticipantID))
+			            if (!Event.participant.status)
 			            {
 				            return;
 			            }
 			            const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
 			            DLB_UE_LOG("Participant status added: UserID=%s Name=%s ExternalID=%s Status=%s", *Info.UserID,
 			                       *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
+			            {
+				            FScopeLock Lock{&RemoteParticipantsLock};
+				            RemoteParticipants.Emplace(*Info.UserID, Info);
+			            }
 
 			            return BroadcastEvent(OnParticipantAdded, Info.Status, Info);
 		            });
@@ -124,15 +135,19 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	        [this](event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
-		            [this](const participant_updated& Event)
+		            [this](const remote_participant_updated& Event)
 		            {
-			            if (!Event.participant.status || Event.participant.user_id == ToStdString(LocalParticipantID))
+			            if (!Event.participant.status)
 			            {
 				            return;
 			            }
 			            const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
 			            DLB_UE_LOG("Participant status updated: UserID=%s Name=%s ExternalID=%s Status=%s",
 			                       *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
+			            {
+				            FScopeLock Lock{&RemoteParticipantsLock};
+				            RemoteParticipants.FindOrAdd(*Info.UserID) = Info;
+			            }
 
 			            return BroadcastEvent(OnParticipantUpdated, Info.Status, Info);
 		            });
@@ -171,18 +186,13 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	        [this](event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
-		            [this](const video_track_added& Event)
+		            [this](const remote_video_track_added& Event)
 		            {
-			            if (!Event.track.remote)
-			            {
-				            return;
-			            }
-
 			            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
-			            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s StreamID=%s", *VideoTrack.TrackID,
-			                       *VideoTrack.ParticipantID, *ToFString(Event.track.stream_id));
+			            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID,
+			                       *VideoTrack.ParticipantID);
 
-			            VideoSinks.Emplace(VideoTrack.TrackID, std::make_shared<FVideoSink>());
+			            VideoSinks.Emplace(VideoTrack.TrackID, std::make_shared<FVideoSink>(VideoTrack.TrackID));
 			            Sdk->video()
 			                .remote()
 			                .set_video_sink(Event.track, VideoSinks[VideoTrack.TrackID])
@@ -194,17 +204,13 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	        [this](event_handler_id)
 	        {
 		        return Sdk->conference().add_event_handler(
-		            [this](const video_track_removed& Event)
+		            [this](const remote_video_track_removed& Event)
 		            {
-			            if (!Event.track.remote)
-			            {
-				            return;
-			            }
-
 			            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
-			            DLB_UE_LOG("Video track removed: TrackID=%s ParticipantID=%s StreamID=%s", *VideoTrack.TrackID,
-			                       *VideoTrack.ParticipantID, *ToFString(Event.track.stream_id));
+			            DLB_UE_LOG("Video track removed: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID,
+			                       *VideoTrack.ParticipantID);
 
+			            VideoSinks[VideoTrack.TrackID]->UnbindAllMaterials();
 			            VideoSinks.Remove(VideoTrack.TrackID);
 			            BroadcastEvent(OnVideoTrackRemoved, VideoTrack);
 		            });
@@ -254,6 +260,28 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	        [this]
 #endif
 	        {
+		        using namespace dolbyio::comms::utils;
+		        vfs_event::add_event_handler(*Sdk,
+		                                     [this](const vfs_event& Event)
+		                                     {
+			                                     for (const auto& TrackMapItem : Event.new_enabled)
+			                                     {
+				                                     const FDolbyIOVideoTrack VideoTrack =
+				                                         ToFDolbyIOVideoTrack(TrackMapItem);
+				                                     DLB_UE_LOG("Video track ID %s for participant ID %s enabled",
+				                                                *VideoTrack.TrackID, *VideoTrack.ParticipantID);
+				                                     BroadcastEvent(OnVideoTrackEnabled, VideoTrack);
+			                                     }
+			                                     for (const auto& TrackMapItem : Event.new_disabled)
+			                                     {
+				                                     const FDolbyIOVideoTrack VideoTrack =
+				                                         ToFDolbyIOVideoTrack(TrackMapItem);
+				                                     DLB_UE_LOG("Video track ID %s for participant ID %s disabled",
+				                                                *VideoTrack.TrackID, *VideoTrack.ParticipantID);
+				                                     BroadcastEvent(OnVideoTrackDisabled, VideoTrack);
+			                                     }
+		                                     });
+
 		        DLB_UE_LOG("Initialized");
 		        BroadcastEvent(OnInitialized);
 	        })
@@ -273,13 +301,15 @@ void UDolbyIOSubsystem::UpdateStatus(conference_status Status)
 		case conference_status::left:
 		case conference_status::error:
 			BroadcastEvent(OnDisconnected);
+			EmptyRemoteParticipants();
 			break;
 	}
 }
 
 void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& UserName, const FString& ExternalID,
                                 const FString& AvatarURL, EDolbyIOConnectionMode ConnMode,
-                                EDolbyIOSpatialAudioStyle SpatialStyle)
+                                EDolbyIOSpatialAudioStyle SpatialStyle, int MaxVideoStreams,
+                                EDolbyIOVideoForwardingStrategy VideoForwardingStrategy)
 {
 	using namespace dolbyio::comms::services;
 
@@ -302,6 +332,7 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 	UserInfo.name = ToStdString(UserName);
 	UserInfo.externalId = ToStdString(ExternalID);
 	UserInfo.avatarUrl = ToStdString(AvatarURL);
+	EmptyRemoteParticipants();
 
 	Sdk->session()
 	    .open(MoveTemp(UserInfo))
@@ -316,7 +347,7 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 		        return Sdk->conference().create(Options);
 	        })
 	    .then(
-	        [this](conference_info&& ConferenceInfo)
+	        [this, MaxVideoStreams, VideoForwardingStrategy](conference_info&& ConferenceInfo)
 	        {
 		        ConferenceID = ToFString(ConferenceInfo.id);
 		        if (ConnectionMode == EDolbyIOConnectionMode::Active)
@@ -325,6 +356,11 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 			        Options.constraints.audio = true;
 			        Options.constraints.video = bIsVideoEnabled;
 			        Options.connection.spatial_audio = IsSpatialAudio();
+			        Options.connection.max_video_forwarding = MaxVideoStreams;
+			        Options.connection.forwarding_strategy =
+			            VideoForwardingStrategy == EDolbyIOVideoForwardingStrategy::LastSpeaker
+			                ? video_forwarding_strategy::last_speaker
+			                : video_forwarding_strategy::closest_user;
 			        return Sdk->conference().join(ConferenceInfo, Options);
 		        }
 		        else
@@ -377,6 +413,12 @@ bool UDolbyIOSubsystem::IsSpatialAudio() const
 	return SpatialAudioStyle != EDolbyIOSpatialAudioStyle::Disabled;
 }
 
+void UDolbyIOSubsystem::EmptyRemoteParticipants()
+{
+	FScopeLock Lock{&RemoteParticipantsLock};
+	RemoteParticipants.Empty();
+}
+
 void UDolbyIOSubsystem::SetSpatialEnvironment()
 {
 	if (!IsConnectedAsActive() || !IsSpatialAudio())
@@ -417,9 +459,10 @@ void UDolbyIOSubsystem::DemoConference()
 		return;
 	}
 
+	DLB_UE_LOG("Connecting to demo conference");
 	ConnectionMode = EDolbyIOConnectionMode::Active;
 	SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared;
-	DLB_UE_LOG("Connecting to demo conference");
+	EmptyRemoteParticipants();
 
 	Sdk->session()
 	    .open({})
@@ -508,6 +551,16 @@ void UDolbyIOSubsystem::UnmuteParticipant(const FString& ParticipantID)
 	Sdk->audio().remote().start(ToStdString(ParticipantID)).on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
+TArray<FDolbyIOParticipantInfo> UDolbyIOSubsystem::GetParticipants()
+{
+	TArray<FDolbyIOParticipantInfo> Ret;
+	{
+		FScopeLock Lock{&RemoteParticipantsLock};
+		RemoteParticipants.GenerateValueArray(Ret);
+	}
+	return Ret;
+}
+
 void UDolbyIOSubsystem::EnableVideo(const FDolbyIOVideoDevice& VideoDevice)
 {
 	if (!Sdk)
@@ -587,7 +640,9 @@ void UDolbyIOSubsystem::GetScreenshareSources()
 }
 
 void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source,
-                                         EDolbyIOScreenshareContentType ContentType)
+                                         EDolbyIOScreenshareEncoderHint EncoderHint,
+                                         EDolbyIOScreenshareMaxResolution MaxResolution,
+                                         EDolbyIOScreenshareDownscaleQuality DownscaleQuality)
 {
 	if (!IsConnectedAsActive())
 	{
@@ -595,13 +650,15 @@ void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source
 		return;
 	}
 
-	DLB_UE_LOG("Starting screenshare using source: ID=%d IsScreen=%d Title=%s ContentType=%s", Source.ID,
-	           Source.bIsScreen, *Source.Title.ToString(), *UEnum::GetValueAsString(ContentType));
+	DLB_UE_LOG("Starting screenshare using source: ID=%d IsScreen=%d Title=%s %s %s %s", Source.ID, Source.bIsScreen,
+	           *Source.Title.ToString(), *UEnum::GetValueAsString(EncoderHint), *UEnum::GetValueAsString(MaxResolution),
+	           *UEnum::GetValueAsString(DownscaleQuality));
 	Sdk->conference()
 	    .start_screen_share(screen_share_source{ToStdString(Source.Title.ToString()), Source.ID,
 	                                            Source.bIsScreen ? screen_share_source::type::screen
 	                                                             : screen_share_source::type::window},
-	                        LocalScreenshareFrameHandler, ToSdkContentType(ContentType))
+	                        LocalScreenshareFrameHandler,
+	                        ToSdkContentInfo(EncoderHint, MaxResolution, DownscaleQuality))
 	    .then([this] { OnScreenshareStarted.Broadcast(LocalScreenshareTrackID); })
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
@@ -620,15 +677,19 @@ void UDolbyIOSubsystem::StopScreenshare()
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
-void UDolbyIOSubsystem::ChangeScreenshareContentType(EDolbyIOScreenshareContentType ContentType)
+void UDolbyIOSubsystem::ChangeScreenshareParameters(EDolbyIOScreenshareEncoderHint EncoderHint,
+                                                    EDolbyIOScreenshareMaxResolution MaxResolution,
+                                                    EDolbyIOScreenshareDownscaleQuality DownscaleQuality)
 {
 	if (!IsConnectedAsActive())
 	{
 		return;
 	}
-
-	DLB_UE_LOG("Changing screenshare content type to %s", *UEnum::GetValueAsString(ContentType));
-	Sdk->conference().screen_share_content_type(ToSdkContentType(ContentType)).on_error(MAKE_DLB_ERROR_HANDLER);
+	DLB_UE_LOG("Changing screenshare parameters to %s %s %s", *UEnum::GetValueAsString(EncoderHint),
+	           *UEnum::GetValueAsString(MaxResolution), *UEnum::GetValueAsString(DownscaleQuality));
+	Sdk->conference()
+	    .screen_share_content_info(ToSdkContentInfo(EncoderHint, MaxResolution, DownscaleQuality))
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
 void UDolbyIOSubsystem::BindMaterial(UMaterialInstanceDynamic* Material, const FString& VideoTrackID)
@@ -700,6 +761,19 @@ void UDolbyIOSubsystem::SetLocalPlayerRotationImpl(const FRotator& Rotation)
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
+void UDolbyIOSubsystem::SetRemotePlayerLocation(const FString& ParticipantID, const FVector& Location)
+{
+	if (!IsConnectedAsActive() || SpatialAudioStyle != EDolbyIOSpatialAudioStyle::Individual ||
+	    ParticipantID == LocalParticipantID)
+	{
+		return;
+	}
+
+	Sdk->conference()
+	    .set_spatial_position(ToStdString(ParticipantID), {Location.X, Location.Y, Location.Z})
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
 void UDolbyIOSubsystem::SetLocationUsingFirstPlayer()
 {
 	if (UWorld* World = GetGameInstance()->GetWorld())
@@ -729,12 +803,17 @@ void UDolbyIOSubsystem::SetRotationUsingFirstPlayer()
 }
 
 void UDolbyIOSubsystem::SetLogSettings(EDolbyIOLogLevel SdkLogLevel, EDolbyIOLogLevel MediaLogLevel,
-                                       const FString& LogDirectory)
+                                       EDolbyIOLogLevel DvcLogLevel)
 {
+	const FString& LogDir = FPaths::ProjectLogDir();
+	DLB_UE_LOG("Logs will be saved in directory %s", *LogDir);
+
 	sdk::log_settings LogSettings;
 	LogSettings.sdk_log_level = ToSdkLogLevel(SdkLogLevel);
 	LogSettings.media_log_level = ToSdkLogLevel(MediaLogLevel);
-	LogSettings.log_directory = ToStdString(LogDirectory);
+	LogSettings.dvc_log_level = ToSdkLogLevel(DvcLogLevel);
+	LogSettings.log_directory = ToStdString(LogDir);
+	LogSettings.suppress_stdout_logs = true;
 	sdk::set_log_settings(LogSettings);
 }
 
@@ -846,7 +925,7 @@ void UDolbyIOSubsystem::GetCurrentAudioOutputDevice()
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
-void UDolbyIOSubsystem::SetAudioInputDevice(const FString& InNativeId)
+void UDolbyIOSubsystem::SetAudioInputDevice(const FString& NativeID)
 {
 	if (!Sdk)
 	{
@@ -854,14 +933,14 @@ void UDolbyIOSubsystem::SetAudioInputDevice(const FString& InNativeId)
 		return;
 	}
 
-	DLB_UE_LOG("Setting audio input device with native ID %s", *InNativeId);
+	DLB_UE_LOG("Setting audio input device with native ID %s", *NativeID);
 	Sdk->device_management()
 	    .get_audio_devices()
 	    .then(
-	        [this, NativeId = ToSdkNativeDeviceId(InNativeId)](const std::vector<audio_device>& DvcDevices)
+	        [this, SdkNativeID = ToSdkNativeDeviceID(NativeID)](const std::vector<audio_device>& DvcDevices)
 	        {
 		        for (const audio_device& Device : DvcDevices)
-			        if (Device.direction() & audio_device::direction::input && Device.native_id() == NativeId)
+			        if (Device.direction() & audio_device::direction::input && Device.native_id() == SdkNativeID)
 			        {
 				        DLB_UE_LOG("Setting audio input device to %s", *ToString(Device));
 				        Sdk->device_management().set_preferred_input_audio_device(Device).on_error(
@@ -872,7 +951,7 @@ void UDolbyIOSubsystem::SetAudioInputDevice(const FString& InNativeId)
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
-void UDolbyIOSubsystem::SetAudioOutputDevice(const FString& InNativeId)
+void UDolbyIOSubsystem::SetAudioOutputDevice(const FString& NativeID)
 {
 	if (!Sdk)
 	{
@@ -880,14 +959,14 @@ void UDolbyIOSubsystem::SetAudioOutputDevice(const FString& InNativeId)
 		return;
 	}
 
-	DLB_UE_LOG("Setting audio output device with native ID %s", *InNativeId);
+	DLB_UE_LOG("Setting audio output device with native ID %s", *NativeID);
 	Sdk->device_management()
 	    .get_audio_devices()
 	    .then(
-	        [this, NativeId = ToSdkNativeDeviceId(InNativeId)](const std::vector<audio_device>& DvcDevices)
+	        [this, SdkNativeID = ToSdkNativeDeviceID(NativeID)](const std::vector<audio_device>& DvcDevices)
 	        {
 		        for (const audio_device& Device : DvcDevices)
-			        if (Device.direction() & audio_device::direction::output && Device.native_id() == NativeId)
+			        if (Device.direction() & audio_device::direction::output && Device.native_id() == SdkNativeID)
 			        {
 				        DLB_UE_LOG("Setting audio output device to %s", *ToString(Device));
 				        Sdk->device_management().set_preferred_output_audio_device(Device).on_error(
