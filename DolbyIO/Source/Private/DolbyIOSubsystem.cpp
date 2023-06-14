@@ -188,9 +188,8 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		            [this](const remote_video_track_added& Event)
 		            {
 			            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
-			            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s StreamID=%s SDPTrackID=%s",
-			                       *VideoTrack.TrackID, *VideoTrack.ParticipantID, *ToFString(Event.track.stream_id),
-			                       *ToFString(Event.track.sdp_track_id));
+			            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID,
+			                       *VideoTrack.ParticipantID);
 
 			            VideoSinks.Emplace(VideoTrack.TrackID, std::make_shared<FVideoSink>(VideoTrack.TrackID));
 			            Sdk->video()
@@ -207,9 +206,8 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		            [this](const remote_video_track_removed& Event)
 		            {
 			            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
-			            DLB_UE_LOG("Video track removed: TrackID=%s ParticipantID=%s StreamID=%s SDPTrackID=%s",
-			                       *VideoTrack.TrackID, *VideoTrack.ParticipantID, *ToFString(Event.track.stream_id),
-			                       *ToFString(Event.track.sdp_track_id));
+			            DLB_UE_LOG("Video track removed: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID,
+			                       *VideoTrack.ParticipantID);
 
 			            VideoSinks[VideoTrack.TrackID]->UnbindAllMaterials();
 			            VideoSinks.Remove(VideoTrack.TrackID);
