@@ -16,7 +16,8 @@ enum class EDolbyIOParticipantStatus : uint8
 	/** An invited participant declined the conference invitation. Currently, the Web SDK does not offer the decline
 	 * method, although participants who use Web SDK can receive the Decline status from other application users who use
 	 * the Android or iOS SDK. The Web SDK does not receive the notification if the invited participant uses the decline
-	 * method after joining a conference. */
+	 * method after joining a conference.
+	 */
 	Decline,
 	/** A participant left the conference. */
 	Left,
@@ -48,7 +49,8 @@ struct DOLBYIO_API FDolbyIOParticipantInfo
 
 	/** The external unique identifier that the customer's application can add to the participant while opening a
 	 * session. If a participant uses the same external ID in conferences, the participant's ID also remains the same
-	 * across all sessions. */
+	 * across all sessions.
+	 */
 	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
 	FString ExternalID;
 
@@ -58,7 +60,8 @@ struct DOLBYIO_API FDolbyIOParticipantInfo
 
 	/** Indicates whether the participants is a listener. True means this is a participant who can receive audio and
 	 * video streams, but cannot send any stream to a conference. False means this is a participant who can send and
-	 * receive an audio and video stream during a conference.*/
+	 * receive an audio and video stream during a conference.
+	 */
 	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
 	bool bIsListener{};
 

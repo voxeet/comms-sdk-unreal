@@ -578,18 +578,18 @@ void UDolbyIOBlueprintFunctionLibrary::SetLogSettings(const UObject* WorldContex
 	}
 }
 
-void UDolbyIOBlueprintFunctionLibrary::SetAudioInputDevice(const UObject* WorldContextObject, const FString& NativeId)
+void UDolbyIOBlueprintFunctionLibrary::SetAudioInputDevice(const UObject* WorldContextObject, const FString& NativeID)
 {
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
-		DolbyIOSubsystem->SetAudioInputDevice(NativeId);
+		DolbyIOSubsystem->SetAudioInputDevice(NativeID);
 	}
 }
 
-void UDolbyIOBlueprintFunctionLibrary::SetAudioOutputDevice(const UObject* WorldContextObject, const FString& NativeId)
+void UDolbyIOBlueprintFunctionLibrary::SetAudioOutputDevice(const UObject* WorldContextObject, const FString& NativeID)
 {
 	if (UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject))
 	{
-		DolbyIOSubsystem->SetAudioOutputDevice(NativeId);
+		DolbyIOSubsystem->SetAudioOutputDevice(NativeID);
 	}
 }

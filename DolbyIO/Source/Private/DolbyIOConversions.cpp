@@ -92,7 +92,7 @@ namespace DolbyIO
 	FString ToString(const audio_device& Device)
 	{
 		return FString::Printf(TEXT("%s, direction: %s, native_id: %s"), *ToFText(Device.name()).ToString(),
-		                       *ToString(Device.direction()), *ToUnrealDeviceId(Device.native_id()));
+		                       *ToString(Device.direction()), *ToUnrealDeviceID(Device.native_id()));
 	}
 
 	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<participant_status> Status)
@@ -268,29 +268,29 @@ namespace DolbyIO
 		}
 	}
 
-	FSdkNativeDeviceId ToSdkNativeDeviceId(const FString& Id)
+	FSdkNativeDeviceID ToSdkNativeDeviceID(const FString& ID)
 	{
 #if PLATFORM_WINDOWS
-		return ToStdString(Id);
+		return ToStdString(ID);
 #else
 		unsigned Ret;
-		TTypeFromString<unsigned>::FromString(Ret, *Id);
+		TTypeFromString<unsigned>::FromString(Ret, *ID);
 		return Ret;
 #endif
 	}
 
-	FString ToUnrealDeviceId(const FSdkNativeDeviceId& Id)
+	FString ToUnrealDeviceID(const FSdkNativeDeviceID& ID)
 	{
 #if PLATFORM_WINDOWS
-		return ToFString(Id);
+		return ToFString(ID);
 #else
-		return ToFString(std::to_string(Id));
+		return ToFString(std::to_string(ID));
 #endif
 	}
 
 	FDolbyIOAudioDevice ToFDolbyIOAudioDevice(const audio_device& Device)
 	{
-		return FDolbyIOAudioDevice{ToFText(Device.name()), ToUnrealDeviceId(Device.native_id())};
+		return FDolbyIOAudioDevice{ToFText(Device.name()), ToUnrealDeviceID(Device.native_id())};
 	}
 
 	FDolbyIOVideoDevice ToFDolbyIOVideoDevice(const camera_device& Device)
@@ -300,6 +300,6 @@ namespace DolbyIO
 
 	camera_device ToSdkVideoDevice(const FDolbyIOVideoDevice& VideoDevice)
 	{
-		return camera_device{ToStdString(VideoDevice.Name.ToString()), ToStdString(VideoDevice.UniqueId)};
+		return camera_device{ToStdString(VideoDevice.Name.ToString()), ToStdString(VideoDevice.UniqueID)};
 	}
 }

@@ -28,21 +28,21 @@ Before you start, follow the [common setup](common-setup) tutorial.
 
 ## How it works
 
-`W_DolbyIOSampleMenu` is a sample widget whose "Screenshare sources" combo box is filled using [`Get Screenshare Sources`](../blueprints/Functions/get-screenshare-sources) each time the widget becomes visible. We also save the sources in a variable.
+`W_DolbyIOSampleMenu` is a sample widget whose "Screenshare sources" combo box is filled using [`Get Screenshare Sources`](../blueprints/functions#dolbyio-get-screenshare-sources) each time the widget becomes visible. We also save the sources in a variable.
 
 ![](../../static/img/screenshare-preview-combobox.png)
 
-When you click "Start screenshare", we match the selected source from the combo box with the corresponding source from the variable, get other parameters from their combo boxes and [`Start Screenshare`](../blueprints/Functions/start-screenshare).
+When you click "Start screenshare", we match the selected source from the combo box with the corresponding source from the variable, get other parameters from their combo boxes and [`Start Screenshare`](../blueprints/functions#dolbyio-start-screenshare).
 
 ![](../../static/img/screenshare-preview-start.png)
 
-Additionally, whenever you change the screen share parameters using their combo boxes, we call [`Change Screenshare Parameters`](../blueprints/Functions/change-screenshare-parameters). It is safe to call this function whenever a combo box selection changes even when screen share is not started, because it does nothing in that case.
+Additionally, whenever you change the screen share parameters using their combo boxes, we call [`Change Screenshare Parameters`](../blueprints/functions#dolbyio-change-screenshare-parameters). It is safe to call this function whenever a combo box selection changes even when screen share is not started, because it does nothing in that case.
 
-Finally, we simply [`Stop Screenshare`](../blueprints/Functions/stop-screenshare) when the "Stop screenshare" button is pressed.
+Finally, we simply [`Stop Screenshare`](../blueprints/functions#dolbyio-stop-screenshare) when the "Stop screenshare" button is pressed.
 
 ![](../../static/img/screenshare-preview-stop.png)
 
-`BP_DolbyIOScreensharePreviewPlane` is a sample Blueprint with a simple `Event Graph`, which handles [`On Screenshare Started`](../blueprints/Events/on-screenshare-started) and [`On Screenshare Stopped`](../blueprints/Events/on-screenshare-stopped).
+`BP_DolbyIOScreensharePreviewPlane` is a sample Blueprint with a simple `Event Graph`, which handles [`On Screenshare Started`](../blueprints/events#on-screenshare-started) and [`On Screenshare Stopped`](../blueprints/events#on-screenshare-stopped).
 
 ![](../../static/img/screenshare-preview-eg.png)
 

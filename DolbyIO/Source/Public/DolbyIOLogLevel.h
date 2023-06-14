@@ -15,7 +15,8 @@ enum class EDolbyIOLogLevel : uint8
 	Error,
 
 	/** The warning level logging generates logs when the SDK detects an unexpected problem but is still able to work as
-	 * usual. */
+	 * usual.
+	 */
 	Warning,
 
 	/** The info level logging generates an informative number of logs. */

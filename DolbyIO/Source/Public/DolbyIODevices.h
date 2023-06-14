@@ -16,7 +16,7 @@ struct DOLBYIO_API FDolbyIOAudioDevice
 
 	/** The native ID of the device. */
 	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
-	FString NativeId;
+	FString NativeID;
 };
 
 /** The platform agnostic description of a video device. */
@@ -31,5 +31,5 @@ struct DOLBYIO_API FDolbyIOVideoDevice
 
 	/** The unique ID of the device. */
 	UPROPERTY(BlueprintReadOnly, Category = "Dolby.io Comms")
-	FString UniqueId;
+	FString UniqueID;
 };

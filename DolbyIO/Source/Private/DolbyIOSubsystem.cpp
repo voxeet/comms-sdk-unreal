@@ -925,7 +925,7 @@ void UDolbyIOSubsystem::GetCurrentAudioOutputDevice()
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
-void UDolbyIOSubsystem::SetAudioInputDevice(const FString& InNativeId)
+void UDolbyIOSubsystem::SetAudioInputDevice(const FString& NativeID)
 {
 	if (!Sdk)
 	{
@@ -933,14 +933,14 @@ void UDolbyIOSubsystem::SetAudioInputDevice(const FString& InNativeId)
 		return;
 	}
 
-	DLB_UE_LOG("Setting audio input device with native ID %s", *InNativeId);
+	DLB_UE_LOG("Setting audio input device with native ID %s", *NativeID);
 	Sdk->device_management()
 	    .get_audio_devices()
 	    .then(
-	        [this, NativeId = ToSdkNativeDeviceId(InNativeId)](const std::vector<audio_device>& DvcDevices)
+	        [this, SdkNativeID = ToSdkNativeDeviceID(NativeID)](const std::vector<audio_device>& DvcDevices)
 	        {
 		        for (const audio_device& Device : DvcDevices)
-			        if (Device.direction() & audio_device::direction::input && Device.native_id() == NativeId)
+			        if (Device.direction() & audio_device::direction::input && Device.native_id() == SdkNativeID)
 			        {
 				        DLB_UE_LOG("Setting audio input device to %s", *ToString(Device));
 				        Sdk->device_management().set_preferred_input_audio_device(Device).on_error(
@@ -951,7 +951,7 @@ void UDolbyIOSubsystem::SetAudioInputDevice(const FString& InNativeId)
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
-void UDolbyIOSubsystem::SetAudioOutputDevice(const FString& InNativeId)
+void UDolbyIOSubsystem::SetAudioOutputDevice(const FString& NativeID)
 {
 	if (!Sdk)
 	{
@@ -959,14 +959,14 @@ void UDolbyIOSubsystem::SetAudioOutputDevice(const FString& InNativeId)
 		return;
 	}
 
-	DLB_UE_LOG("Setting audio output device with native ID %s", *InNativeId);
+	DLB_UE_LOG("Setting audio output device with native ID %s", *NativeID);
 	Sdk->device_management()
 	    .get_audio_devices()
 	    .then(
-	        [this, NativeId = ToSdkNativeDeviceId(InNativeId)](const std::vector<audio_device>& DvcDevices)
+	        [this, SdkNativeID = ToSdkNativeDeviceID(NativeID)](const std::vector<audio_device>& DvcDevices)
 	        {
 		        for (const audio_device& Device : DvcDevices)
-			        if (Device.direction() & audio_device::direction::output && Device.native_id() == NativeId)
+			        if (Device.direction() & audio_device::direction::output && Device.native_id() == SdkNativeID)
 			        {
 				        DLB_UE_LOG("Setting audio output device to %s", *ToString(Device));
 				        Sdk->device_management().set_preferred_output_audio_device(Device).on_error(

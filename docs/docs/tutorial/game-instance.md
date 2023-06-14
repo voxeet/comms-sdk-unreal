@@ -20,7 +20,7 @@ However, at the moment `Event Init` is called, the `Dolby.io Subsystem` does not
 
 ## How the sample works
 
-Suppose you want to handle the [`On Participant Updated`](../blueprints/Events/on-participant-updated) event from within the game instance.
+Suppose you want to handle the [`On Participant Updated`](../blueprints/events#on-participant-updated) event from within the game instance.
 
 1. Find `BP_DolbyIOGameInstanceSample` in the plugin's content in `Content Browser` and open its `Event Graph`.
 
@@ -36,4 +36,4 @@ Suppose you want to handle the [`On Participant Updated`](../blueprints/Events/o
 
 ![](../../static/img/game-instance-level-eg.png)
 
-The game instance should now be set up to handle the [`On Participant Updated`](../blueprints/Events/on-participant-updated) event. You can use this method for other events as well by chaining `Bind Event` calls. In theory, it is possible to control the plugin entirely from a game instance, however doing so is less convenient than using the `Dolby.io Observer` actor component.
+The game instance should now be set up to handle the [`On Participant Updated`](../blueprints/events#on-participant-updated) event. You can use this method for other events as well by chaining `Bind Event` calls. In theory, it is possible to control the plugin entirely from a game instance, however doing so is less convenient than using the `Dolby.io Observer` actor component.
