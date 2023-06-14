@@ -169,7 +169,7 @@ namespace DolbyIO
 	FDolbyIOVideoTrack ToFDolbyIOVideoTrack(const dolbyio::comms::video_track& Track)
 	{
 		FDolbyIOVideoTrack Ret;
-		Ret.TrackID = ToFString(Track.track_id);
+		Ret.TrackID = ToFString(Track.sdp_track_id);
 		Ret.ParticipantID = ToFString(Track.peer_id);
 		Ret.bIsScreenshare = Track.is_screenshare;
 		return Ret;
