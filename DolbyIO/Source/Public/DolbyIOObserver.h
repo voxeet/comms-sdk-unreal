@@ -52,6 +52,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnCurrentAudioInputDeviceC
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FObserverOnCurrentAudioOutputDeviceChangedDelegate, bool, IsNone,
                                              const FDolbyIOAudioDevice&, OptionalDevice);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObserverOnErrorDelegate, const FString&, ErrorMsg);
+
 UCLASS(ClassGroup = "Dolby.io Comms",
        Meta = (BlueprintSpawnableComponent, DisplayName = "Dolby.io Observer",
                ToolTip = "Component to use for easy handling of Dolby.io subsystem events."))
@@ -174,6 +176,10 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FObserverOnCurrentAudioOutputDeviceChangedDelegate OnCurrentAudioOutputDeviceChanged;
 
+	/** Triggered when errors occur. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FObserverOnErrorDelegate OnError;
+
 private:
 	void InitializeComponent() override;
 
@@ -249,6 +255,9 @@ private:
 
 	UFUNCTION()
 	void FwdOnCurrentAudioOutputDeviceChanged(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice);
+
+	UFUNCTION()
+	void FwdOnError(const FString& Msg);
 
 	template <class TDelegate, class... TArgs> void BroadcastEvent(TDelegate&, TArgs&&...);
 };

@@ -50,6 +50,7 @@ void UDolbyIOObserver::InitializeComponent()
 		    this, &UDolbyIOObserver::FwdOnCurrentAudioInputDeviceChanged);
 		DolbyIOSubsystem->OnCurrentAudioOutputDeviceChanged.AddDynamic(
 		    this, &UDolbyIOObserver::FwdOnCurrentAudioOutputDeviceChanged);
+		DolbyIOSubsystem->OnError.AddDynamic(this, &UDolbyIOObserver::FwdOnError);
 		FwdOnTokenNeeded();
 	}
 }
@@ -151,6 +152,10 @@ void UDolbyIOObserver::FwdOnCurrentAudioInputDeviceChanged(bool IsNone, const FD
 void UDolbyIOObserver::FwdOnCurrentAudioOutputDeviceChanged(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
 {
 	BroadcastEvent(OnCurrentAudioOutputDeviceChanged, IsNone, OptionalDevice);
+}
+void UDolbyIOObserver::FwdOnError(const FString& Msg)
+{
+	BroadcastEvent(OnError, Msg);
 }
 
 template <class TDelegate, class... TArgs> void UDolbyIOObserver::BroadcastEvent(TDelegate& Event, TArgs&&... Args)

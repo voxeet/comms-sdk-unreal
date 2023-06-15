@@ -338,7 +338,7 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 	}
 	if (ConferenceName.IsEmpty())
 	{
-		DLB_UE_WARN("Cannot connect - conference name cannot be empty");
+		LogWarning("Cannot connect - conference name cannot be empty");
 		return;
 	}
 
@@ -406,12 +406,12 @@ bool UDolbyIOSubsystem::CanConnect() const
 {
 	if (!Sdk)
 	{
-		DLB_UE_WARN("Cannot connect - not initialized");
+		LogWarning("Cannot connect - not initialized");
 		return false;
 	}
 	if (IsConnected())
 	{
-		DLB_UE_WARN("Cannot connect - already connected, please disconnect first");
+		LogWarning("Cannot connect - already connected, please disconnect first");
 		return false;
 	}
 	return true;
@@ -584,7 +584,7 @@ void UDolbyIOSubsystem::EnableVideo(const FDolbyIOVideoDevice& VideoDevice)
 {
 	if (!Sdk)
 	{
-		DLB_UE_WARN("Cannot enable video - not initialized");
+		LogWarning("Cannot enable video - not initialized");
 		return;
 	}
 
@@ -635,7 +635,7 @@ void UDolbyIOSubsystem::GetScreenshareSources()
 {
 	if (!Sdk)
 	{
-		DLB_UE_WARN("Cannot get screenshare sources - not initialized");
+		LogWarning("Cannot get screenshare sources - not initialized");
 		return;
 	}
 
@@ -665,7 +665,7 @@ void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source
 {
 	if (!IsConnectedAsActive())
 	{
-		DLB_UE_WARN("Cannot start screenshare - not connected as active user");
+		LogWarning("Cannot start screenshare - not connected as active user");
 		return;
 	}
 
@@ -841,7 +841,7 @@ void UDolbyIOSubsystem::GetAudioInputDevices()
 {
 	if (!Sdk)
 	{
-		DLB_UE_WARN("Cannot get audio input devices - not initialized");
+		LogWarning("Cannot get audio input devices - not initialized");
 		return;
 	}
 
@@ -869,7 +869,7 @@ void UDolbyIOSubsystem::GetAudioOutputDevices()
 {
 	if (!Sdk)
 	{
-		DLB_UE_WARN("Cannot get audio output devices - not initialized");
+		LogWarning("Cannot get audio output devices - not initialized");
 		return;
 	}
 
@@ -897,7 +897,7 @@ void UDolbyIOSubsystem::GetCurrentAudioInputDevice()
 {
 	if (!Sdk)
 	{
-		DLB_UE_WARN("Cannot get current audio input device - not initialized");
+		LogWarning("Cannot get current audio input device - not initialized");
 		return;
 	}
 
@@ -923,7 +923,7 @@ void UDolbyIOSubsystem::GetCurrentAudioOutputDevice()
 {
 	if (!Sdk)
 	{
-		DLB_UE_WARN("Cannot get current audio output device - not initialized");
+		LogWarning("Cannot get current audio output device - not initialized");
 		return;
 	}
 
@@ -949,7 +949,7 @@ void UDolbyIOSubsystem::SetAudioInputDevice(const FString& NativeID)
 {
 	if (!Sdk)
 	{
-		DLB_UE_WARN("Cannot set audio input device - not initialized");
+		LogWarning("Cannot set audio input device - not initialized");
 		return;
 	}
 
@@ -975,7 +975,7 @@ void UDolbyIOSubsystem::SetAudioOutputDevice(const FString& NativeID)
 {
 	if (!Sdk)
 	{
-		DLB_UE_WARN("Cannot set audio output device - not initialized");
+		LogWarning("Cannot set audio output device - not initialized");
 		return;
 	}
 
@@ -1001,7 +1001,7 @@ void UDolbyIOSubsystem::GetVideoDevices()
 {
 	if (!Sdk)
 	{
-		DLB_UE_WARN("Cannot get video devices - not initialized");
+		LogWarning("Cannot get video devices - not initialized");
 		return;
 	}
 
@@ -1022,6 +1022,18 @@ void UDolbyIOSubsystem::GetVideoDevices()
 		        BroadcastEvent(OnVideoDevicesReceived, Devices);
 	        })
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::LogWarning(const FString& Msg) const
+{
+	DLB_UE_WARN("%s", *Msg);
+	OnError.Broadcast(Msg);
+}
+
+void UDolbyIOSubsystem::LogError(const FString& Msg) const
+{
+	DLB_UE_ERROR("%s", *Msg);
+	OnError.Broadcast(Msg);
 }
 
 template <class TDelegate, class... TArgs> void UDolbyIOSubsystem::BroadcastEvent(TDelegate& Event, TArgs&&... Args)
@@ -1084,6 +1096,6 @@ catch (...)
 
 void UDolbyIOSubsystem::FErrorHandler::LogException(const FString& Type, const FString& What) const
 {
-	DLB_UE_ERROR("Caught %s: %s (conference status: %s, line: %d)", *Type, *What,
-	             *ToString(DolbyIOSubsystem.ConferenceStatus), Line);
+	DolbyIOSubsystem.LogError(FString::Printf(TEXT("Caught %s: %s (conference status: %s, line: %d)"), *Type, *What,
+	                                          *ToString(DolbyIOSubsystem.ConferenceStatus), Line));
 }

@@ -60,6 +60,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnCurrentAudioInputDevice
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSubsystemOnCurrentAudioOutputDeviceChangedDelegate, bool, IsNone,
                                              const FDolbyIOAudioDevice&, OptionalDevice);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSubsystemOnErrorDelegate, const FString&, ErrorMsg);
+
 namespace dolbyio::comms
 {
 	enum class conference_status;
@@ -422,6 +424,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnCurrentAudioOutputDeviceChangedDelegate OnCurrentAudioOutputDeviceChanged;
 
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FSubsystemOnErrorDelegate OnError;
+
 private:
 	void Initialize(FSubsystemCollectionBase&) override;
 	void Deinitialize() override;
@@ -444,6 +449,9 @@ private:
 	void SetLocalPlayerLocationImpl(const FVector& Location);
 	void SetRotationUsingFirstPlayer();
 	void SetLocalPlayerRotationImpl(const FRotator& Rotation);
+
+	void LogWarning(const FString& Msg) const;
+	void LogError(const FString& Msg) const;
 
 	template <class TDelegate, class... TArgs> void BroadcastEvent(TDelegate&, TArgs&&...);
 
