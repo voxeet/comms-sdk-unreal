@@ -123,12 +123,22 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
 			            DLB_UE_LOG("Participant status added: UserID=%s Name=%s ExternalID=%s Status=%s", *Info.UserID,
 			                       *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
-			            {
-				            FScopeLock Lock{&RemoteParticipantsLock};
-				            RemoteParticipants.Emplace(*Info.UserID, Info);
-			            }
 
-			            return BroadcastEvent(OnParticipantAdded, Info.Status, Info);
+			            FScopeLock Lock{&RemoteParticipantsLock};
+			            RemoteParticipants.Emplace(Info.UserID, Info);
+
+			            BroadcastEvent(OnParticipantAdded, Info.Status, Info);
+
+			            if (TArray<FDolbyIOVideoTrack>* ParticipantTracks = BufferedVideoTracks.Find(Info.UserID))
+			            {
+				            for (const FDolbyIOVideoTrack& VideoTrack : *ParticipantTracks)
+				            {
+					            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID,
+					                       *VideoTrack.ParticipantID);
+					            BroadcastEvent(OnVideoTrackAdded, VideoTrack);
+				            }
+				            BufferedVideoTracks.Remove(Info.UserID);
+			            }
 		            });
 	        })
 	    .then(
@@ -146,10 +156,10 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			                       *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
 			            {
 				            FScopeLock Lock{&RemoteParticipantsLock};
-				            RemoteParticipants.FindOrAdd(*Info.UserID) = Info;
+				            RemoteParticipants.FindOrAdd(Info.UserID) = Info;
 			            }
 
-			            return BroadcastEvent(OnParticipantUpdated, Info.Status, Info);
+			            BroadcastEvent(OnParticipantUpdated, Info.Status, Info);
 		            });
 	        })
 	    .then(
@@ -189,15 +199,24 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		            [this](const remote_video_track_added& Event)
 		            {
 			            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
-			            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID,
-			                       *VideoTrack.ParticipantID);
 
 			            VideoSinks.Emplace(VideoTrack.TrackID, std::make_shared<FVideoSink>(VideoTrack.TrackID));
 			            Sdk->video()
 			                .remote()
 			                .set_video_sink(Event.track, VideoSinks[VideoTrack.TrackID])
 			                .on_error(MAKE_DLB_ERROR_HANDLER);
-			            BroadcastEvent(OnVideoTrackAdded, VideoTrack);
+
+			            FScopeLock Lock{&RemoteParticipantsLock};
+			            if (RemoteParticipants.Contains(VideoTrack.ParticipantID))
+			            {
+				            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID,
+				                       *VideoTrack.ParticipantID);
+				            BroadcastEvent(OnVideoTrackAdded, VideoTrack);
+			            }
+			            else
+			            {
+				            BufferedVideoTracks.FindOrAdd(VideoTrack.ParticipantID).Add(VideoTrack);
+			            }
 		            });
 	        })
 	    .then(

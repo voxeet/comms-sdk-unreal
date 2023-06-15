@@ -452,6 +452,7 @@ private:
 	FString ConferenceID;
 	EDolbyIOConnectionMode ConnectionMode;
 	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
+	TMap<FString, TArray<FDolbyIOVideoTrack>> BufferedVideoTracks;
 	TMap<FString, FDolbyIOParticipantInfo> RemoteParticipants;
 	FCriticalSection RemoteParticipantsLock;
 
