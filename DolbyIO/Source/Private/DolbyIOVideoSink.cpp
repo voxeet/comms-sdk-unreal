@@ -85,7 +85,11 @@ namespace DolbyIO
 		}
 	}
 
-	FVideoSink::FVideoSink(const FString& VideoTrackID) : Texture(CreateEmptyTexture()), VideoTrackID(VideoTrackID) {}
+	FVideoSink::FVideoSink(const FString& VideoTrackID)
+	    : Texture(CreateEmptyTexture()), Region(MakeUnique<FUpdateTextureRegion2D>(0, 0, 0, 0, 0, 0)),
+	      VideoTrackID(VideoTrackID)
+	{
+	}
 
 	FVideoSink::~FVideoSink()
 	{
@@ -150,15 +154,23 @@ namespace DolbyIO
 		const int Width = VideoFrame.width();
 		const int Height = VideoFrame.height();
 
-		FLockedTexture Tex{*Texture};
-
 		if (Texture->GetSizeX() != Width || Texture->GetSizeY() != Height)
 		{
 			DLB_UE_LOG("Resizing texture %u for video track ID %s: old %dx%d new %dx%d", Texture->GetUniqueID(),
 			           *VideoTrackID, Texture->GetSizeX(), Texture->GetSizeY(), Width, Height);
+			FLockedTexture Tex{*Texture};
 			Tex.Resize(Width, Height);
 		}
 
+		Convert(VideoFrame);
+
+		Region->Width = Texture->GetSizeX();
+		Region->Height = Texture->GetSizeY();
+		Texture->UpdateTextureRegions(0, 1, Region.Get(), Width * Stride, Stride, Buffer.GetData());
+	}
+
+	void FVideoSink::Convert(const video_frame& VideoFrame)
+	{
 		std::shared_ptr<video_frame_buffer> VideoFrameBuffer = VideoFrame.video_frame_buffer();
 
 		if (!VideoFrameBuffer)
@@ -166,14 +178,18 @@ namespace DolbyIO
 			return;
 		}
 
+		const int Width = VideoFrame.width();
+		const int Height = VideoFrame.height();
+		Buffer.Reserve(Width * Height * Stride);
+
 		enum video_frame_buffer::type VideoFrameBufferType = VideoFrameBuffer->type();
 
 		if (VideoFrameBufferType == video_frame_buffer::type::argb)
 		{
 			if (const video_frame_buffer_argb_interface* FrameARGB = VideoFrameBuffer->get_argb())
 			{
-				video_utils::format_converter::argb_copy(FrameARGB->data(), FrameARGB->stride(), Tex, Width * Stride,
-				                                         Width, Height);
+				video_utils::format_converter::argb_copy(FrameARGB->data(), FrameARGB->stride(), Buffer.GetData(),
+				                                         Width * Stride, Width, Height);
 			}
 		}
 		else if (VideoFrameBufferType == video_frame_buffer::type::i420)
@@ -182,7 +198,7 @@ namespace DolbyIO
 			{
 				video_utils::format_converter::i420_to_argb(
 				    FrameI420->data_y(), FrameI420->stride_y(), FrameI420->data_u(), FrameI420->stride_u(),
-				    FrameI420->data_v(), FrameI420->stride_v(), Tex, Width * Stride, Width, Height);
+				    FrameI420->data_v(), FrameI420->stride_v(), Buffer.GetData(), Width * Stride, Width, Height);
 			}
 		}
 		else if (VideoFrameBufferType == video_frame_buffer::type::nv12)
@@ -190,8 +206,8 @@ namespace DolbyIO
 			if (const video_frame_buffer_nv12_interface* FrameNV12 = VideoFrameBuffer->get_nv12())
 			{
 				video_utils::format_converter::nv12_to_argb(FrameNV12->data_y(), FrameNV12->stride_y(),
-				                                            FrameNV12->data_uv(), FrameNV12->stride_uv(), Tex,
-				                                            Width * Stride, Width, Height);
+				                                            FrameNV12->data_uv(), FrameNV12->stride_uv(),
+				                                            Buffer.GetData(), Width * Stride, Width, Height);
 			}
 		}
 #if PLATFORM_MAC
@@ -225,7 +241,8 @@ namespace DolbyIO
 				    static_cast<uint8*>(CVPixelBufferGetBaseAddressOfPlane(PixelBuffer, 0)),
 				    CVPixelBufferGetBytesPerRowOfPlane(PixelBuffer, 0),
 				    static_cast<uint8*>(CVPixelBufferGetBaseAddressOfPlane(PixelBuffer, 1)),
-				    CVPixelBufferGetBytesPerRowOfPlane(PixelBuffer, 1), Tex, Width * Stride, Width, Height);
+				    CVPixelBufferGetBytesPerRowOfPlane(PixelBuffer, 1), Buffer.GetData(), Width * Stride, Width,
+				    Height);
 			}
 		}
 #endif

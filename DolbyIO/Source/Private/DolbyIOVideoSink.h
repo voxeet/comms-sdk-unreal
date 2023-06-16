@@ -8,6 +8,7 @@
 
 class UMaterialInstanceDynamic;
 class UTexture2D;
+struct FUpdateTextureRegion2D;
 
 namespace DolbyIO
 {
@@ -26,8 +27,12 @@ namespace DolbyIO
 		void handle_frame(const dolbyio::comms::video_frame&) override;
 
 		void HandleFrameImpl(const dolbyio::comms::video_frame& VideoFrame);
+		void Convert(const dolbyio::comms::video_frame& VideoFrame);
 
 		UTexture2D* const Texture{};
+		TArray<uint8> Buffer;
+		TUniquePtr<FUpdateTextureRegion2D> Region;
+
 		TSet<UMaterialInstanceDynamic*> Materials;
 		const FString VideoTrackID;
 	};
