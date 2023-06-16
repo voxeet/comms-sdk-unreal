@@ -25,9 +25,12 @@ namespace DolbyIO
 	private:
 		void handle_frame(const dolbyio::comms::video_frame&) override;
 
-		void HandleFrameImpl(const dolbyio::comms::video_frame& VideoFrame);
+		void Convert(const dolbyio::comms::video_frame& VideoFrame);
+		void Render(const dolbyio::comms::video_frame& VideoFrame);
 
 		UTexture2D* const Texture{};
+		TArray<uint8> Buffer;
+
 		TSet<UMaterialInstanceDynamic*> Materials;
 		const FString VideoTrackID;
 	};
