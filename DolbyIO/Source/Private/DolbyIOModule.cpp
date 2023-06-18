@@ -52,6 +52,11 @@ public:
 		LoadDll(BaseDir, "libdvclient.so");
 		LoadDll(BaseDir, "libdolbyio_comms_media.so");
 		LoadDll(BaseDir, "libdolbyio_comms_sdk.so");
+#elif PLATFORM_ANDROID
+		BaseDir = "";
+		LoadDll(BaseDir, "libdvclient.so");
+		LoadDll(BaseDir, "libdolbyio_comms_media.so");
+		LoadDll(BaseDir, "libdolbyio_comms_sdk.so");
 #endif
 	}
 
