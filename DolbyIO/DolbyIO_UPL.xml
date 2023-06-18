@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root xmlns:android="http://schemas.android.com/apk/res/android">
+  <init>
+    <log text="DolbyIO plugin init"/>
+  </init>
+
+  <resourceCopies>
+    <copyFile src="$S(AbsPluginDir)/sdk-release-android/lib/libdolbyio_comms_media.so"
+              dst="$S(BuildDir)/libs/$S(Architecture)/libdolbyio_comms_media.so" />
+    <log text="Copying libdolbyio_comms_media.so"/>
+    <copyFile src="$S(AbsPluginDir)/sdk-release-android/lib/libdolbyio_comms_sdk.so"
+              dst="$S(BuildDir)/libs/$S(Architecture)/libdolbyio_comms_sdk.so" />
+    <log text="Copying libdolbyio_comms_sdk.so"/>
+    <copyFile src="$S(AbsPluginDir)/sdk-release-android/lib/libdvclient.so"
+              dst="$S(BuildDir)/libs/$S(Architecture)/libdvclient.so" />
+    <log text="Copying libdvclient.so"/>
+    <copyFile src="$S(AbsPluginDir)/sdk-release-android/lib/libdvdnr.so"
+              dst="$S(BuildDir)/libs/$S(Architecture)/libdvdnr.so" />
+    <log text="Copying libdvdnr.so"/>
+    <copyFile src="$S(AbsPluginDir)/sdk-release-android/lib/model.dnr"
+              dst="$S(BuildDir)/libs/$S(Architecture)/model.dnr" />
+    <log text="Copying model.dnr"/>
+  </resourceCopies>
+</root>

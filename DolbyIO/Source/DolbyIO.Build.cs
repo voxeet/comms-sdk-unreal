@@ -20,6 +20,10 @@ public class DolbyIO : ModuleRules
         {
             ReleaseDir += "-ubuntu-20.04-clang10-libc++10";
         }
+        if (Target.Platform == UnrealTargetPlatform.Android)
+        {
+            ReleaseDir += "-android";
+        }
         string SdkDir = Path.Combine("$(PluginDir)", ReleaseDir);
         PublicIncludePaths.Add(Path.Combine(SdkDir, "include"));
         string LibDir = Path.Combine(SdkDir, "lib");
@@ -96,6 +100,27 @@ public class DolbyIO : ModuleRules
             }
             RuntimeDependencies.Add(Path.Combine(LibDir, "libcac_dvdnr.so"));
             RuntimeDependencies.Add(Path.Combine(LibDir, "model.dnr"));
+        }
+        else if (Target.Platform == UnrealTargetPlatform.Android)
+        {
+            string[] Libs = new string[] { Path.Combine(LibDir, "libdvclient.so"),
+                                           Path.Combine(LibDir, "libdolbyio_comms_media.so"),
+                                           Path.Combine(LibDir, "libdolbyio_comms_sdk.so") };
+            PublicAdditionalLibraries.AddRange(new string[] {
+                Path.Combine(LibDir, "libdolbyio_comms_media.so"),
+                Path.Combine(LibDir, "libdolbyio_comms_sdk.so"),
+            });
+            PublicDelayLoadDLLs.AddRange(Libs);
+
+            foreach (string Lib in Libs)
+            {
+                RuntimeDependencies.Add(Lib);
+            }
+            RuntimeDependencies.Add(Path.Combine(LibDir, "libdvdnr.so"));
+
+            AdditionalPropertiesForReceipt.Add(
+                "AndroidPlugin",
+                Path.Combine(Utils.MakePathRelativeTo(PluginDirectory, Target.RelativeEnginePath), "DolbyIO_UPL.xml"));
         }
     }
 }
