@@ -1,0 +1,30 @@
+name: 'Notarise'
+description: 'Notarise Unreal Plugin '
+inputs:
+  catalog_path:
+    description: 'Path to zip which going to be notarise'
+    required: true
+  file:
+    description: 'Name of zip file which going to be notarise'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Notarise Unreal Plugin
+      run: |
+        export KEYCHAIN_PATH="/Users/dolbyio/Library/Keychains/dolbyio.keychain-db"
+        security default-keychain -s ${KEYCHAIN_PATH}
+        export INPUT_NOTARISATION_FILE=${{ inputs.file }}
+        echo "entering ${{ inputs.catalog_path }}"
+        cd ${{ inputs.catalog_path }}
+        security unlock-keychain -p ${DOLBYIO_KEYCHAIN_PASSWORD} ${KEYCHAIN_PATH}
+        echo "submitting ${INPUT_NOTARISATION_FILE}"
+        if ! $(security show-keychain-info ${KEYCHAIN_PATH} 2> /dev/null); then
+                    security unlock-keychain -p ${DOLBYIO_KEYCHAIN_PASSWORD} ${KEYCHAIN_PATH};
+        fi
+        xcrun notarytool submit ${INPUT_NOTARISATION_FILE} --keychain-profile unreal-sdk-notarization-profile --keychain ${KEYCHAIN_PATH} --wait > ${{ github.workspace }}/notarylog.json
+        export NOTARIZATION_ID=$(awk '$1=="id:"{print $2}' ${{ github.workspace }}/notarylog.json | head -n 1)
+        xcrun notarytool log ${NOTARIZATION_ID} --keychain-profile unreal-sdk-notarization-profile ${{ github.workspace }}/notarylog.json
+        export notarization_status=$(cat ${{ github.workspace }}/notarylog.json | jq ".issues")
+        if [[ ${notarization_status} == "null" ]]; then echo "Success"; else exit 1; fi
+      shell: bash
