@@ -3,3 +3,7 @@
 Binaries/
 Intermediate/
 *sdk-release*
+
+# Local build preparation
+/Output
+/.tmp
