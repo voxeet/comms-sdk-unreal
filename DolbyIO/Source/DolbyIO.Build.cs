@@ -103,12 +103,22 @@ public class DolbyIO : ModuleRules
         }
         else if (Target.Platform == UnrealTargetPlatform.Android)
         {
-            string[] Libs = new string[] { Path.Combine(LibDir, "libdvclient.so"),
-                                           Path.Combine(LibDir, "libdolbyio_comms_media.so"),
-                                           Path.Combine(LibDir, "libdolbyio_comms_sdk.so") };
-            PublicAdditionalLibraries.AddRange(new string[] {
-                Path.Combine(LibDir, "libdolbyio_comms_media.so"),
+            LibDir = Path.Combine(SdkDir, "libs/android.arm64-v8a");
+
+            // since sdk & media are also provided by the regular app, just to make sure
+            // that nothing is duplicated in some way, we just need to "register" them
+            // for the compilation part. Not the actual package. Right now we just duplicate
+
+            string[] Libs = new string[] {
                 Path.Combine(LibDir, "libdolbyio_comms_sdk.so"),
+                Path.Combine(LibDir, "libdolbyio_comms_media.so"),
+                Path.Combine(LibDir, "libdolbyio_comms_sdk_android_cppsdk.so")
+            };
+
+            PublicAdditionalLibraries.AddRange(new string[] {
+                Path.Combine(LibDir, "libdolbyio_comms_sdk.so"),
+                Path.Combine(LibDir, "libdolbyio_comms_media.so"),
+                Path.Combine(LibDir, "libdolbyio_comms_sdk_android_cppsdk.so")
             });
             PublicDelayLoadDLLs.AddRange(Libs);
 
@@ -116,11 +126,10 @@ public class DolbyIO : ModuleRules
             {
                 RuntimeDependencies.Add(Lib);
             }
-            RuntimeDependencies.Add(Path.Combine(LibDir, "libdvdnr.so"));
 
             AdditionalPropertiesForReceipt.Add(
                 "AndroidPlugin",
-                Path.Combine(Utils.MakePathRelativeTo(PluginDirectory, Target.RelativeEnginePath), "DolbyIO_UPL.xml"));
+                Path.Combine(Utils.MakePathRelativeTo(PluginDirectory, Target.RelativeEnginePath), "DolbyIO.Android.xml"));
         }
     }
 }

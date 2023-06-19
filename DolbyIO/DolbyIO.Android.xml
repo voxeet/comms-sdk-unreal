@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root xmlns:android="http://schemas.android.com/apk/res/android">
+  <init>
+    <log text="DolbyIO plugin init"/>
+  </init>
+
+  <gradleProperties>
+    <insert>
+org.gradle.jvmargs=-Xmx1536M --add-exports=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-exports=jdk.unsupported/sun.misc=ALL-UNNAMED
+ANDROID_BUILD_TOOLS_GRADLE_VERSION=com.android.tools.build:gradle:7.3.1
+ANDROID_TOOLS_BUILD_GRADLE_VERSION=com.android.tools.build:gradle:7.3.1
+    </insert>
+  </gradleProperties>
+
+  <soLoadLibrary>
+    <loadLibrary name="dolbyio_comms_sdk_android_cppsdk" 
+      failmsg="XML! libdolbyio_comms_sdk_android_cppsdk.so library not loaded and required!" />
+  </soLoadLibrary>
+
+	<buildGradleAdditions>
+		<insert>
+repositories {
+  mavenLocal()
+  google()
+  mavenCentral()
+}
+
+dependencies {
+	implementation('io.dolby:comms-sdk-android-cppsdk-noprefab:2.5.3')
+	implementation('org.jetbrains.kotlin:kotlin-stdlib:1.7.20')
+}
+
+android {
+    packagingOptions {
+        pickFirst 'assets/model.dnr'
+    }
+}
+		</insert>
+	</buildGradleAdditions>
+</root>
