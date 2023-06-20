@@ -4,7 +4,10 @@ sidebar_label: Installation
 title: Installation
 ---
 
-Download and enable the plugin to be able to use it in the Unreal Editor. You can either use the binary or build the plugin from source. On macOS, you need to additionally [obtain permissions](obtain-permissions) to use your microphone and camera.
+Download and enable the plugin to be able to use it in the Unreal Editor. You can either use the binary or build the plugin from source.
+
+- On macOS, you need to additionally [obtain permissions](obtain-permissions) to use your microphone and camera.
+- On Ubuntu, you need to have libc++ installed: `sudo apt install libc++-dev`.
 
 ## Enable the plugin using the binary
 1. Make sure that your project contains a `Plugins` folder in the root of your game folder. If you do not have this folder, create it.
