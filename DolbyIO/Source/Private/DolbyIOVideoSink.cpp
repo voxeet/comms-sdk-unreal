@@ -73,6 +73,12 @@ namespace DolbyIO
 			          });
 			return Ret;
 		}
+
+		void UnbindMaterialImpl(UMaterialInstanceDynamic& Material)
+		{
+			static UTexture2D* EmptyTexture = CreateEmptyTexture();
+			Material.SetTextureParameterValue(TexParamName, EmptyTexture);
+		}
 	}
 
 	FVideoSink::FVideoSink(const FString& VideoTrackID) : Texture(CreateEmptyTexture()), VideoTrackID(VideoTrackID) {}
@@ -102,25 +108,25 @@ namespace DolbyIO
 	{
 		if (Materials.Remove(Material) && IsValid(Material))
 		{
-			static UTexture2D* EmptyTexture = nullptr;
-			if (!EmptyTexture)
-			{
-				EmptyTexture = CreateEmptyTexture();
-			}
 			DLB_UE_LOG("Unbinding material %u from video track ID %s texture %u", Material->GetUniqueID(),
 			           *VideoTrackID, Texture->GetUniqueID());
-			AsyncTask(ENamedThreads::GameThread,
-			          [Material] { Material->SetTextureParameterValue(TexParamName, EmptyTexture); });
+			UnbindMaterialImpl(*Material);
 		}
 	}
 
 	void FVideoSink::UnbindAllMaterials()
 	{
-		TArray<UMaterialInstanceDynamic*> MaterialsArray = Materials.Array();
-		for (UMaterialInstanceDynamic* Material : MaterialsArray)
-		{
-			UnbindMaterial(Material);
-		}
+		AsyncTask(ENamedThreads::GameThread,
+		          [MaterialsArray = Materials.Array()]
+		          {
+			          for (UMaterialInstanceDynamic* Material : MaterialsArray)
+			          {
+				          if (IsValid(Material))
+				          {
+					          UnbindMaterialImpl(*Material);
+				          }
+			          }
+		          });
 	}
 
 	void FVideoSink::handle_frame(const video_frame& VideoFrame)
