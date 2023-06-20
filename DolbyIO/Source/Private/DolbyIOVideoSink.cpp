@@ -76,11 +76,7 @@ namespace DolbyIO
 
 		void UnbindMaterialImpl(UMaterialInstanceDynamic& Material)
 		{
-			static UTexture2D* EmptyTexture = nullptr;
-			if (!EmptyTexture)
-			{
-				EmptyTexture = CreateEmptyTexture();
-			}
+			static UTexture2D* EmptyTexture = CreateEmptyTexture();
 			Material.SetTextureParameterValue(TexParamName, EmptyTexture);
 		}
 	}
