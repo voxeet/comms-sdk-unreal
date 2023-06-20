@@ -63,6 +63,13 @@ jobs:
         working-directory: Build
         run: |
           zip -rq DolbyIO/DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip DolbyIO/
+      - name: Notarise DolbyIO Unreal Plugin
+        env:
+          DOLBYIO_KEYCHAIN_PASSWORD: ${{ secrets.VOXEET_KEYCHAIN_PASSWORD }}
+        uses: ./.github/actions/notarise/mac
+        with:
+          catalog_path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
+          file: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
       - name: Send assets of DolbyIO Unreal Plugin 🎉
         working-directory: ${{ env.UNREAL_PLUGIN_OUTPUT }}
         run: |
