@@ -48,10 +48,10 @@ If you launch the game now, assuming you successfully connect to a conference wi
 
 `BP_DolbyIOVideoPlaneSpawner` is a sample actor which handles [`On Video Track Added`](../blueprints/events#on-video-track-added) and [`On Video Track Removed`](../blueprints/events#on-video-track-removed) in its `Event Graph`: 
 
-- [`On Video Track Added`](../blueprints/events#on-video-track-added) is handled by spawning a new `BP_DolbyIOGenericVideoPlane`, binding the material of the new plane to the new track ID and saving the plane in a map variable.
+- [`On Video Track Added`](../blueprints/events#on-video-track-added) is handled by spawning a new `BP_DolbyIOGenericVideoPlane`, binding the material of the new plane to the new track ID, and saving the plane in a map variable.
 
 - [`On Video Track Removed`](../blueprints/events#on-video-track-removed) is handled by destroying the plane which is bound to the track and removing it from the map variable.
 
 The implementation of these events is specific to this (rather artificial) use case, but it shows that it is possible to render many videos without much effort.
 
-For a more practical example, consider a case where you have avatars with video planes positioned above the avatars' heads. The planes should have their materials set up as shown in the `Construction Script` above. Assuming you already have a way of managing the avatar actors (their world transform, their lifetime, etc.) and each avatar corresponds to a participant ID, then all you need to is bind the material from a selected avatar's video plane to the participant's video track.
+For a more practical example, consider a case where you have avatars with video planes positioned above the avatars' heads. The planes should have their materials set up as shown in the `Construction Script` above. Assuming you already have a way of managing the avatar actors (their world transform, their lifetime, etc.) and each avatar corresponds to a participant ID, then all you need to do is bind the material from a selected avatar's video plane to the participant's video track.
