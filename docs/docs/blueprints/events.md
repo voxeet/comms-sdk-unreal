@@ -2,29 +2,19 @@
 
 ## On Token Needed
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| **Automatically** | An initial or refreshed [client access token](https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) is needed, which happens when the Dolby.io Subsystem is initialized or when a refresh token is requested. After receiving this event, obtain a token for your Dolby.io application and call the Dolby.io Set Token function. |
+Triggered automatically when an initial or refreshed [client access token](https://docs.dolby.io/communications-apis/docs/overview-developer-tools#client-access-token) is needed, which happens when the Dolby.io Subsystem is initialized or when a refresh token is requested. After receiving this event, obtain a token for your Dolby.io application and call the Dolby.io Set Token function.
 
 ---
 
 ## On Initialized
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| [**Dolby.io Set Token**](functions.md#dolbyio-set-token) | The plugin is successfully initialized. After receiving this event, the plugin is ready for use. You can now, for example, call the [Dolby.io Connect](functions.md#dolbyio-connect) function. |
+Triggered by [**Dolby.io Set Token**](functions.md#dolbyio-set-token) when the plugin is successfully initialized. After receiving this event, the plugin is ready for use. You can now, for example, call the [Dolby.io Connect](functions.md#dolbyio-connect) function.
 
 ---
 
 ## On Connected
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| [**Dolby.io Connect**](functions.md#dolbyio-connect) | The client is successfully connected to the conference. |
-| [**Dolby.io Demo Conference**](functions.md#dolbyio-demo-conference) | The client is successfully connected to the conference. |
+Triggered by [**Dolby.io Connect**](functions.md#dolbyio-connect) or [**Dolby.io Demo Conference**](functions.md#dolbyio-demo-conference) when the client is successfully connected to the conference.
 
 #### Data provided
 | Provides | Type | Description |
@@ -36,20 +26,13 @@
 
 ## On Disconnected
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| [**Dolby.io Disconnect**](functions.md#dolbyio-disconnect) | The client is disconnected from the conference. |
-| **Automatically** | An error occured that disconnected the client from the conference. |
+Triggered by [**Dolby.io Disconnect**](functions.md#dolbyio-disconnect) when the client is disconnected from the conference. The event may be also triggered automatically after receiving error that disconnected the client from the conference.
 
 ---
 
 ## On Participant Added
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| **Automatically** | A remote participant is added to the conference. |
+Triggered automatically when a remote participant is added to the conference.
 
 #### Data provided
 | Provides | Type | Description |
@@ -61,10 +44,7 @@
 
 ## On Participant Updated
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| **Automatically** | A remote participant's status is updated. Please refer to the [graph of possible status changes](../../static/img/participant-status-changes.png). |
+Triggered automatically when a remote participant's status is updated. For more information, refer to the [graph of possible status changes](../../static/img/participant-status-changes.png).
 
 #### Data provided
 | Provides | Type | Description |
@@ -76,10 +56,7 @@
 
 ## On Video Track Added
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| **Automatically** | A video track is added. |
+Triggered automatically when a video track is added.
 
 #### Data provided
 | Provides | Type | Description |
@@ -90,10 +67,7 @@
 
 ## On Video Track Removed
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| **Automatically** | A video track is removed. |
+Triggered automatically when a video track is removed.
 
 #### Data provided
 | Provides | Type | Description |
@@ -104,10 +78,7 @@
 
 ## On Video Track Enabled
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| **Automatically** | A video track is enabled as a result of the video forwarding strategy. |
+Triggered automatically when a video track is enabled as a result of the video forwarding strategy.
 
 #### Data provided
 | Provides | Type | Description |
@@ -118,10 +89,7 @@
 
 ## On Video Track Disabled
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| **Automatically** | A video track is disabled as a result of the video forwarding strategy. |
+Triggered automatically when a video track is disabled as a result of the video forwarding strategy.
 
 #### Data provided
 | Provides | Type | Description |
@@ -132,10 +100,7 @@
 
 ## On Video Enabled
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| [**Dolby.io Enable Video**](functions.md#dolbyio-enable-video) | Local video is enabled. |
+Triggered by [**Dolby.io Enable Video**](functions.md#dolbyio-enable-video) when local video is enabled.
 
 #### Data provided
 | Provides | Type | Description |
@@ -146,10 +111,7 @@
 
 ## On Video Disabled
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| [**Dolby.io Disable Video**](functions.md#dolbyio-disable-video) | Local video is disabled. |
+Triggered by [**Dolby.io Disable Video**](functions.md#dolbyio-disable-video) when local video is disabled.
 
 #### Data provided
 | Provides | Type | Description |
@@ -160,10 +122,7 @@
 
 ## On Screenshare Started
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| [**Dolby.io Start Screenshare**](functions.md#dolbyio-start-screenshare) | Screenshare is started. |
+Triggered by [**Dolby.io Start Screenshare**](functions.md#dolbyio-start-screenshare) when screenshare is started.
 
 #### Data provided
 | Provides | Type | Description |
@@ -174,10 +133,7 @@
 
 ## On Screenshare Stopped
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| [**Dolby.io Stop Screenshare**](functions.md#dolbyio-stop-screenshare) | Screenshare is stopped. |
+Triggered by [**Dolby.io Stop Screenshare**](functions.md#dolbyio-stop-screenshare) when screenshare is stopped.
 
 #### Data provided
 | Provides | Type | Description |
@@ -188,10 +144,7 @@
 
 ## On Active Speakers Changed
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| **Automatically** | Participants start or stop speaking. |
+Triggered automatically when participants start or stop speaking.
 
 #### Data provided
 | Provides | Type | Description |
@@ -202,10 +155,7 @@
 
 ## On Audio Levels Changed
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| **Automatically** | Roughly every 500ms. |
+Triggered automatically roughly every 500ms.
 
 #### Data provided
 | Provides | Type | Description |
@@ -217,10 +167,7 @@
 
 ## On Screenshare Sources Received
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| [**Dolby.io Get Screenshare Sources**](functions.md#dolbyio-get-screenshare-sources) | Screen share sources are received. |
+Triggered by [**Dolby.io Get Screenshare Sources**](functions.md#dolbyio-get-screenshare-sources) when screen share sources are received.
 
 #### Data provided
 | Provides | Type | Description |
@@ -231,10 +178,7 @@
 
 ## On Audio Input Devices Received
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| [**Dolby.io Get Audio Input Devices**](functions.md#dolbyio-get-audio-input-devices) | Devices are received. |
+Triggered by [**Dolby.io Get Audio Input Devices**](functions.md#dolbyio-get-audio-input-devices) when devices are received.
 
 #### Data provided
 | Provides | Type | Description |
@@ -245,10 +189,7 @@
 
 ## On Audio Output Devices Received
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| [**Dolby.io Get Audio Output Devices**](functions.md#dolbyio-get-audio-output-devices) | Devices are received. |
+Triggered by [**Dolby.io Get Audio Output Devices**](functions.md#dolbyio-get-audio-output-devices) when devices are received.
 
 #### Data provided
 | Provides | Type | Description |
@@ -259,10 +200,7 @@
 
 ## On Current Audio Input Device Received
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| [**Dolby.io Get Current Audio Input Device**](functions.md#dolbyio-get-current-audio-input-device) | The device is received. |
+Triggered by [**Dolby.io Get Current Audio Input Device**](functions.md#dolbyio-get-current-audio-input-device) when the device is received.
 
 #### Data provided
 | Provides | Type | Description |
@@ -274,10 +212,7 @@
 
 ## On Current Audio Output Device Received
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| [**Dolby.io Get Current Audio Output Device**](functions.md#dolbyio-get-current-audio-output-device) | The device is received. |
+Triggered by [**Dolby.io Get Current Audio Output Device**](functions.md#dolbyio-get-current-audio-output-device) when the device is received.
 
 #### Data provided
 | Provides | Type | Description |
@@ -289,10 +224,7 @@
 
 ## On Video Devices Received
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| [**Dolby.io Get Video Devices**](functions.md#dolbyio-get-video-devices) | Devices are received. |
+Triggered by [**Dolby.io Get Video Devices**](functions.md#dolbyio-get-video-devices) when devices are received.
 
 #### Data provided
 | Provides | Type | Description |
@@ -303,11 +235,7 @@
 
 ## On Current Audio Input Device Changed
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| [**Dolby.io Set Input Device**](functions.md#dolbyio-set-input-device) | Device is changed. |
-| **Automatically** | Device is changed. |
+Triggered by [**Dolby.io Set Input Device**](functions.md#dolbyio-set-input-device) or automatically when the device is changed.
 
 #### Data provided
 | Provides | Type | Description |
@@ -319,11 +247,7 @@
 
 ## On Current Audio Output Device Changed
 
-#### Triggered by functions
-| Function | When |
-|---|:---|
-| [**Dolby.io Set Output Device**](functions.md#dolbyio-set-output-device) | Device is changed. |
-| **Automatically** | Device is changed. |
+Triggered by [**Dolby.io Set Output Device**](functions.md#dolbyio-set-output-device) or automatically when the device is changed.
 
 #### Data provided
 | Provides | Type | Description |
