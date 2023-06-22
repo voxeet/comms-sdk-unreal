@@ -7,7 +7,7 @@ title: Getting Started - First Conference
 The following steps present how to create a sample game which uses the plugin and connects to a demo conference. It is based on the Unreal Engine 5 First Person game template.
 
 ## 1. Open Event Graph
-Open Unreal Editor and locate the `All/Content/Blueprints/FirstPerson` folder in the `Content Browser` window. Select the folder and open the `BP_FirstPersonCharacter` Blueprint.
+Open Unreal Editor and locate the `All/Content/FirstPerson/Blueprints` folder in the `Content Browser` window. Select the folder and open the `BP_FirstPersonCharacter` Blueprint.
 
 ## 2. Add `DolbyIOObserver` component
 Click the `+Add` button located in the `Components` window and select `Dolby.io Observer`.
@@ -33,7 +33,7 @@ Select the added component and check its details in the `Details` panel. Scroll 
 
 3. Provide your app key and app secret to the [`Get Dolby.io Token`](../blueprints/functions#get-dolbyio-token) function.
 
-## 4. Connect to demo conference  
+## 4. Connect to demo conference
 Place a [`Dolby.io Demo Conference`](../blueprints/functions#dolbyio-demo-conference) node and connect it to the [`Dolby.io Set Token`](../blueprints/functions#dolbyio-set-token) node as shown below:
 
 ![](../../static/img/first-conf-demo.png)
