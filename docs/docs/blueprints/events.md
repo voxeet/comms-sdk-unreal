@@ -26,7 +26,7 @@ Triggered by [**Dolby.io Connect**](functions.md#dolbyio-connect) or [**Dolby.io
 
 ## On Disconnected
 
-Triggered by [**Dolby.io Disconnect**](functions.md#dolbyio-disconnect) when the client is disconnected from the conference. The event may be also triggered automatically after receiving an error that disconnected the client from the conference.
+Triggered by [**Dolby.io Disconnect**](functions.md#dolbyio-disconnect) when the client is disconnected from the conference.
 
 ---
 
