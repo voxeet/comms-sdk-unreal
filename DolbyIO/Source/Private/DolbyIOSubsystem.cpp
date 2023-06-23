@@ -317,11 +317,6 @@ void UDolbyIOSubsystem::UpdateStatus(conference_status Status)
 		case conference_status::joined:
 			BroadcastEvent(OnConnected, LocalParticipantID, ConferenceID);
 			break;
-		case conference_status::left:
-		case conference_status::error:
-			BroadcastEvent(OnDisconnected);
-			EmptyRemoteParticipants();
-			break;
 	}
 }
 
@@ -510,7 +505,11 @@ void UDolbyIOSubsystem::Disconnect()
 	}
 
 	DLB_UE_LOG("Disconnecting");
-	Sdk->conference().leave().then([this]() { return Sdk->session().close(); }).on_error(MAKE_DLB_ERROR_HANDLER);
+	Sdk->conference()
+	    .leave()
+	    .then([this]() { return Sdk->session().close(); })
+	    .then([this] { OnDisconnected.Broadcast(); })
+	    .on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
 void UDolbyIOSubsystem::SetSpatialEnvironmentScale(float Scale)
@@ -573,6 +572,7 @@ void UDolbyIOSubsystem::UnmuteParticipant(const FString& ParticipantID)
 TArray<FDolbyIOParticipantInfo> UDolbyIOSubsystem::GetParticipants()
 {
 	TArray<FDolbyIOParticipantInfo> Ret;
+	if (IsConnected())
 	{
 		FScopeLock Lock{&RemoteParticipantsLock};
 		RemoteParticipants.GenerateValueArray(Ret);
