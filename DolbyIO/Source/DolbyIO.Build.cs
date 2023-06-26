@@ -111,12 +111,14 @@ public class DolbyIO : ModuleRules
 
             string[] Libs = new string[] {
                 Path.Combine(LibDir, "libdolbyio_comms_sdk.so"),
-                Path.Combine(LibDir, "libdolbyio_comms_media.so")
+                Path.Combine(LibDir, "libdolbyio_comms_media.so"),
+                Path.Combine(LibDir, "libdolbyio_comms_sdk_android_cppsdk.so")
             };
 
             PublicAdditionalLibraries.AddRange(new string[] {
                 Path.Combine(LibDir, "libdolbyio_comms_sdk.so"),
                 Path.Combine(LibDir, "libdolbyio_comms_media.so"),
+                Path.Combine(LibDir, "libdolbyio_comms_sdk_android_cppsdk.so")
             });
             PublicDelayLoadDLLs.AddRange(Libs);
 

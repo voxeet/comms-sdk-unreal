@@ -32,4 +32,6 @@ mkdir -p $RELEASE/libs/android.x86_64
 # copy the shared object
 cp -r .tmp/aar/prefab/modules/sdk/* $RELEASE
 cp -r .tmp/aar/jni/arm64-v8a/libdolbyio_comms_media.so $RELEASE/libs/android.arm64-v8a
+cp -r .tmp/aar/jni/arm64-v8a/libdolbyio_comms_sdk_android_cppsdk.so $RELEASE/libs/android.arm64-v8a
 cp -r .tmp/aar/jni/x86_64/libdolbyio_comms_media.so $RELEASE/libs/android.x86_64
+cp -r .tmp/aar/jni/x86_64/libdolbyio_comms_sdk_android_cppsdk.so $RELEASE/libs/android.x86_64

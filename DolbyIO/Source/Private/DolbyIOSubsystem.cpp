@@ -482,7 +482,7 @@ void UDolbyIOSubsystem::DemoConference()
 
 	DLB_UE_LOG("Connecting to demo conference");
 	ConnectionMode = EDolbyIOConnectionMode::Active;
-	SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared;
+	SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Disabled;
 	EmptyRemoteParticipants();
 
 	Sdk->session()
