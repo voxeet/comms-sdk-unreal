@@ -5,6 +5,7 @@
 #include "DolbyIOCppSdk.h"
 
 #include "Containers/Set.h"
+#include "HAL/CriticalSection.h"
 
 class UMaterialInstanceDynamic;
 class UTexture2D;
@@ -30,6 +31,7 @@ namespace DolbyIO
 
 		UTexture2D* const Texture{};
 		TArray<uint8> Buffer;
+		FCriticalSection BufferLock;
 
 		TSet<UMaterialInstanceDynamic*> Materials;
 		const FString VideoTrackID;
