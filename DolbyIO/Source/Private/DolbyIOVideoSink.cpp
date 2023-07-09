@@ -159,13 +159,16 @@ namespace DolbyIO
 
 		ENQUEUE_RENDER_COMMAND(DolbyIOUpdateTexture)
 		(
-		    [Texture = Texture, BufferData = Buffer.GetData(), Width = static_cast<uint32>(Width),
+		    [WeakThis = weak_from_this(), Width = static_cast<uint32>(Width),
 		     Height = static_cast<uint32>(Height)](FRHICommandListImmediate& RHICmdList)
 		    {
-			    RHIUpdateTexture2D(
-			        Texture->GetResource()->GetTexture2DRHI(), 0,
-			        FUpdateTextureRegion2D{0, 0, 0, 0, static_cast<uint32>(Width), static_cast<uint32>(Height)},
-			        Width * Stride, BufferData);
+			    if (std::shared_ptr<FVideoSink> SharedThis = WeakThis.lock())
+			    {
+				    FScopeLock Lock{&SharedThis->BufferLock};
+				    RHIUpdateTexture2D(SharedThis->Texture->GetResource()->GetTexture2DRHI(), 0,
+				                       FUpdateTextureRegion2D{0, 0, 0, 0, Width, Height}, Width * Stride,
+				                       SharedThis->Buffer.GetData());
+			    }
 		    });
 	}
 
@@ -180,6 +183,8 @@ namespace DolbyIO
 
 		const int Width = VideoFrame.width();
 		const int Height = VideoFrame.height();
+
+		FScopeLock Lock{&BufferLock};
 		Buffer.Reserve(Width * Height * Stride);
 
 		enum video_frame_buffer::type VideoFrameBufferType = VideoFrameBuffer->type();
