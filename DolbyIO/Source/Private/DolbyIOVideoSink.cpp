@@ -9,6 +9,7 @@
 #include "Async/Async.h"
 #include "Engine/Texture2D.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "RenderingThread.h"
 #include "Runtime/Launch/Resources/Version.h"
 #include "TextureResource.h"
 
@@ -156,13 +157,16 @@ namespace DolbyIO
 			Tex.Resize(Width, Height);
 		}
 
-		AsyncTask(ENamedThreads::ActualRenderingThread,
-		          [Texture = Texture, BufferData = Buffer.GetData(), Width = static_cast<uint32>(Width),
-		           Height = static_cast<uint32>(Height)]()
-		          {
-			          RHIUpdateTexture2D(Texture->GetResource()->GetTexture2DRHI(), 0,
-			                             FUpdateTextureRegion2D{0, 0, 0, 0, Width, Height}, Width * Stride, BufferData);
-		          });
+		ENQUEUE_RENDER_COMMAND(DolbyIOUpdateTexture)
+		(
+		    [Texture = Texture, BufferData = Buffer.GetData(), Width = static_cast<uint32>(Width),
+		     Height = static_cast<uint32>(Height)](FRHICommandListImmediate& RHICmdList)
+		    {
+			    RHIUpdateTexture2D(
+			        Texture->GetResource()->GetTexture2DRHI(), 0,
+			        FUpdateTextureRegion2D{0, 0, 0, 0, static_cast<uint32>(Width), static_cast<uint32>(Height)},
+			        Width * Stride, BufferData);
+		    });
 	}
 
 	void FVideoSink::Convert(const video_frame& VideoFrame)
