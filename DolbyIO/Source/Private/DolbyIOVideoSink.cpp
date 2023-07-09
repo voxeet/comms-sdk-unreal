@@ -41,6 +41,7 @@ namespace DolbyIO
 			{
 				Mip.BulkData.Unlock();
 				Tex.UpdateResource();
+				FlushRenderingCommands();
 			}
 
 			void Resize(int Width, int Height)
