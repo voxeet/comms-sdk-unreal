@@ -65,8 +65,7 @@ public:
 	 * @param AvatarURL - The URL of the participant's avatar.
 	 * @param ConnectionMode - Defines whether to connect as an active user or a listener.
 	 * @param SpatialAudioStyle - The spatial audio style of the conference.
-	 * @param MaxVideoStreams - Sets the maximum number of video streams that may be transmitted to the user. Valid
-	 * parameter values are between 0 and 25.
+	 * @param MaxVideoStreams - Sets the maximum number of video streams that may be transmitted to the user.
 	 * @param VideoForwardingStrategy - Defines how the plugin should select conference participants whose videos will
 	 * be transmitted to the local participant.
 	 */

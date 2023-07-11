@@ -74,7 +74,7 @@ Connects to a conference.
 | **Avatar URL** | Input | string | "" | The URL of the participant's avatar. |
 | **Connection Mode** | Input | [Dolby.io Connection Mode](types.md#dolbyio-connection-mode) | Active | Defines whether to connect as an active user or a listener. |
 | **Spatial Audio Style** | Input | [Dolby.io Spatial Audio Style](types.md#dolbyio-spatial-audio-style) | Shared | The spatial audio style of the conference. |
-| **Max Video Streams** | Input | integer | 25 | Sets the maximum number of video streams that may be transmitted to the user. Valid parameter values are between 0 and 25. |
+| **Max Video Streams** | Input | integer | 25 | Sets the maximum number of video streams that may be transmitted to the user. |
 | **Video Forwarding Strategy** | Input | [Dolby.io Video Forwarding Strategy](types.md#dolbyio-video-forwarding-strategy) | LastSpeaker | Defines how the plugin should select conference participants whose videos will be transmitted to the local participant. |
 
 #### Triggered events
