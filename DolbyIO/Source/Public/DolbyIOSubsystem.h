@@ -421,6 +421,8 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnCurrentAudioOutputDeviceChangedDelegate OnCurrentAudioOutputDeviceChanged;
 
+	static UDolbyIOSubsystem* Get(const UObject* WorldContextObject);
+
 private:
 	void Initialize(FSubsystemCollectionBase&) override;
 	void Deinitialize() override;

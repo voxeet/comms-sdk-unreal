@@ -12,6 +12,7 @@
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 #include "Misc/Paths.h"
 #include "TimerManager.h"
 
@@ -1086,4 +1087,13 @@ void UDolbyIOSubsystem::FErrorHandler::LogException(const FString& Type, const F
 {
 	DLB_UE_ERROR("Caught %s: %s (conference status: %s, line: %d)", *Type, *What,
 	             *ToString(DolbyIOSubsystem.ConferenceStatus), Line);
+}
+
+UDolbyIOSubsystem* UDolbyIOSubsystem::Get(const UObject* WorldContextObject)
+{
+	if (UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(WorldContextObject))
+	{
+		return GameInstance->GetSubsystem<UDolbyIOSubsystem>();
+	}
+	return nullptr;
 }
