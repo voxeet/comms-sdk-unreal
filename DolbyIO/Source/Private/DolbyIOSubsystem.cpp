@@ -22,6 +22,8 @@
 #include "Misc/Paths.h"
 #include "TimerManager.h"
 
+#include <dolbyio/comms/session.h>
+
 using namespace dolbyio::comms;
 using namespace dolbyio::comms::plugin;
 using namespace DolbyIO;
@@ -574,6 +576,22 @@ void UDolbyIOSubsystem::UnmuteParticipant(const FString& ParticipantID)
 
 	DLB_UE_LOG("Unmuting participant ID %s", *ParticipantID);
 	Sdk->audio().remote().start(ToStdString(ParticipantID)).on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::UpdateUserMetadata(const FString& UserName, const FString& AvatarURL)
+{
+	if (!IsConnected())
+	{
+		return;
+	}
+
+	DLB_UE_LOG("Updated Info: UserName: %s | AvatarURL: %s", *UserName, *AvatarURL)
+
+	services::session::user_info UserInfo{};
+	UserInfo.name = ToStdString(UserName);
+	UserInfo.avatarUrl = ToStdString(AvatarURL);
+
+	Sdk->session().update(MoveTemp(UserInfo)).on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
 TArray<FDolbyIOParticipantInfo> UDolbyIOSubsystem::GetParticipants()

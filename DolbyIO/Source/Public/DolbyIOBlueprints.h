@@ -650,6 +650,15 @@ public:
 		DLB_EXECUTE_SUBSYSTEM_METHOD(MuteParticipant, ParticipantID);
 	}
 
+	/** Changes a name of a Participant.
+	 *
+	 * @param ParticipantName - The New name to be set to Participant.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Update User Metadata"))
+	static void UpdateUserMetadata(const UObject* WorldContextObject, const FString& UserName,
+	                               const FString& AvatarURL);
+
 	/** Unmutes a given participant for the local user.
 	 *
 	 * @param ParticipantID - The ID of the remote participant to unmute.
