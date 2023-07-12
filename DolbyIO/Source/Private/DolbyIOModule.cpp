@@ -29,9 +29,9 @@ public:
 		LoadDll(BaseDir, "bin/dlb_vidseg_c_api.dll");
 		LoadDll(BaseDir, "bin/video_processor.dll");
 #elif PLATFORM_MAC
-		LoadDll(BaseDir, "lib/libdvclient.dylib");
 		LoadDll(BaseDir, "lib/libdolbyio_comms_media.dylib");
 		LoadDll(BaseDir, "lib/libdolbyio_comms_sdk.dylib");
+		LoadDll(BaseDir, "lib/libvideo_processor.dylib");
 #elif PLATFORM_LINUX
 		BaseDir += "-ubuntu-20.04-clang10-libc++10";
 		LoadDll(BaseDir, "lib/libavutil.so.57");
