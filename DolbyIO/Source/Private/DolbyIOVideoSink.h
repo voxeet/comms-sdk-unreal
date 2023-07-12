@@ -5,17 +5,17 @@
 #include "DolbyIOCppSdk.h"
 
 #include "Containers/Set.h"
+#include "Templates/SharedPointer.h"
 
 class UMaterialInstanceDynamic;
 class UTexture2D;
 
 namespace DolbyIO
 {
-	class FVideoSink final : public dolbyio::comms::video_sink, public std::enable_shared_from_this<FVideoSink>
+	class FVideoSink final : public dolbyio::comms::video_sink
 	{
 	public:
 		FVideoSink(const FString& VideoTrackID);
-		~FVideoSink();
 
 		UTexture2D* GetTexture();
 		void BindMaterial(UMaterialInstanceDynamic* Material);
@@ -25,9 +25,11 @@ namespace DolbyIO
 	private:
 		void handle_frame(const dolbyio::comms::video_frame&) override;
 
-		void HandleFrameImpl(const dolbyio::comms::video_frame& VideoFrame);
+		void CreateTexture(int Width, int Height);
+		void ResizeTexture(int Width, int Height);
+		void Convert(const dolbyio::comms::video_frame& VideoFrame);
 
-		UTexture2D* const Texture{};
+		TSharedPtr<class FVideoTexture> Texture;
 		TSet<UMaterialInstanceDynamic*> Materials;
 		const FString VideoTrackID;
 	};

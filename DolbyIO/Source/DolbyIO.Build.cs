@@ -13,7 +13,7 @@ public class DolbyIO : ModuleRules
         bEnableExceptions = true;
 
         PublicDependencyModuleNames.AddRange(
-            new string[] { "Core", "CoreUObject", "Engine", "HTTP", "Json", "Projects", "RenderCore" });
+            new string[] { "Core", "CoreUObject", "Engine", "HTTP", "Json", "Projects", "RenderCore", "RHI" });
 
         string ReleaseDir = "sdk-release";
         if (Target.Platform == UnrealTargetPlatform.Linux)

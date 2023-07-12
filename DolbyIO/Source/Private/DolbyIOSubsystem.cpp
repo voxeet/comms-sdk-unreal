@@ -48,18 +48,6 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	OnTokenNeeded.Broadcast();
 }
 
-void UDolbyIOSubsystem::Deinitialize()
-{
-#if WITH_EDITOR && PLATFORM_WINDOWS
-	// on Windows, closing the game while sharing an Unreal Editor window results in a deadlock if SDK is destroyed on
-	// main thread
-	AsyncTask(ENamedThreads::ActualRenderingThread, [MovedSdk = MoveTemp(Sdk)] {});
-#else
-	Sdk.Reset(); // make sure Sdk is dead so it doesn't call handle_frame on VideoSink during game destruction
-#endif
-	Super::Deinitialize();
-}
-
 #define MAKE_DLB_ERROR_HANDLER FErrorHandler(*this, __LINE__)
 
 void UDolbyIOSubsystem::SetToken(const FString& Token)
@@ -123,9 +111,10 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
 			            DLB_UE_LOG("Participant status added: UserID=%s Name=%s ExternalID=%s Status=%s", *Info.UserID,
 			                       *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
-
-			            FScopeLock Lock{&RemoteParticipantsLock};
-			            RemoteParticipants.Emplace(Info.UserID, Info);
+			            {
+				            FScopeLock Lock{&RemoteParticipantsLock};
+				            RemoteParticipants.Emplace(Info.UserID, Info);
+			            }
 
 			            BroadcastEvent(OnParticipantAdded, Info.Status, Info);
 
