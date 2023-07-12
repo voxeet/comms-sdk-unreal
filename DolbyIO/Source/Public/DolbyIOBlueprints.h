@@ -650,9 +650,10 @@ public:
 		DLB_EXECUTE_SUBSYSTEM_METHOD(MuteParticipant, ParticipantID);
 	}
 
-	/** Changes a name of a Participant.
+	/** Updates information about the local participant.
 	 *
-	 * @param ParticipantName - The New name to be set to Participant.
+	 * @param UserName - The name of the participant.
+	 * @param AvatarURL - The URL of the participant's avatar.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Update User Metadata"))
