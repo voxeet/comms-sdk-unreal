@@ -7,6 +7,10 @@
 #include "DolbyIOVideoFrameHandler.h"
 #include "DolbyIOVideoSink.h"
 
+#if PLATFORM_WINDOWS | PLATFORM_MAC
+#include <dolbyio/comms/video_processor.h>
+#endif
+
 #include "Async/Async.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
@@ -17,6 +21,7 @@
 #include "TimerManager.h"
 
 using namespace dolbyio::comms;
+using namespace dolbyio::comms::plugin;
 using namespace DolbyIO;
 
 constexpr auto LocalCameraTrackID = "local-camera";
@@ -28,11 +33,14 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 
 #if PLATFORM_WINDOWS
-	sdk::set_app_allocator(
-	    {::operator new,
-	     [](std::size_t Count, std::size_t Al) { return ::operator new(Count, static_cast<std::align_val_t>(Al)); },
-	     ::operator delete,
-	     [](void* Ptr, std::size_t Al) { ::operator delete(Ptr, static_cast<std::align_val_t>(Al)); }});
+	app_allocator Allocator{
+	    ::operator new,
+	    [](std::size_t Count, std::size_t Al) { return ::operator new(Count, static_cast<std::align_val_t>(Al)); },
+	    ::operator delete,
+	    [](void* Ptr, std::size_t Al) { ::operator delete(Ptr, static_cast<std::align_val_t>(Al)); }};
+
+	sdk::set_app_allocator(Allocator);
+	video_processor::set_app_allocator(Allocator);
 #endif
 
 	ConferenceStatus = conference_status::destroyed;
@@ -265,6 +273,13 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	    .then([this](event_handler_id)
 #if PLATFORM_WINDOWS
 	          { return Sdk->device_management().set_default_audio_device_policy(default_audio_device_policy::output); })
+	    .then([this]
+#endif
+#if PLATFORM_WINDOWS | PLATFORM_MAC
+	          // keep this comment here to avoid wrong clang-formatting
+	          { return video_processor::create(*Sdk); })
+	    .then([this](std::shared_ptr<video_processor> VideoProcessorPtr)
+	          { VideoProcessor = std::move(VideoProcessorPtr); })
 	    .then(
 	        [this]
 #endif
@@ -570,7 +585,7 @@ TArray<FDolbyIOParticipantInfo> UDolbyIOSubsystem::GetParticipants()
 	return Ret;
 }
 
-void UDolbyIOSubsystem::EnableVideo(const FDolbyIOVideoDevice& VideoDevice)
+void UDolbyIOSubsystem::EnableVideo(const FDolbyIOVideoDevice& VideoDevice, bool bBlurBackground)
 {
 	if (!Sdk)
 	{
@@ -579,10 +594,21 @@ void UDolbyIOSubsystem::EnableVideo(const FDolbyIOVideoDevice& VideoDevice)
 	}
 
 	DLB_UE_LOG("Enabling video");
-	static const camera_device DefaultCamera{};
+
+	std::shared_ptr<video_frame_handler> VideoFrameHandler = LocalCameraFrameHandler;
+	if (bBlurBackground)
+	{
+#if PLATFORM_WINDOWS | PLATFORM_MAC
+		DLB_UE_LOG("Blurring background");
+		VideoFrameHandler = VideoProcessor;
+#else
+		DLB_UE_WARN("Cannot blur background on this platform");
+#endif
+	}
+
 	Sdk->video()
 	    .local()
-	    .start(ToSdkVideoDevice(VideoDevice), LocalCameraFrameHandler)
+	    .start(ToSdkVideoDevice(VideoDevice), VideoFrameHandler)
 	    .then(
 	        [this]
 	        {
