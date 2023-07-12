@@ -32,7 +32,7 @@ Before you start, [set up](common-setup) your project.
 
 When you select a device from the combo box, we get a corresponding device from the variable and use [`Enable Video`](../blueprints/functions#dolbyio-enable-video) to start streaming or [`Disable Video`](../blueprints/functions#dolbyio-disable-video) if the device is "None".
 
-![](../../static/img/video-plane-selection.png)
+![](../../static/img/camera-preview-selection.png)
 
 `BP_DolbyIOVideoPreviewPlane` is a sample Blueprint with a simple `Event Graph`, which handles [`On Video Enabled`](../blueprints/events#on-video-enabled) and [`On Video Disabled`](../blueprints/events#on-video-disabled).
 

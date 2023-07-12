@@ -192,6 +192,7 @@ Enables video streaming from the given video device or the default device if no 
 | Name | Direction | Type | Default value | Description |
 |---|:---|:---|:---|:---|
 | **VideoDevice** | Input | [Dolby.io Video Device](types.md#dolbyio-video-device) | default device | The video device to use. |
+| **Blur Background** | Input | bool | false | Indicates whether the background should be blurred. This parameter is ignored on platforms other than Windows and macOS. |
 
 #### Triggered events
 | Event | When |
