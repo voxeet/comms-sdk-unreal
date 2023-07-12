@@ -585,7 +585,7 @@ void UDolbyIOSubsystem::UpdateUserMetadata(const FString& UserName, const FStrin
 		return;
 	}
 
-	DLB_UE_LOG("Updated Info: UserName: %s | AvatarURL: %s", *UserName, *AvatarURL)
+	DLB_UE_LOG("Updating user metadata: UserName=%s AvatarURL=%s", *UserName, *AvatarURL)
 
 	services::session::user_info UserInfo{};
 	UserInfo.name = ToStdString(UserName);
