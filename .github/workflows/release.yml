@@ -69,7 +69,7 @@ jobs:
         uses: ./.github/actions/notarise/mac
         with:
           catalog_path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
-          file: "${{ env.UNREAL_PLUGIN_OUTPUT }}/DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip"
+          file: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
       - name: test1
         run: |
           pwd
@@ -78,7 +78,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: DolbyIO-Unreal-Plugin-macos-${{ matrix.version }}
-          path: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
+          path: "${{ env.UNREAL_PLUGIN_OUTPUT }}/DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip"
       - name: Send assets of DolbyIO Unreal Plugin 🎉
         working-directory: ${{ env.UNREAL_PLUGIN_OUTPUT }}
         run: |
