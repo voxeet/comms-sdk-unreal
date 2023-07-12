@@ -8,6 +8,8 @@
 #include "DolbyIOVideoSink.h"
 
 #if PLATFORM_WINDOWS | PLATFORM_MAC
+#include "DolbyIOVideoProcessingFrameHandler.h"
+
 #include <dolbyio/comms/video_processor.h>
 #endif
 
@@ -600,7 +602,8 @@ void UDolbyIOSubsystem::EnableVideo(const FDolbyIOVideoDevice& VideoDevice, bool
 	{
 #if PLATFORM_WINDOWS | PLATFORM_MAC
 		DLB_UE_LOG("Blurring background");
-		VideoFrameHandler = VideoProcessor;
+		VideoFrameHandler =
+		    std::make_shared<FVideoProcessingFrameHandler>(VideoProcessor, LocalCameraFrameHandler->sink());
 #else
 		DLB_UE_WARN("Cannot blur background on this platform");
 #endif

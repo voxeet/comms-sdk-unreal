@@ -4,7 +4,6 @@
 
 #include "DolbyIOCppSdk.h"
 
-#include "Containers/Set.h"
 #include "Templates/SharedPointer.h"
 
 class UMaterialInstanceDynamic;
