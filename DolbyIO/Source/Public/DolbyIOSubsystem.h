@@ -177,10 +177,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteParticipant(const FString& ParticipantID);
 
-	/** Changes a properties of a Participant.
+	/** Updates information about the local participant.
 	 *
-	 * @param UserName - The New name to be set to Participant.
-	 * @param AvatarURL - The New URL to avatar.
+	 * @param UserName - The name of the participant.
+	 * @param AvatarURL - The URL of the participant's avatar.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UpdateUserMetadata(const FString& UserName,const FString& AvatarURL);
