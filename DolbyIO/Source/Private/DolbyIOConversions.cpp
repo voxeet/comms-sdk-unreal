@@ -2,8 +2,6 @@
 
 #include "DolbyIOConversions.h"
 
-#include "Misc/Base64.h"
-
 namespace DolbyIO
 {
 	using namespace dolbyio::comms;
@@ -134,35 +132,6 @@ namespace DolbyIO
 		Ret.bIsSendingAudio = Info.is_sending_audio.value_or(false);
 		Ret.bIsAudibleLocally = Info.audible_locally.value_or(false);
 		Ret.Status = ToEDolbyIOParticipantStatus(Info.status);
-
-		FString DecodedExternalID;
-		FBase64::Decode(Ret.ExternalID, DecodedExternalID);
-		if (DecodedExternalID.StartsWith("{\"init-pos\": {\"x\": "))
-		{
-			Ret.bIsInjectedBot = true;
-
-			FString Left;
-			FString Right;
-
-			DecodedExternalID.Split("\"x\": ", &Left, &Right);
-			Right.Split(",", &Left, &Right);
-			Ret.Location.Y = FCString::Atof(*Left) * ScaleCenti;
-
-			Right.Split("\"y\": ", &Left, &Right);
-			Right.Split(",", &Left, &Right);
-			Ret.Location.Z = FCString::Atof(*Left) * ScaleCenti;
-
-			Right.Split("\"z\": ", &Left, &Right);
-			Right.Split(",", &Left, &Right);
-			Ret.Location.X = -FCString::Atof(*Left) * ScaleCenti;
-
-			Right.Split("\"r\": ", &Left, &Right);
-			Right.Split(",", &Left, &Right);
-			Ret.Rotation.Yaw = FCString::Atof(*Left);
-
-			Ret.Rotation.Roll = 0;
-			Ret.Rotation.Pitch = 0;
-		}
 		return Ret;
 	}
 
