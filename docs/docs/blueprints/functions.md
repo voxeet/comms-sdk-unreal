@@ -169,6 +169,20 @@ Unmutes a given participant for the local user.
 
 ---
 
+## Dolby.io Update User Metadata
+
+Updates information about the local participant.
+
+![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_UpdateUserMetadata.png)
+
+#### Inputs and outputs
+| Name | Direction | Type | Default value | Description |
+|---|:---|:---|:---|:---|
+| **User Name** | Input | String | - | The name of the participant. |
+| **Avatar URL** | Input | String | - | The URL of the participant's avatar. |
+
+---
+
 ## Dolby.io Get Participants
 
 Gets a list of all remote participants.

@@ -22,8 +22,6 @@
 #include "Misc/Paths.h"
 #include "TimerManager.h"
 
-#include <dolbyio/comms/session.h>
-
 using namespace dolbyio::comms;
 using namespace dolbyio::comms::plugin;
 using namespace DolbyIO;
