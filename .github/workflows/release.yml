@@ -70,6 +70,11 @@ jobs:
         with:
           catalog_path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
           file: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
+      - name: Archive DolbyIO Unreal Plugin
+        uses: actions/upload-artifact@v3
+        with:
+          name: DolbyIO-Unreal-Plugin-macos-${{ matrix.version }}
+          path: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
       - name: Send assets of DolbyIO Unreal Plugin 🎉
         working-directory: ${{ env.UNREAL_PLUGIN_OUTPUT }}
         run: |
@@ -110,7 +115,12 @@ jobs:
       - name: Zip of assets of DolbyIO Unreal Plugin
         working-directory: ${{ env.UNREAL_PLUGIN_OUTPUT }}
         run: |
-          Compress-Archive -Path . -DestinationPath DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip 
+          Compress-Archive -Path . -DestinationPath DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
+      - name: Archive DolbyIO Unreal Plugin
+        uses: actions/upload-artifact@v3
+        with:
+          name: DolbyIO-Unreal-Plugin-win-${{ matrix.version }}
+          path: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip 
       - name: Send assets of DolbyIO Unreal Plugin 🎉
         id: upload_release_asset
         working-directory: ${{ env.UNREAL_PLUGIN_OUTPUT }}
@@ -158,6 +168,11 @@ jobs:
         working-directory: ${{ env.UNREAL_PLUGIN_OUTPUT }}
         run: |
           Compress-Archive -Path . -DestinationPath DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip 
+      - name: Archive DolbyIO Unreal Plugin
+        uses: actions/upload-artifact@v3
+        with:
+          name: DolbyIO-Unreal-Plugin-linux-${{ matrix.version }}
+          path: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
       - name: Send assets of DolbyIO Unreal Plugin 🎉
         id: upload_release_asset
         working-directory: ${{ env.UNREAL_PLUGIN_OUTPUT }}
