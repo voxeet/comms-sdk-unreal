@@ -1,14 +1,10 @@
-VERSION=$1
-AAR=$2
-
-if [[ -z "$VERSION" ]]; then
-  VERSION="2.5.3"
-fi
-
-echo "using Android version 2.5.3"
+AAR=$1
 
 if [[ -z "$AAR" ]]; then
-  echo "using default local maven"
+  VERSION=$2
+  if [[ -z "$VERSION" ]]; then
+    VERSION="2.5.4"
+  fi
   AAR=~/.m2/repository/io/dolby/comms-sdk-android-cppsdk/$VERSION/*.aar
 fi
 
@@ -17,6 +13,7 @@ mkdir -p .tmp/aar || echo "tmp already exists, skipping"
 
 # extract all the files we will need for compilation only ...
 pushd .tmp/aar
+echo "using aar " $AAR
 unzip "$AAR"
 popd
 
