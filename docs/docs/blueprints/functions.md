@@ -74,7 +74,7 @@ Connects to a conference.
 | **Avatar URL** | Input | string | "" | The URL of the participant's avatar. |
 | **Connection Mode** | Input | [Dolby.io Connection Mode](types.md#dolbyio-connection-mode) | Active | Defines whether to connect as an active user or a listener. |
 | **Spatial Audio Style** | Input | [Dolby.io Spatial Audio Style](types.md#dolbyio-spatial-audio-style) | Shared | The spatial audio style of the conference. |
-| **Max Video Streams** | Input | integer | 25 | Sets the maximum number of video streams that may be transmitted to the user. Valid parameter values are between 0 and 25. |
+| **Max Video Streams** | Input | integer | 25 | Sets the maximum number of video streams that may be transmitted to the user. |
 | **Video Forwarding Strategy** | Input | [Dolby.io Video Forwarding Strategy](types.md#dolbyio-video-forwarding-strategy) | LastSpeaker | Defines how the plugin should select conference participants whose videos will be transmitted to the local participant. |
 
 #### Triggered events
@@ -169,6 +169,20 @@ Unmutes a given participant for the local user.
 
 ---
 
+## Dolby.io Update User Metadata
+
+Updates information about the local participant.
+
+![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_UpdateUserMetadata.png)
+
+#### Inputs and outputs
+| Name | Direction | Type | Default value | Description |
+|---|:---|:---|:---|:---|
+| **User Name** | Input | String | - | The name of the participant. |
+| **Avatar URL** | Input | String | - | The URL of the participant's avatar. |
+
+---
+
 ## Dolby.io Get Participants
 
 Gets a list of all remote participants.
@@ -192,6 +206,7 @@ Enables video streaming from the given video device or the default device if no 
 | Name | Direction | Type | Default value | Description |
 |---|:---|:---|:---|:---|
 | **VideoDevice** | Input | [Dolby.io Video Device](types.md#dolbyio-video-device) | default device | The video device to use. |
+| **Blur Background** | Input | bool | false | Indicates whether the background should be blurred. This parameter is ignored on platforms other than Windows and macOS. |
 
 #### Triggered events
 | Event | When |

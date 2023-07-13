@@ -1,17 +1,18 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.1.0",
+	"VersionName": "1.2.0-beta.1",
 	"FriendlyName": "Dolby.io Virtual Worlds",
 	"Description": "Plugin integrating Dolby.io Communications.",
 	"Category": "Communications",
 	"CreatedBy": "Dolby Laboratories",
 	"CreatedByURL": "https://dolby.io",
-	"DocsURL": "https://github.com/DolbyIO/comms-sdk-unreal",
-	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/OFFERID",
-	"SupportURL": "https://github.com/DolbyIO/comms-sdk-unreal",
+	"DocsURL": "https://api-references.dolby.io/comms-sdk-unreal/docs/intro",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/fa7c269078dc456e886c44db5d372372",
+	"SupportURL": "https://github.com/DolbyIO/comms-sdk-unreal/issues",
+	"EnabledByDefault": true,
 	"CanContainContent": true,
-	"IsBetaVersion": false,
+	"IsBetaVersion": true,
 	"Installed": false,
 	"Modules": [
 		{

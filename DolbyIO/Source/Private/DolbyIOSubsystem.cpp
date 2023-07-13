@@ -7,15 +7,23 @@
 #include "DolbyIOVideoFrameHandler.h"
 #include "DolbyIOVideoSink.h"
 
+#if PLATFORM_WINDOWS | PLATFORM_MAC
+#include "DolbyIOVideoProcessingFrameHandler.h"
+
+#include <dolbyio/comms/video_processor.h>
+#endif
+
 #include "Async/Async.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 #include "Misc/Paths.h"
 #include "TimerManager.h"
 
 using namespace dolbyio::comms;
+using namespace dolbyio::comms::plugin;
 using namespace DolbyIO;
 
 constexpr auto LocalCameraTrackID = "local-camera";
@@ -27,11 +35,14 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 
 #if PLATFORM_WINDOWS
-	sdk::set_app_allocator(
-	    {::operator new,
-	     [](std::size_t Count, std::size_t Al) { return ::operator new(Count, static_cast<std::align_val_t>(Al)); },
-	     ::operator delete,
-	     [](void* Ptr, std::size_t Al) { ::operator delete(Ptr, static_cast<std::align_val_t>(Al)); }});
+	app_allocator Allocator{
+	    ::operator new,
+	    [](std::size_t Count, std::size_t Al) { return ::operator new(Count, static_cast<std::align_val_t>(Al)); },
+	    ::operator delete,
+	    [](void* Ptr, std::size_t Al) { ::operator delete(Ptr, static_cast<std::align_val_t>(Al)); }};
+
+	sdk::set_app_allocator(Allocator);
+	video_processor::set_app_allocator(Allocator);
 #endif
 
 	ConferenceStatus = conference_status::destroyed;
@@ -46,18 +57,6 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	TimerManager.SetTimer(RotationTimerHandle, this, &UDolbyIOSubsystem::SetRotationUsingFirstPlayer, 0.01, true);
 
 	OnTokenNeeded.Broadcast();
-}
-
-void UDolbyIOSubsystem::Deinitialize()
-{
-#if WITH_EDITOR && PLATFORM_WINDOWS
-	// on Windows, closing the game while sharing an Unreal Editor window results in a deadlock if SDK is destroyed on
-	// main thread
-	AsyncTask(ENamedThreads::ActualRenderingThread, [MovedSdk = MoveTemp(Sdk)] {});
-#else
-	Sdk.Reset(); // make sure Sdk is dead so it doesn't call handle_frame on VideoSink during game destruction
-#endif
-	Super::Deinitialize();
 }
 
 #define MAKE_DLB_ERROR_HANDLER FErrorHandler(*this, __LINE__)
@@ -103,7 +102,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		return;
 	}
 
-	Sdk->register_component_version("unreal-sdk", "1.1.0")
+	Sdk->register_component_version("unreal-sdk", "1.2.0-beta.1")
 	    .then(
 	        [this](sdk::component_data)
 	        {
@@ -123,9 +122,10 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
 			            DLB_UE_LOG("Participant status added: UserID=%s Name=%s ExternalID=%s Status=%s", *Info.UserID,
 			                       *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
-
-			            FScopeLock Lock{&RemoteParticipantsLock};
-			            RemoteParticipants.Emplace(Info.UserID, Info);
+			            {
+				            FScopeLock Lock{&RemoteParticipantsLock};
+				            RemoteParticipants.Emplace(Info.UserID, Info);
+			            }
 
 			            BroadcastEvent(OnParticipantAdded, Info.Status, Info);
 
@@ -275,6 +275,13 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	    .then([this](event_handler_id)
 #if PLATFORM_WINDOWS
 	          { return Sdk->device_management().set_default_audio_device_policy(default_audio_device_policy::output); })
+	    .then([this]
+#endif
+#if PLATFORM_WINDOWS | PLATFORM_MAC
+	          // keep this comment here to avoid wrong clang-formatting
+	          { return video_processor::create(*Sdk); })
+	    .then([this](std::shared_ptr<video_processor> VideoProcessorPtr)
+	          { VideoProcessor = std::move(VideoProcessorPtr); })
 	    .then(
 	        [this]
 #endif
@@ -569,6 +576,22 @@ void UDolbyIOSubsystem::UnmuteParticipant(const FString& ParticipantID)
 	Sdk->audio().remote().start(ToStdString(ParticipantID)).on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
+void UDolbyIOSubsystem::UpdateUserMetadata(const FString& UserName, const FString& AvatarURL)
+{
+	if (!IsConnected())
+	{
+		return;
+	}
+
+	DLB_UE_LOG("Updating user metadata: UserName=%s AvatarURL=%s", *UserName, *AvatarURL)
+
+	services::session::user_info UserInfo{};
+	UserInfo.name = ToStdString(UserName);
+	UserInfo.avatarUrl = ToStdString(AvatarURL);
+
+	Sdk->session().update(MoveTemp(UserInfo)).on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
 TArray<FDolbyIOParticipantInfo> UDolbyIOSubsystem::GetParticipants()
 {
 	TArray<FDolbyIOParticipantInfo> Ret;
@@ -580,7 +603,7 @@ TArray<FDolbyIOParticipantInfo> UDolbyIOSubsystem::GetParticipants()
 	return Ret;
 }
 
-void UDolbyIOSubsystem::EnableVideo(const FDolbyIOVideoDevice& VideoDevice)
+void UDolbyIOSubsystem::EnableVideo(const FDolbyIOVideoDevice& VideoDevice, bool bBlurBackground)
 {
 	if (!Sdk)
 	{
@@ -589,10 +612,22 @@ void UDolbyIOSubsystem::EnableVideo(const FDolbyIOVideoDevice& VideoDevice)
 	}
 
 	DLB_UE_LOG("Enabling video");
-	static const camera_device DefaultCamera{};
+
+	std::shared_ptr<video_frame_handler> VideoFrameHandler = LocalCameraFrameHandler;
+	if (bBlurBackground)
+	{
+#if PLATFORM_WINDOWS | PLATFORM_MAC
+		DLB_UE_LOG("Blurring background");
+		VideoFrameHandler =
+		    std::make_shared<FVideoProcessingFrameHandler>(VideoProcessor, LocalCameraFrameHandler->sink());
+#else
+		DLB_UE_WARN("Cannot blur background on this platform");
+#endif
+	}
+
 	Sdk->video()
 	    .local()
-	    .start(ToSdkVideoDevice(VideoDevice), LocalCameraFrameHandler)
+	    .start(ToSdkVideoDevice(VideoDevice), VideoFrameHandler)
 	    .then(
 	        [this]
 	        {
@@ -1086,4 +1121,13 @@ void UDolbyIOSubsystem::FErrorHandler::LogException(const FString& Type, const F
 {
 	DLB_UE_ERROR("Caught %s: %s (conference status: %s, line: %d)", *Type, *What,
 	             *ToString(DolbyIOSubsystem.ConferenceStatus), Line);
+}
+
+UDolbyIOSubsystem* UDolbyIOSubsystem::Get(const UObject* WorldContextObject)
+{
+	if (UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(WorldContextObject))
+	{
+		return GameInstance->GetSubsystem<UDolbyIOSubsystem>();
+	}
+	return nullptr;
 }

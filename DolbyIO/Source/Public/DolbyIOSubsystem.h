@@ -65,6 +65,11 @@ namespace dolbyio::comms
 	enum class conference_status;
 	class refresh_token;
 	class sdk;
+
+	namespace plugin
+	{
+		class video_processor;
+	}
 }
 
 namespace DolbyIO
@@ -103,8 +108,7 @@ public:
 	 * @param AvatarURL - The URL of the participant's avatar.
 	 * @param ConnectionMode - Defines whether to connect as an active user or a listener.
 	 * @param SpatialAudioStyle - The spatial audio style of the conference.
-	 * @param MaxVideoStreams - Sets the maximum number of video streams that may be transmitted to the user. Valid
-	 * parameter values are between 0 and 25.
+	 * @param MaxVideoStreams - Sets the maximum number of video streams that may be transmitted to the user.
 	 * @param VideoForwardingStrategy - Defines how the plugin should select conference participants whose videos will
 	 * be transmitted to the local participant.
 	 */
@@ -173,6 +177,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteParticipant(const FString& ParticipantID);
 
+	/** Updates information about the local participant.
+	 *
+	 * @param UserName - The name of the participant.
+	 * @param AvatarURL - The URL of the participant's avatar.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void UpdateUserMetadata(const FString& UserName, const FString& AvatarURL);
+
 	/** Gets a list of all remote participants.
 	 *
 	 * @return An array of current Dolby.io Participant Info's.
@@ -185,9 +197,11 @@ public:
 	 * Triggers On Video Enabled if successful.
 	 *
 	 * @param VideoDevice - The video device to use.
+	 * @param bBlurBackground - Indicates whether the background should be blurred. This parameter is ignored on
+	 * platforms other than Windows and macOS.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms", Meta = (AutoCreateRefTerm = "VideoDevice"))
-	void EnableVideo(const FDolbyIOVideoDevice& VideoDevice);
+	void EnableVideo(const FDolbyIOVideoDevice& VideoDevice, bool bBlurBackground = false);
 
 	/** Disables video streaming.
 	 *
@@ -422,9 +436,10 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FSubsystemOnCurrentAudioOutputDeviceChangedDelegate OnCurrentAudioOutputDeviceChanged;
 
+	static UDolbyIOSubsystem* Get(const UObject* WorldContextObject);
+
 private:
 	void Initialize(FSubsystemCollectionBase&) override;
-	void Deinitialize() override;
 
 	bool CanConnect() const;
 	bool IsConnected() const;
@@ -457,6 +472,7 @@ private:
 	FCriticalSection RemoteParticipantsLock;
 
 	TMap<FString, std::shared_ptr<DolbyIO::FVideoSink>> VideoSinks;
+	std::shared_ptr<dolbyio::comms::plugin::video_processor> VideoProcessor;
 	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalCameraFrameHandler;
 	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalScreenshareFrameHandler;
 	TSharedPtr<dolbyio::comms::sdk> Sdk;

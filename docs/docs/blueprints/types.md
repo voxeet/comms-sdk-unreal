@@ -79,9 +79,6 @@ Contains the current status of a conference participant and information whether 
 | **Is Listener** | bool | Indicates whether the participants is a listener. True means this is a participant who can receive audio and video streams, but cannot send any stream to a conference. False means this is a participant who can send and receive an audio and video stream during a conference. |
 | **Is Sending Audio** | bool | A boolean that informs whether the participant is sending audio into conference. |
 | **Is Audible Locally** | bool | Indicates whether a remote participant is audible locally. This will always be false for the local participant. |
-| **Is Injected Bot** | bool | A boolean that informs whether the participant is an injected bot. |
-| **Location** | [Vector](https://docs.unrealengine.com/5.2/en-US/BlueprintAPI/Math/Vector/) | The initial location of the participant. Meaningless unless the participant is an injected bot. |
-| **Rotation** | [Rotator](https://docs.unrealengine.com/5.2/en-US/BlueprintAPI/Math/Rotator/) | Meaningless unless the participant is an injected bot. |
 | **Status** | [Dolby.io Participant Status](#dolbyio-participant-status) | The conference status of the remote participant. |
 
 ---

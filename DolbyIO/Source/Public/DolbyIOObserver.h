@@ -177,78 +177,99 @@ public:
 private:
 	void InitializeComponent() override;
 
-	UFUNCTION()
-	void FwdOnTokenNeeded();
+#define DLB_DEFINE_FORWARDER(Event, ...)      \
+	{                                         \
+		BroadcastEvent(Event, ##__VA_ARGS__); \
+	}
 
 	UFUNCTION()
-	void FwdOnInitialized();
+	void FwdOnTokenNeeded() DLB_DEFINE_FORWARDER(OnTokenNeeded);
+
+	UFUNCTION() void FwdOnInitialized() DLB_DEFINE_FORWARDER(OnInitialized);
 
 	UFUNCTION()
-	void FwdOnConnected(const FString& LocalParticipantID, const FString& ConferenceID);
+	void FwdOnConnected(const FString& LocalParticipantID, const FString& ConferenceID)
+	    DLB_DEFINE_FORWARDER(OnConnected, LocalParticipantID, ConferenceID);
 
 	UFUNCTION()
-	void FwdOnDisconnected();
+	void FwdOnDisconnected() DLB_DEFINE_FORWARDER(OnDisconnected);
 
 	UFUNCTION()
-	void FwdOnParticipantAdded(const EDolbyIOParticipantStatus Status, const FDolbyIOParticipantInfo& ParticipantInfo);
+	void FwdOnParticipantAdded(const EDolbyIOParticipantStatus Status, const FDolbyIOParticipantInfo& ParticipantInfo)
+	    DLB_DEFINE_FORWARDER(OnParticipantAdded, Status, ParticipantInfo);
 
 	UFUNCTION()
-	void FwdOnParticipantUpdated(const EDolbyIOParticipantStatus Status,
-	                             const FDolbyIOParticipantInfo& ParticipantInfo);
+	void FwdOnParticipantUpdated(const EDolbyIOParticipantStatus Status, const FDolbyIOParticipantInfo& ParticipantInfo)
+	    DLB_DEFINE_FORWARDER(OnParticipantUpdated, Status, ParticipantInfo);
 
 	UFUNCTION()
-	void FwdOnVideoTrackAdded(const FDolbyIOVideoTrack& VideoTrack);
+	void FwdOnVideoTrackAdded(const FDolbyIOVideoTrack& VideoTrack) DLB_DEFINE_FORWARDER(OnVideoTrackAdded, VideoTrack);
 
 	UFUNCTION()
-	void FwdOnVideoTrackRemoved(const FDolbyIOVideoTrack& VideoTrack);
+	void FwdOnVideoTrackRemoved(const FDolbyIOVideoTrack& VideoTrack)
+	    DLB_DEFINE_FORWARDER(OnVideoTrackRemoved, VideoTrack);
 
 	UFUNCTION()
-	void FwdOnVideoTrackEnabled(const FDolbyIOVideoTrack& VideoTrack);
+	void FwdOnVideoTrackEnabled(const FDolbyIOVideoTrack& VideoTrack)
+	    DLB_DEFINE_FORWARDER(OnVideoTrackEnabled, VideoTrack);
 
 	UFUNCTION()
-	void FwdOnVideoTrackDisabled(const FDolbyIOVideoTrack& VideoTrack);
+	void FwdOnVideoTrackDisabled(const FDolbyIOVideoTrack& VideoTrack)
+	    DLB_DEFINE_FORWARDER(OnVideoTrackDisabled, VideoTrack);
 
 	UFUNCTION()
-	void FwdOnVideoEnabled(const FString& VideoTrackID);
+	void FwdOnVideoEnabled(const FString& VideoTrackID) DLB_DEFINE_FORWARDER(OnVideoEnabled, VideoTrackID);
 
 	UFUNCTION()
-	void FwdOnVideoDisabled(const FString& VideoTrackID);
+	void FwdOnVideoDisabled(const FString& VideoTrackID) DLB_DEFINE_FORWARDER(OnVideoDisabled, VideoTrackID);
 
 	UFUNCTION()
-	void FwdOnScreenshareStarted(const FString& VideoTrackID);
+	void FwdOnScreenshareStarted(const FString& VideoTrackID) DLB_DEFINE_FORWARDER(OnScreenshareStarted, VideoTrackID);
 
 	UFUNCTION()
-	void FwdOnScreenshareStopped(const FString& VideoTrackID);
+	void FwdOnScreenshareStopped(const FString& VideoTrackID) DLB_DEFINE_FORWARDER(OnScreenshareStopped, VideoTrackID);
 
 	UFUNCTION()
-	void FwdOnActiveSpeakersChanged(const TArray<FString>& ActiveSpeakers);
+	void FwdOnActiveSpeakersChanged(const TArray<FString>& ActiveSpeakers)
+	    DLB_DEFINE_FORWARDER(OnActiveSpeakersChanged, ActiveSpeakers);
 
 	UFUNCTION()
-	void FwdOnAudioLevelsChanged(const TArray<FString>& ActiveSpeakers, const TArray<float>& AudioLevels);
+	void FwdOnAudioLevelsChanged(const TArray<FString>& ActiveSpeakers, const TArray<float>& AudioLevels)
+	    DLB_DEFINE_FORWARDER(OnAudioLevelsChanged, ActiveSpeakers, AudioLevels);
 
 	UFUNCTION()
-	void FwdOnScreenshareSourcesReceived(const TArray<FDolbyIOScreenshareSource>& Sources);
+	void FwdOnScreenshareSourcesReceived(const TArray<FDolbyIOScreenshareSource>& Sources)
+	    DLB_DEFINE_FORWARDER(OnScreenshareSourcesReceived, Sources);
 
 	UFUNCTION()
-	void FwdOnAudioInputDevicesReceived(const TArray<FDolbyIOAudioDevice>& Devices);
+	void FwdOnAudioInputDevicesReceived(const TArray<FDolbyIOAudioDevice>& Devices)
+	    DLB_DEFINE_FORWARDER(OnAudioInputDevicesReceived, Devices);
 
 	UFUNCTION()
-	void FwdOnAudioOutputDevicesReceived(const TArray<FDolbyIOAudioDevice>& Devices);
+	void FwdOnAudioOutputDevicesReceived(const TArray<FDolbyIOAudioDevice>& Devices)
+	    DLB_DEFINE_FORWARDER(OnAudioOutputDevicesReceived, Devices);
 
 	UFUNCTION()
-	void FwdOnCurrentAudioInputDeviceReceived(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice);
+	void FwdOnCurrentAudioInputDeviceReceived(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
+	    DLB_DEFINE_FORWARDER(OnCurrentAudioInputDeviceReceived, IsNone, OptionalDevice);
 
 	UFUNCTION()
-	void FwdOnCurrentAudioOutputDeviceReceived(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice);
+	void FwdOnCurrentAudioOutputDeviceReceived(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
+	    DLB_DEFINE_FORWARDER(OnCurrentAudioOutputDeviceReceived, IsNone, OptionalDevice);
 
 	UFUNCTION()
-	void FwdOnVideoDevicesReceived(const TArray<FDolbyIOVideoDevice>& Devices);
+	void FwdOnVideoDevicesReceived(const TArray<FDolbyIOVideoDevice>& Devices)
+	    DLB_DEFINE_FORWARDER(OnVideoDevicesReceived, Devices);
 
 	UFUNCTION()
-	void FwdOnCurrentAudioInputDeviceChanged(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice);
+	void FwdOnCurrentAudioInputDeviceChanged(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
+	    DLB_DEFINE_FORWARDER(OnCurrentAudioInputDeviceChanged, IsNone, OptionalDevice);
 
 	UFUNCTION()
-	void FwdOnCurrentAudioOutputDeviceChanged(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice);
+	void FwdOnCurrentAudioOutputDeviceChanged(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
+	    DLB_DEFINE_FORWARDER(OnCurrentAudioOutputDeviceChanged, IsNone, OptionalDevice);
+
+#undef DLB_DEFINE_FORWARDER
 
 	template <class TDelegate, class... TArgs> void BroadcastEvent(TDelegate&, TArgs&&...);
 };
