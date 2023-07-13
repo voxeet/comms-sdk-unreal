@@ -576,6 +576,22 @@ void UDolbyIOSubsystem::UnmuteParticipant(const FString& ParticipantID)
 	Sdk->audio().remote().start(ToStdString(ParticipantID)).on_error(MAKE_DLB_ERROR_HANDLER);
 }
 
+void UDolbyIOSubsystem::UpdateUserMetadata(const FString& UserName, const FString& AvatarURL)
+{
+	if (!IsConnected())
+	{
+		return;
+	}
+
+	DLB_UE_LOG("Updating user metadata: UserName=%s AvatarURL=%s", *UserName, *AvatarURL)
+
+	services::session::user_info UserInfo{};
+	UserInfo.name = ToStdString(UserName);
+	UserInfo.avatarUrl = ToStdString(AvatarURL);
+
+	Sdk->session().update(MoveTemp(UserInfo)).on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
 TArray<FDolbyIOParticipantInfo> UDolbyIOSubsystem::GetParticipants()
 {
 	TArray<FDolbyIOParticipantInfo> Ret;

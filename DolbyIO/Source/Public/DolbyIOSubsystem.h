@@ -177,6 +177,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteParticipant(const FString& ParticipantID);
 
+	/** Updates information about the local participant.
+	 *
+	 * @param UserName - The name of the participant.
+	 * @param AvatarURL - The URL of the participant's avatar.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void UpdateUserMetadata(const FString& UserName, const FString& AvatarURL);
+
 	/** Gets a list of all remote participants.
 	 *
 	 * @return An array of current Dolby.io Participant Info's.

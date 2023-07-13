@@ -650,6 +650,18 @@ public:
 		DLB_EXECUTE_SUBSYSTEM_METHOD(MuteParticipant, ParticipantID);
 	}
 
+	/** Updates information about the local participant.
+	 *
+	 * @param UserName - The name of the participant.
+	 * @param AvatarURL - The URL of the participant's avatar.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Update User Metadata"))
+	static void UpdateUserMetadata(const UObject* WorldContextObject, const FString& UserName, const FString& AvatarURL)
+	{
+		DLB_EXECUTE_SUBSYSTEM_METHOD(UpdateUserMetadata, UserName, AvatarURL);
+	}
+
 	/** Unmutes a given participant for the local user.
 	 *
 	 * @param ParticipantID - The ID of the remote participant to unmute.
