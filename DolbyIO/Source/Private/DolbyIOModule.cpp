@@ -63,13 +63,15 @@ public:
 private:
 	void LoadDll(const FString& BaseDir, const FString& Dll)
 	{
-		if (FDllHandle Handle = FPlatformProcess::GetDllHandle(*FPaths::Combine(*BaseDir, *Dll)))
+		const FString DllPath = FPaths::Combine(*BaseDir, *Dll);
+		if (FDllHandle Handle = FPlatformProcess::GetDllHandle(*DllPath))
 		{
+			DLB_UE_LOG("Loaded %s", *DllPath);
 			DllHandles.Add(Handle);
 		}
 		else
 		{
-			DLB_UE_FATAL("Failed to load %s/%s", *BaseDir, *Dll);
+			DLB_UE_FATAL("Failed to load %s", *DllPath);
 		}
 	}
 
