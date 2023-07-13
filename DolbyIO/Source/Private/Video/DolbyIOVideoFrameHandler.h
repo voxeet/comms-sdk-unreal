@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "DolbyIOCppSdk.h"
+#include "Utils/DolbyIOCppSdk.h"
 
 namespace DolbyIO
 {
