@@ -657,8 +657,10 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Update User Metadata"))
-	static void UpdateUserMetadata(const UObject* WorldContextObject, const FString& UserName,
-	                               const FString& AvatarURL);
+	static void UpdateUserMetadata(const UObject* WorldContextObject, const FString& UserName, const FString& AvatarURL)
+	{
+		DLB_EXECUTE_SUBSYSTEM_METHOD(UpdateUserMetadata, UserName, AvatarURL);
+	}
 
 	/** Unmutes a given participant for the local user.
 	 *

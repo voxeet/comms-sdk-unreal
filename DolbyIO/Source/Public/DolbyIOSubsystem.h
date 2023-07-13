@@ -169,7 +169,7 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void MuteParticipant(const FString& ParticipantID);
-	
+
 	/** Unmutes a given participant for the local user.
 	 *
 	 * @param ParticipantID - The ID of the remote participant to unmute.
