@@ -65,6 +65,11 @@ namespace dolbyio::comms
 	enum class conference_status;
 	class refresh_token;
 	class sdk;
+
+	namespace plugin
+	{
+		class video_processor;
+	}
 }
 
 namespace DolbyIO
@@ -184,9 +189,11 @@ public:
 	 * Triggers On Video Enabled if successful.
 	 *
 	 * @param VideoDevice - The video device to use.
+	 * @param bBlurBackground - Indicates whether the background should be blurred. This parameter is ignored on
+	 * platforms other than Windows and macOS.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms", Meta = (AutoCreateRefTerm = "VideoDevice"))
-	void EnableVideo(const FDolbyIOVideoDevice& VideoDevice);
+	void EnableVideo(const FDolbyIOVideoDevice& VideoDevice, bool bBlurBackground = false);
 
 	/** Disables video streaming.
 	 *
@@ -457,6 +464,7 @@ private:
 	FCriticalSection RemoteParticipantsLock;
 
 	TMap<FString, std::shared_ptr<DolbyIO::FVideoSink>> VideoSinks;
+	std::shared_ptr<dolbyio::comms::plugin::video_processor> VideoProcessor;
 	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalCameraFrameHandler;
 	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalScreenshareFrameHandler;
 	TSharedPtr<dolbyio::comms::sdk> Sdk;

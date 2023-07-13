@@ -228,16 +228,19 @@ public:
 	 * Triggers On Video Enabled if successful.
 	 *
 	 * @param VideoDevice - The video device to use.
+	 * @param bBlurBackground - Indicates whether the background should be blurred. This parameter is ignored on
+	 * platforms other than Windows and macOS.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
 	                  DisplayName = "Dolby.io Enable Video", AutoCreateRefTerm = "VideoDevice"))
 	static UDolbyIOEnableVideo* DolbyIOEnableVideo(const UObject* WorldContextObject,
-	                                               const FDolbyIOVideoDevice& VideoDevice)
+	                                               const FDolbyIOVideoDevice& VideoDevice, bool bBlurBackground = false)
 	{
 		UDolbyIOEnableVideo* Self = NewObject<UDolbyIOEnableVideo>();
 		Self->WorldContextObject = WorldContextObject;
 		Self->VideoDevice = VideoDevice;
+		Self->bBlurBackground = bBlurBackground;
 		return Self;
 	}
 
@@ -245,7 +248,7 @@ public:
 	FDolbyIOEnableVideoOutputPin OnVideoEnabled;
 
 private:
-	DLB_DEFINE_ACTIVATE_METHOD(EnableVideo, OnVideoEnabled, VideoDevice);
+	DLB_DEFINE_ACTIVATE_METHOD(EnableVideo, OnVideoEnabled, VideoDevice, bBlurBackground);
 
 	UFUNCTION()
 	void OnVideoEnabledImpl(const FString& VideoTrackID)
@@ -253,6 +256,7 @@ private:
 
 	const UObject* WorldContextObject;
 	FDolbyIOVideoDevice VideoDevice;
+	bool bBlurBackground;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIODisableVideoOutputPin, const FString&, VideoTrackID);

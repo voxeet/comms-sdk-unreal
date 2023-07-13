@@ -11,7 +11,6 @@ namespace DolbyIO
 	public:
 		FVideoFrameHandler(std::shared_ptr<dolbyio::comms::video_sink> Sink) : Sink(std::move(Sink)) {}
 
-	private:
 		std::shared_ptr<dolbyio::comms::video_sink> sink() override
 		{
 			return Sink;
@@ -21,6 +20,7 @@ namespace DolbyIO
 			return nullptr;
 		}
 
+	private:
 		std::shared_ptr<dolbyio::comms::video_sink> Sink;
 	};
 }
