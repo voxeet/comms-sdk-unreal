@@ -17,13 +17,13 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 {
 	using namespace dolbyio::comms::services;
 
-	if (!CanConnect())
+	if (!CanConnect(OnConnectError))
 	{
 		return;
 	}
 	if (ConferenceName.IsEmpty())
 	{
-		DLB_UE_WARN("Cannot connect - conference name cannot be empty");
+		DLB_WARNING(OnConnectError, "Cannot connect - conference name cannot be empty");
 		return;
 	}
 
@@ -84,12 +84,12 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 		        ToggleInputMute();
 		        ToggleOutputMute();
 	        })
-	    .on_error(DLB_ERROR_HANDLER);
+	    .on_error(DLB_ERROR_HANDLER(OnConnectError));
 }
 
 void UDolbyIOSubsystem::DemoConference()
 {
-	if (!CanConnect())
+	if (!CanConnect(OnDemoConferenceError))
 	{
 		return;
 	}
@@ -115,7 +115,7 @@ void UDolbyIOSubsystem::DemoConference()
 		        ToggleInputMute();
 		        ToggleOutputMute();
 	        })
-	    .on_error(DLB_ERROR_HANDLER);
+	    .on_error(DLB_ERROR_HANDLER(OnDemoConferenceError));
 }
 
 void UDolbyIOSubsystem::Disconnect()
@@ -126,7 +126,7 @@ void UDolbyIOSubsystem::Disconnect()
 	}
 
 	DLB_UE_LOG("Disconnecting");
-	Sdk->conference().leave().on_error(DLB_ERROR_HANDLER);
+	Sdk->conference().leave().on_error(DLB_ERROR_HANDLER(OnDisconnectError));
 }
 
 void UDolbyIOSubsystem::UpdateStatus(conference_status Status)
@@ -141,21 +141,24 @@ void UDolbyIOSubsystem::UpdateStatus(conference_status Status)
 			break;
 		case conference_status::left:
 		case conference_status::error:
-			Sdk->session().close().then([this] { BroadcastEvent(OnDisconnected); }).on_error(DLB_ERROR_HANDLER);
+			Sdk->session()
+			    .close()
+			    .then([this] { BroadcastEvent(OnDisconnected); })
+			    .on_error(DLB_ERROR_HANDLER(OnDisconnectError));
 			break;
 	}
 }
 
-bool UDolbyIOSubsystem::CanConnect() const
+bool UDolbyIOSubsystem::CanConnect(const FDolbyIOOnErrorDelegate& OnError) const
 {
 	if (!Sdk)
 	{
-		DLB_UE_WARN("Cannot connect - not initialized");
+		DLB_WARNING(OnError, "Cannot connect - not initialized");
 		return false;
 	}
 	if (IsConnected())
 	{
-		DLB_UE_WARN("Cannot connect - already connected, please disconnect first");
+		DLB_WARNING(OnError, "Cannot connect - already connected, please disconnect first");
 		return false;
 	}
 	return true;
@@ -199,5 +202,5 @@ void UDolbyIOSubsystem::UpdateUserMetadata(const FString& UserName, const FStrin
 	services::session::user_info UserInfo{};
 	UserInfo.name = ToStdString(UserName);
 	UserInfo.avatarUrl = ToStdString(AvatarURL);
-	Sdk->session().update(MoveTemp(UserInfo)).on_error(DLB_ERROR_HANDLER);
+	Sdk->session().update(MoveTemp(UserInfo)).on_error(DLB_ERROR_HANDLER(OnUpdateUserMetadataError));
 }

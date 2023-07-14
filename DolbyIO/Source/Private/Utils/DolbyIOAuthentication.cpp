@@ -20,8 +20,14 @@ namespace
 		{
 			return false;
 		}
-		Delegate.Broadcast(Token);
+		Delegate.Broadcast(Token, "");
 		return true;
+	}
+
+	void BroadcastError(const FGetDolbyIOTokenOutputPin& Delegate, const FString& ErrorMsg)
+	{
+		DLB_UE_ERROR("%s", *ErrorMsg);
+		Delegate.Broadcast("", ErrorMsg);
 	}
 }
 
@@ -29,8 +35,7 @@ void UDolbyIOGetTokenFromURL::Activate()
 {
 	if (URL.IsEmpty())
 	{
-		DLB_UE_WARN("URL must not be empty");
-		return;
+		return BroadcastError(OnError, "URL must not be empty");
 	}
 
 	FHttpRequestRef Request = FHttpModule::Get().CreateRequest();
@@ -46,12 +51,11 @@ void UDolbyIOGetTokenFromURL::OnTokenObtainedImpl(FHttpRequestPtr, FHttpResponse
 {
 	if (!bConnectedSuccessfully)
 	{
-		DLB_UE_ERROR("Could not connect to given URL: %s", *URL);
-		return;
+		return BroadcastError(OnError, "Could not connect to given URL");
 	}
 	if (!TryBroadcastToken(Response, OnTokenObtained))
 	{
-		DLB_UE_ERROR("Could not get access token - no token in response from %s", *URL);
+		BroadcastError(OnError, "Could not get access token - no token in response from URL");
 	}
 }
 
@@ -66,13 +70,11 @@ void UGetDolbyIOToken::Activate()
 {
 	if (AppKey.IsEmpty() || AppSecret.IsEmpty())
 	{
-		DLB_UE_WARN("App key and secret must not be empty");
-		return;
+		return BroadcastError(OnError, "App key and secret must not be empty");
 	}
 	if (TokenExpirationTimeInSeconds <= 0)
 	{
-		DLB_UE_WARN("Token expiration time must be greater than zero");
-		return;
+		return BroadcastError(OnError, "Token expiration time must be greater than zero");
 	}
 
 	FHttpRequestRef Request = FHttpModule::Get().CreateRequest();
@@ -90,12 +92,11 @@ void UGetDolbyIOToken::OnTokenObtained(FHttpRequestPtr, FHttpResponsePtr Respons
 {
 	if (!bConnectedSuccessfully)
 	{
-		DLB_UE_ERROR("Could not connect to backend serving access tokens");
-		return;
+		return BroadcastError(OnError, "Could not connect to backend serving access tokens");
 	}
 	if (!TryBroadcastToken(Response, TokenObtained))
 	{
-		DLB_UE_ERROR("Could not get access token - verify app key and secret and validity");
+		BroadcastError(OnError, "Could not get access token - verify app key and secret and validity");
 	}
 }
 

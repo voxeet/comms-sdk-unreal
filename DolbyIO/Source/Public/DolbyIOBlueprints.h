@@ -32,22 +32,32 @@ inline UDolbyIOSubsystem* GetDolbyIOSubsystem(const UObject* WorldContextObject)
 		return;                                                                    \
 	}
 
-#define DLB_DEFINE_ACTIVATE_METHOD(MethodName, SuccessEvent, ...)                                   \
-	void Activate() override                                                                        \
-	{                                                                                               \
-		DLB_GET_SUBSYSTEM;                                                                          \
-		DolbyIOSubsystem->SuccessEvent.AddDynamic(this, &UDolbyIO##MethodName::SuccessEvent##Impl); \
-		DolbyIOSubsystem->MethodName(__VA_ARGS__);                                                  \
+#define DLB_DEFINE_ACTIVATE_METHOD(MethodName, SuccessEvent, ...)                                     \
+	void Activate() override                                                                          \
+	{                                                                                                 \
+		DLB_GET_SUBSYSTEM;                                                                            \
+		DolbyIOSubsystem->SuccessEvent.AddDynamic(this, &UDolbyIO##MethodName::SuccessEvent##Impl);   \
+		DolbyIOSubsystem->On##MethodName##Error.AddDynamic(this, &UDolbyIO##MethodName::OnErrorImpl); \
+		DolbyIOSubsystem->MethodName(__VA_ARGS__);                                                    \
 	}
 
-#define DLB_DEFINE_IMPL_METHOD(MethodName, SuccessEvent, ...)                                          \
-	{                                                                                                  \
-		SuccessEvent.Broadcast(__VA_ARGS__);                                                           \
-		DLB_GET_SUBSYSTEM;                                                                             \
-		DolbyIOSubsystem->SuccessEvent.RemoveDynamic(this, &UDolbyIO##MethodName::SuccessEvent##Impl); \
+#define DLB_DEFINE_IMPL_METHOD(MethodName, SuccessEvent, ...)                                            \
+	{                                                                                                    \
+		SuccessEvent.Broadcast(__VA_ARGS__);                                                             \
+		DLB_GET_SUBSYSTEM;                                                                               \
+		DolbyIOSubsystem->SuccessEvent.RemoveDynamic(this, &UDolbyIO##MethodName::SuccessEvent##Impl);   \
+		DolbyIOSubsystem->On##MethodName##Error.RemoveDynamic(this, &UDolbyIO##MethodName::OnErrorImpl); \
 	}
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDolbyIOSetTokenOutputPin);
+#define DLB_DEFINE_ERROR_METHOD(MethodName, SuccessEvent, ...)                                           \
+	{                                                                                                    \
+		OnError.Broadcast(__VA_ARGS__);                                                                  \
+		DLB_GET_SUBSYSTEM;                                                                               \
+		DolbyIOSubsystem->SuccessEvent.RemoveDynamic(this, &UDolbyIO##MethodName::SuccessEvent##Impl);   \
+		DolbyIOSubsystem->On##MethodName##Error.RemoveDynamic(this, &UDolbyIO##MethodName::OnErrorImpl); \
+	}
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOSetTokenOutputPin, const FString&, ErrorMsg);
 
 UCLASS()
 class DOLBYIO_API UDolbyIOSetToken : public UBlueprintAsyncActionBase
@@ -78,21 +88,30 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIOSetTokenOutputPin OnInitialized;
 
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOSetTokenOutputPin OnError;
+
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(SetToken, OnInitialized, Token);
 
 	UFUNCTION()
 	void OnInitializedImpl()
 	{
-		DLB_DEFINE_IMPL_METHOD(SetToken, OnInitialized);
+		DLB_DEFINE_IMPL_METHOD(SetToken, OnInitialized, "");
+	}
+
+	UFUNCTION()
+	void OnErrorImpl(const FString& ErrorMsg)
+	{
+		DLB_DEFINE_ERROR_METHOD(SetToken, OnInitialized, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
 	FString Token;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOConnectOutputPin, const FString&, LocalParticipantID,
-                                             const FString&, ConferenceID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FDolbyIOConnectOutputPin, const FString&, LocalParticipantID,
+                                               const FString&, ConferenceID, const FString&, ErrorMsg);
 
 UCLASS()
 class DOLBYIO_API UDolbyIOConnect : public UBlueprintAsyncActionBase
@@ -142,6 +161,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIOConnectOutputPin OnConnected;
 
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOSetTokenOutputPin OnError;
+
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(Connect, OnConnected, ConferenceName, UserName, ExternalID, AvatarURL, ConnectionMode,
 	                           SpatialAudioStyle, MaxVideoStreams, VideoForwardingStrategy);
@@ -149,7 +171,13 @@ private:
 	UFUNCTION()
 	void OnConnectedImpl(const FString& LocalParticipantID, const FString& ConferenceID)
 	{
-		DLB_DEFINE_IMPL_METHOD(Connect, OnConnected, LocalParticipantID, ConferenceID);
+		DLB_DEFINE_IMPL_METHOD(Connect, OnConnected, LocalParticipantID, ConferenceID, "");
+	}
+
+	UFUNCTION()
+	void OnErrorImpl(const FString& ErrorMsg)
+	{
+		DLB_DEFINE_ERROR_METHOD(Connect, OnConnected, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -182,19 +210,29 @@ public:
 	static UDolbyIODemoConference* DolbyIODemoConference(const UObject* WorldContextObject)
 	    DLB_DEFINE_CONSTRUCTOR(UDolbyIODemoConference);
 
-	UPROPERTY(BlueprintAssignable) FDolbyIOConnectOutputPin OnConnected;
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOConnectOutputPin OnConnected;
+
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOSetTokenOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(DemoConference, OnConnected);
 
 	UFUNCTION()
 	void OnConnectedImpl(const FString& LocalParticipantID, const FString& ConferenceID)
-	    DLB_DEFINE_IMPL_METHOD(DemoConference, OnConnected, LocalParticipantID, ConferenceID);
+	    DLB_DEFINE_IMPL_METHOD(DemoConference, OnConnected, LocalParticipantID, ConferenceID, "");
+
+	UFUNCTION()
+	void OnErrorImpl(const FString& ErrorMsg)
+	{
+		DLB_DEFINE_ERROR_METHOD(DemoConference, OnConnected, ErrorMsg);
+	}
 
 	const UObject* WorldContextObject;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDolbyIODisconnectOutputPin);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIODisconnectOutputPin, const FString&, ErrorMsg);
 
 UCLASS()
 class DOLBYIO_API UDolbyIODisconnect : public UBlueprintAsyncActionBase
@@ -215,16 +253,26 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIODisconnectOutputPin OnDisconnected;
 
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIODisconnectOutputPin OnError;
+
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(Disconnect, OnDisconnected);
 
 	UFUNCTION()
-	void OnDisconnectedImpl() DLB_DEFINE_IMPL_METHOD(Disconnect, OnDisconnected);
+	void OnDisconnectedImpl() DLB_DEFINE_IMPL_METHOD(Disconnect, OnDisconnected, "");
+
+	UFUNCTION()
+	void OnErrorImpl(const FString& ErrorMsg)
+	{
+		DLB_DEFINE_ERROR_METHOD(Disconnect, OnDisconnected, ErrorMsg);
+	}
 
 	const UObject* WorldContextObject;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOEnableVideoOutputPin, const FString&, VideoTrackID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOEnableVideoOutputPin, const FString&, VideoTrackID, const FString&,
+                                             ErrorMsg);
 
 UCLASS()
 class DOLBYIO_API UDolbyIOEnableVideo : public UBlueprintAsyncActionBase
@@ -256,19 +304,29 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIOEnableVideoOutputPin OnVideoEnabled;
 
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIODisconnectOutputPin OnError;
+
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(EnableVideo, OnVideoEnabled, VideoDevice, bBlurBackground);
 
 	UFUNCTION()
 	void OnVideoEnabledImpl(const FString& VideoTrackID)
-	    DLB_DEFINE_IMPL_METHOD(EnableVideo, OnVideoEnabled, VideoTrackID);
+	    DLB_DEFINE_IMPL_METHOD(EnableVideo, OnVideoEnabled, VideoTrackID, "");
+
+	UFUNCTION()
+	void OnErrorImpl(const FString& ErrorMsg)
+	{
+		DLB_DEFINE_ERROR_METHOD(EnableVideo, OnVideoEnabled, ErrorMsg);
+	}
 
 	const UObject* WorldContextObject;
 	FDolbyIOVideoDevice VideoDevice;
 	bool bBlurBackground;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIODisableVideoOutputPin, const FString&, VideoTrackID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIODisableVideoOutputPin, const FString&, VideoTrackID,
+                                             const FString&, ErrorMsg);
 
 UCLASS()
 class DOLBYIO_API UDolbyIODisableVideo : public UBlueprintAsyncActionBase
@@ -289,18 +347,28 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIODisableVideoOutputPin OnVideoDisabled;
 
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOSetTokenOutputPin OnError;
+
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(DisableVideo, OnVideoDisabled)
 
 	UFUNCTION()
 	void OnVideoDisabledImpl(const FString& VideoTrackID)
-	    DLB_DEFINE_IMPL_METHOD(DisableVideo, OnVideoDisabled, VideoTrackID);
+	    DLB_DEFINE_IMPL_METHOD(DisableVideo, OnVideoDisabled, VideoTrackID, "");
+
+	UFUNCTION()
+	void OnErrorImpl(const FString& ErrorMsg)
+	{
+		DLB_DEFINE_ERROR_METHOD(DisableVideo, OnVideoDisabled, ErrorMsg);
+	}
 
 	const UObject* WorldContextObject;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOGetScreenshareSourcesOutputPin,
-                                            const TArray<FDolbyIOScreenshareSource>&, Sources);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOGetScreenshareSourcesOutputPin,
+                                             const TArray<FDolbyIOScreenshareSource>&, Sources, const FString&,
+                                             ErrorMsg);
 
 UCLASS()
 class DOLBYIO_API UDolbyIOGetScreenshareSources : public UBlueprintAsyncActionBase
@@ -322,17 +390,27 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIOGetScreenshareSourcesOutputPin OnScreenshareSourcesReceived;
 
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOSetTokenOutputPin OnError;
+
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetScreenshareSources, OnScreenshareSourcesReceived);
 
 	UFUNCTION()
 	void OnScreenshareSourcesReceivedImpl(const TArray<FDolbyIOScreenshareSource>& Sources)
-	    DLB_DEFINE_IMPL_METHOD(GetScreenshareSources, OnScreenshareSourcesReceived, Sources);
+	    DLB_DEFINE_IMPL_METHOD(GetScreenshareSources, OnScreenshareSourcesReceived, Sources, "");
+
+	UFUNCTION()
+	void OnErrorImpl(const FString& ErrorMsg)
+	{
+		DLB_DEFINE_ERROR_METHOD(GetScreenshareSources, OnScreenshareSourcesReceived, ErrorMsg);
+	}
 
 	const UObject* WorldContextObject;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOStartScreenshareOutputPin, const FString&, VideoTrackID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOStartScreenshareOutputPin, const FString&, VideoTrackID,
+                                             const FString&, ErrorMsg);
 
 UCLASS()
 class DOLBYIO_API UDolbyIOStartScreenshare : public UBlueprintAsyncActionBase
@@ -375,13 +453,22 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIOStartScreenshareOutputPin OnScreenshareStarted;
 
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOSetTokenOutputPin OnError;
+
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(StartScreenshare, OnScreenshareStarted, Source, EncoderHint, MaxResolution,
 	                           DownscaleQuality);
 
 	UFUNCTION()
 	void OnScreenshareStartedImpl(const FString& VideoTrackID)
-	    DLB_DEFINE_IMPL_METHOD(StartScreenshare, OnScreenshareStarted, VideoTrackID);
+	    DLB_DEFINE_IMPL_METHOD(StartScreenshare, OnScreenshareStarted, VideoTrackID, "");
+
+	UFUNCTION()
+	void OnErrorImpl(const FString& ErrorMsg)
+	{
+		DLB_DEFINE_ERROR_METHOD(StartScreenshare, OnScreenshareStarted, ErrorMsg);
+	}
 
 	const UObject* WorldContextObject;
 	FDolbyIOScreenshareSource Source;
@@ -390,7 +477,8 @@ private:
 	EDolbyIOScreenshareDownscaleQuality DownscaleQuality;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOStopScreenshareOutputPin, const FString&, VideoTrackID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOStopScreenshareOutputPin, const FString&, VideoTrackID,
+                                             const FString&, ErrorMsg);
 
 UCLASS()
 class DOLBYIO_API UDolbyIOStopScreenshare : public UBlueprintAsyncActionBase
@@ -411,18 +499,27 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIOStopScreenshareOutputPin OnScreenshareStopped;
 
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOSetTokenOutputPin OnError;
+
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(StopScreenshare, OnScreenshareStopped);
 
 	UFUNCTION()
 	void OnScreenshareStoppedImpl(const FString& VideoTrackID)
-	    DLB_DEFINE_IMPL_METHOD(StopScreenshare, OnScreenshareStopped, VideoTrackID);
+	    DLB_DEFINE_IMPL_METHOD(StopScreenshare, OnScreenshareStopped, VideoTrackID, "");
+
+	UFUNCTION()
+	void OnErrorImpl(const FString& ErrorMsg)
+	{
+		DLB_DEFINE_ERROR_METHOD(StopScreenshare, OnScreenshareStopped, ErrorMsg);
+	}
 
 	const UObject* WorldContextObject;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOGetAudioInputDevicesOutputPin, const TArray<FDolbyIOAudioDevice>&,
-                                            Devices);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOGetAudioInputDevicesOutputPin, const TArray<FDolbyIOAudioDevice>&,
+                                             Devices, const FString&, ErrorMsg);
 
 UCLASS()
 class DOLBYIO_API UDolbyIOGetAudioInputDevices : public UBlueprintAsyncActionBase
@@ -443,18 +540,27 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIOGetAudioInputDevicesOutputPin OnAudioInputDevicesReceived;
 
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOSetTokenOutputPin OnError;
+
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetAudioInputDevices, OnAudioInputDevicesReceived);
 
 	UFUNCTION()
 	void OnAudioInputDevicesReceivedImpl(const TArray<FDolbyIOAudioDevice>& Devices)
-	    DLB_DEFINE_IMPL_METHOD(GetAudioInputDevices, OnAudioInputDevicesReceived, Devices);
+	    DLB_DEFINE_IMPL_METHOD(GetAudioInputDevices, OnAudioInputDevicesReceived, Devices, "");
+
+	UFUNCTION()
+	void OnErrorImpl(const FString& ErrorMsg)
+	{
+		DLB_DEFINE_ERROR_METHOD(GetAudioInputDevices, OnAudioInputDevicesReceived, ErrorMsg);
+	}
 
 	const UObject* WorldContextObject;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOGetAudioOutputDevicesOutputPin, const TArray<FDolbyIOAudioDevice>&,
-                                            Devices);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOGetAudioOutputDevicesOutputPin, const TArray<FDolbyIOAudioDevice>&,
+                                             Devices, const FString&, ErrorMsg);
 
 UCLASS()
 class DOLBYIO_API UDolbyIOGetAudioOutputDevices : public UBlueprintAsyncActionBase
@@ -475,18 +581,27 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIOGetAudioOutputDevicesOutputPin OnAudioOutputDevicesReceived;
 
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOSetTokenOutputPin OnError;
+
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetAudioOutputDevices, OnAudioOutputDevicesReceived);
 
 	UFUNCTION()
 	void OnAudioOutputDevicesReceivedImpl(const TArray<FDolbyIOAudioDevice>& Devices)
-	    DLB_DEFINE_IMPL_METHOD(GetAudioOutputDevices, OnAudioOutputDevicesReceived, Devices);
+	    DLB_DEFINE_IMPL_METHOD(GetAudioOutputDevices, OnAudioOutputDevicesReceived, Devices, "");
+
+	UFUNCTION()
+	void OnErrorImpl(const FString& ErrorMsg)
+	{
+		DLB_DEFINE_ERROR_METHOD(GetAudioOutputDevices, OnAudioOutputDevicesReceived, ErrorMsg);
+	}
 
 	const UObject* WorldContextObject;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOGetCurrentAudioInputDeviceOutputPin, bool, IsNone,
-                                             const FDolbyIOAudioDevice&, OptionalDevice);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FDolbyIOGetCurrentAudioInputDeviceOutputPin, bool, IsNone,
+                                               const FDolbyIOAudioDevice&, OptionalDevice, const FString&, ErrorMsg);
 
 UCLASS()
 class DOLBYIO_API UDolbyIOGetCurrentAudioInputDevice : public UBlueprintAsyncActionBase
@@ -507,18 +622,28 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIOGetCurrentAudioInputDeviceOutputPin OnCurrentAudioInputDeviceReceived;
 
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOSetTokenOutputPin OnError;
+
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetCurrentAudioInputDevice, OnCurrentAudioInputDeviceReceived);
 
 	UFUNCTION()
 	void OnCurrentAudioInputDeviceReceivedImpl(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
-	    DLB_DEFINE_IMPL_METHOD(GetCurrentAudioInputDevice, OnCurrentAudioInputDeviceReceived, IsNone, OptionalDevice);
+	    DLB_DEFINE_IMPL_METHOD(GetCurrentAudioInputDevice, OnCurrentAudioInputDeviceReceived, IsNone, OptionalDevice,
+	                           "");
+
+	UFUNCTION()
+	void OnErrorImpl(const FString& ErrorMsg)
+	{
+		DLB_DEFINE_ERROR_METHOD(GetCurrentAudioInputDevice, OnCurrentAudioInputDeviceReceived, ErrorMsg);
+	}
 
 	const UObject* WorldContextObject;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOGetCurrentAudioOutputDeviceOutputPin, bool, IsNone,
-                                             const FDolbyIOAudioDevice&, OptionalDevice);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FDolbyIOGetCurrentAudioOutputDeviceOutputPin, bool, IsNone,
+                                               const FDolbyIOAudioDevice&, OptionalDevice, const FString&, ErrorMsg);
 
 UCLASS()
 class DOLBYIO_API UDolbyIOGetCurrentAudioOutputDevice : public UBlueprintAsyncActionBase
@@ -539,18 +664,28 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIOGetCurrentAudioOutputDeviceOutputPin OnCurrentAudioOutputDeviceReceived;
 
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOSetTokenOutputPin OnError;
+
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetCurrentAudioOutputDevice, OnCurrentAudioOutputDeviceReceived);
 
 	UFUNCTION()
 	void OnCurrentAudioOutputDeviceReceivedImpl(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
-	    DLB_DEFINE_IMPL_METHOD(GetCurrentAudioOutputDevice, OnCurrentAudioOutputDeviceReceived, IsNone, OptionalDevice);
+	    DLB_DEFINE_IMPL_METHOD(GetCurrentAudioOutputDevice, OnCurrentAudioOutputDeviceReceived, IsNone, OptionalDevice,
+	                           "");
+
+	UFUNCTION()
+	void OnErrorImpl(const FString& ErrorMsg)
+	{
+		DLB_DEFINE_ERROR_METHOD(GetCurrentAudioOutputDevice, OnCurrentAudioOutputDeviceReceived, ErrorMsg);
+	}
 
 	const UObject* WorldContextObject;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOGetVideoDevicesOutputPin, const TArray<FDolbyIOVideoDevice>&,
-                                            Devices);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOGetVideoDevicesOutputPin, const TArray<FDolbyIOVideoDevice>&,
+                                             Devices, const FString&, ErrorMsg);
 
 UCLASS()
 class DOLBYIO_API UDolbyIOGetVideoDevices : public UBlueprintAsyncActionBase
@@ -571,12 +706,21 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDolbyIOGetVideoDevicesOutputPin OnVideoDevicesReceived;
 
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOSetTokenOutputPin OnError;
+
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetVideoDevices, OnVideoDevicesReceived);
 
 	UFUNCTION()
 	void OnVideoDevicesReceivedImpl(const TArray<FDolbyIOVideoDevice>& Devices)
-	    DLB_DEFINE_IMPL_METHOD(GetVideoDevices, OnVideoDevicesReceived, Devices);
+	    DLB_DEFINE_IMPL_METHOD(GetVideoDevices, OnVideoDevicesReceived, Devices, "");
+
+	UFUNCTION()
+	void OnErrorImpl(const FString& ErrorMsg)
+	{
+		DLB_DEFINE_ERROR_METHOD(GetVideoDevices, OnVideoDevicesReceived, ErrorMsg);
+	}
 
 	const UObject* WorldContextObject;
 };

@@ -28,7 +28,7 @@ Before you start, [set up](common-setup) your project.
 
 `W_DolbyIOSampleMenu` is a sample widget whose "Video devices" combo box is filled using [`Get Video Devices`](../blueprints/functions#dolbyio-get-video-devices) (and an additional "None" device) each time the widget becomes visible. We also save the devices in a variable.
 
-![](../../static/img/video-plane-combobox.png)
+![](../../static/img/camera-preview-combobox.png)
 
 When you select a device from the combo box, we get a corresponding device from the variable and use [`Enable Video`](../blueprints/functions#dolbyio-enable-video) to start streaming or [`Disable Video`](../blueprints/functions#dolbyio-disable-video) if the device is "None".
 

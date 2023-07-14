@@ -49,6 +49,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentAudioInputDeviceCh
                                              const FDolbyIOAudioDevice&, OptionalDevice);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentAudioOutputDeviceChangedDelegate, bool, IsNone,
                                              const FDolbyIOAudioDevice&, OptionalDevice);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnErrorDelegate, const FString&, ErrorMsg);
 
 namespace dolbyio::comms
 {
@@ -80,6 +81,10 @@ class DOLBYIO_API UDolbyIOSubsystem : public UGameInstanceSubsystem
 public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetToken(const FString& Token);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnInitializedDelegate OnInitialized;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSetTokenError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void Connect(
@@ -87,42 +92,74 @@ public:
 	    const FString& AvatarURL = "", EDolbyIOConnectionMode ConnectionMode = EDolbyIOConnectionMode::Active,
 	    EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared, int MaxVideoStreams = 25,
 	    EDolbyIOVideoForwardingStrategy VideoForwardingStrategy = EDolbyIOVideoForwardingStrategy::LastSpeaker);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnConnectedDelegate OnConnected;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnConnectError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void DemoConference();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnDemoConferenceError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void Disconnect();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnDisconnectedDelegate OnDisconnected;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnDisconnectError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetSpatialEnvironmentScale(float SpatialEnvironmentScale = 1.0f);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSetSpatialEnvironmentScaleError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void MuteInput();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnMuteInputError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteInput();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnUnmuteInputError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void MuteOutput();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnMuteOutputError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteOutput();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnUnmuteOutputError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void MuteParticipant(const FString& ParticipantID);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnMuteParticipantError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UnmuteParticipant(const FString& ParticipantID);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnUnmuteParticipantError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	TArray<FDolbyIOParticipantInfo> GetParticipants();
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms", Meta = (AutoCreateRefTerm = "VideoDevice"))
 	void EnableVideo(const FDolbyIOVideoDevice& VideoDevice, bool bBlurBackground = false);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnVideoEnabledDelegate OnVideoEnabled;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnEnableVideoError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void DisableVideo();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnVideoDisabledDelegate OnVideoDisabled;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnDisableVideoError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void BindMaterial(UMaterialInstanceDynamic* Material, const FString& VideoTrackID);
@@ -135,6 +172,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetScreenshareSources();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnScreenshareSourcesReceivedDelegate OnScreenshareSourcesReceived;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetScreenshareSourcesError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void StartScreenshare(
@@ -142,65 +183,109 @@ public:
 	    EDolbyIOScreenshareEncoderHint EncoderHint = EDolbyIOScreenshareEncoderHint::Detailed,
 	    EDolbyIOScreenshareMaxResolution MaxResolution = EDolbyIOScreenshareMaxResolution::ActualCaptured,
 	    EDolbyIOScreenshareDownscaleQuality DownscaleQuality = EDolbyIOScreenshareDownscaleQuality::Low);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnScreenshareStartedDelegate OnScreenshareStarted;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnStartScreenshareError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void StopScreenshare();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnScreenshareStoppedDelegate OnScreenshareStopped;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnStopScreenshareError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void ChangeScreenshareParameters(
 	    EDolbyIOScreenshareEncoderHint EncoderHint = EDolbyIOScreenshareEncoderHint::Detailed,
 	    EDolbyIOScreenshareMaxResolution MaxResolution = EDolbyIOScreenshareMaxResolution::ActualCaptured,
 	    EDolbyIOScreenshareDownscaleQuality DownscaleQuality = EDolbyIOScreenshareDownscaleQuality::Low);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnChangeScreenshareParametersError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetLocalPlayerLocation(const FVector& Location);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSetLocalPlayerLocationError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetLocalPlayerRotation(const FRotator& Rotation);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSetLocalPlayerRotationError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetRemotePlayerLocation(const FString& ParticipantID, const FVector& Location);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSetRemotePlayerLocationError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetLogSettings(EDolbyIOLogLevel SdkLogLevel = EDolbyIOLogLevel::Info,
 	                    EDolbyIOLogLevel MediaLogLevel = EDolbyIOLogLevel::Info,
 	                    EDolbyIOLogLevel DvcLogLevel = EDolbyIOLogLevel::Info);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSetLogSettingsError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetAudioInputDevices();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnAudioInputDevicesReceivedDelegate OnAudioInputDevicesReceived;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetAudioInputDevicesError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetAudioOutputDevices();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnAudioOutputDevicesReceivedDelegate OnAudioOutputDevicesReceived;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetAudioOutputDevicesError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetCurrentAudioInputDevice();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnCurrentAudioInputDeviceReceivedDelegate OnCurrentAudioInputDeviceReceived;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetCurrentAudioInputDeviceError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetCurrentAudioOutputDevice();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnCurrentAudioOutputDeviceReceivedDelegate OnCurrentAudioOutputDeviceReceived;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetCurrentAudioOutputDeviceError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetAudioInputDevice(const FString& NativeID);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnCurrentAudioInputDeviceChangedDelegate OnCurrentAudioInputDeviceChanged;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSetAudioInputDeviceError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetAudioOutputDevice(const FString& NativeID);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnCurrentAudioOutputDeviceChangedDelegate OnCurrentAudioOutputDeviceChanged;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSetAudioOutputDeviceError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void GetVideoDevices();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnVideoDevicesReceivedDelegate OnVideoDevicesReceived;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetVideoDevicesError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UpdateUserMetadata(const FString& UserName, const FString& AvatarURL);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnUpdateUserMetadataError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetAudioCaptureMode(EDolbyIONoiseReduction NoiseReduction, EDolbyIOVoiceFont VoiceFont);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSetAudioCaptureModeError;
 
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnTokenNeededDelegate OnTokenNeeded;
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
-	FDolbyIOOnInitializedDelegate OnInitialized;
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
-	FDolbyIOOnConnectedDelegate OnConnected;
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
-	FDolbyIOOnDisconnectedDelegate OnDisconnected;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnParticipantAddedDelegate OnParticipantAdded;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
@@ -214,38 +299,14 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnVideoTrackDisabledDelegate OnVideoTrackDisabled;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
-	FDolbyIOOnVideoEnabledDelegate OnVideoEnabled;
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
-	FDolbyIOOnVideoDisabledDelegate OnVideoDisabled;
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
-	FDolbyIOOnScreenshareStartedDelegate OnScreenshareStarted;
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
-	FDolbyIOOnScreenshareStoppedDelegate OnScreenshareStopped;
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnActiveSpeakersChangedDelegate OnActiveSpeakersChanged;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnAudioLevelsChangedDelegate OnAudioLevelsChanged;
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
-	FDolbyIOOnScreenshareSourcesReceivedDelegate OnScreenshareSourcesReceived;
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
-	FDolbyIOOnAudioInputDevicesReceivedDelegate OnAudioInputDevicesReceived;
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
-	FDolbyIOOnAudioOutputDevicesReceivedDelegate OnAudioOutputDevicesReceived;
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
-	FDolbyIOOnCurrentAudioInputDeviceReceivedDelegate OnCurrentAudioInputDeviceReceived;
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
-	FDolbyIOOnCurrentAudioOutputDeviceReceivedDelegate OnCurrentAudioOutputDeviceReceived;
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
-	FDolbyIOOnVideoDevicesReceivedDelegate OnVideoDevicesReceived;
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
-	FDolbyIOOnCurrentAudioInputDeviceChangedDelegate OnCurrentAudioInputDeviceChanged;
-	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
-	FDolbyIOOnCurrentAudioOutputDeviceChangedDelegate OnCurrentAudioOutputDeviceChanged;
 
 private:
 	void Initialize(FSubsystemCollectionBase&) override;
 
-	bool CanConnect() const;
+	bool CanConnect(const FDolbyIOOnErrorDelegate&) const;
 	bool IsConnected() const;
 	bool IsConnectedAsActive() const;
 	bool IsSpatialAudio() const;
@@ -261,6 +322,11 @@ private:
 	void SetLocalPlayerLocationImpl(const FVector& Location);
 	void SetRotationUsingFirstPlayer();
 	void SetLocalPlayerRotationImpl(const FRotator& Rotation);
+
+	UDolbyIOSubsystem& GetSubsystem()
+	{
+		return *this;
+	}
 
 	dolbyio::comms::conference_status ConferenceStatus;
 	FString LocalParticipantID;
@@ -318,16 +384,56 @@ public:
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnInitializedDelegate OnInitialized;
+	/** Triggered when errors occur after calling the Set Token function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSetTokenError;
 
 	/** Triggered when the client is successfully connected to the conference after calling the Connect function. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnConnectedDelegate OnConnected;
+	/** Triggered when errors occur after calling the Connect function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnConnectError;
+	/** Triggered when errors occur after calling the Demo Conference function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnDemoConferenceError;
 
 	/** Triggered when the client is disconnected from the conference by any means; in particular, by the Disconnect
 	 * function.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnDisconnectedDelegate OnDisconnected;
+	/** Triggered when errors occur after calling the Disconnect function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnDisconnectError;
+
+	/** Triggered when errors occur after calling the Set Spatial Environment function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSetSpatialEnvironmentScaleError;
+
+	/** Triggered when errors occur after calling the Mute Input function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnMuteInputError;
+
+	/** Triggered when errors occur after calling the Unmute Input function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnUnmuteInputError;
+
+	/** Triggered when errors occur after calling the Mute Output function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnMuteOutputError;
+
+	/** Triggered when errors occur after calling the Unmute Output function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnUnmuteOutputError;
+
+	/** Triggered when errors occur after calling the Mute Participant function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnMuteParticipantError;
+
+	/** Triggered when errors occur after calling the Unmute Participant function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnUnmuteParticipantError;
 
 	/** Triggered when a remote participant is added to the conference. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
@@ -356,18 +462,41 @@ public:
 	/** Triggered when local video is enabled. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnVideoEnabledDelegate OnVideoEnabled;
+	/** Triggered when errors occur after calling the Enable Video function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnEnableVideoError;
 
 	/** Triggered when local video is disabled. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnVideoDisabledDelegate OnVideoDisabled;
+	/** Triggered when errors occur after calling the Disable Video function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnDisableVideoError;
+
+	/** Triggered when screen share sources are received as a result of calling Get Screenshare Sources. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnScreenshareSourcesReceivedDelegate OnScreenshareSourcesReceived;
+	/** Triggered when errors occur after calling the Get Screenshare Sources function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetScreenshareSourcesError;
 
 	/** Triggered when screenshare is started. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnScreenshareStartedDelegate OnScreenshareStarted;
+	/** Triggered when errors occur after calling the Start Screenshare function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnStartScreenshareError;
 
 	/** Triggered when screenshare is stopped. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnScreenshareStoppedDelegate OnScreenshareStopped;
+	/** Triggered when errors occur after calling the Stop Screenshare function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnStopScreenshareError;
+
+	/** Triggered when errors occur after calling the Change Screenshare Parameters function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnChangeScreenshareParametersError;
 
 	/** Triggered when participants start or stop speaking. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
@@ -380,42 +509,83 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnAudioLevelsChangedDelegate OnAudioLevelsChanged;
 
-	/** Triggered when screen share sources are received as a result of calling Get Screenshare Sources. */
+	/** Triggered when errors occur after calling the Set Local Player Location function. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
-	FDolbyIOOnScreenshareSourcesReceivedDelegate OnScreenshareSourcesReceived;
+	FDolbyIOOnErrorDelegate OnSetLocalPlayerLocationError;
+
+	/** Triggered when errors occur after calling the Set Local Player Rotation function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSetLocalPlayerRotationError;
+
+	/** Triggered when errors occur after calling the Set Remote Player Location function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSetRemotePlayerLocationError;
+
+	/** Triggered when errors occur after calling the Set Log Settings function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSetLogSettingsError;
 
 	/** Triggered when audio input devices are received as a result of calling Get Audio Input Devices. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnAudioInputDevicesReceivedDelegate OnAudioInputDevicesReceived;
+	/** Triggered when errors occur after calling the Get Audio Input Devices function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetAudioInputDevicesError;
 
 	/** Triggered when audio output devices are received as a result of calling Get Audio Output Devices. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnAudioOutputDevicesReceivedDelegate OnAudioOutputDevicesReceived;
+	/** Triggered when errors occur after calling the Get Audio Output Devices function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetAudioOutputDevicesError;
 
 	/** Triggered when the current audio input device is received as a result of calling Get Current Audio Input Device.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnCurrentAudioInputDeviceReceivedDelegate OnCurrentAudioInputDeviceReceived;
+	/** Triggered when errors occur after calling the Get Current Audio Input Device function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetCurrentAudioInputDeviceError;
 
 	/** Triggered when the current audio output device is received as a result of calling Get Current Audio Output
 	 * Device.
 	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnCurrentAudioOutputDeviceReceivedDelegate OnCurrentAudioOutputDeviceReceived;
+	/** Triggered when errors occur after calling the Get Current Audio Output Device function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetCurrentAudioOutputDeviceError;
 
 	/** Triggered when video devices are received as a result of calling Get Video Devices. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnVideoDevicesReceivedDelegate OnVideoDevicesReceived;
+	/** Triggered when errors occur after calling the Get Video Devices function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetVideoDevicesError;
 
-	/** Triggered when the current audio input device is changed by the user or as a result of calling
-	 * Set Current Audio Input Device. */
+	/** Triggered when the current audio input device is changed by the user or as a result of calling Set Audio Input
+	 * Device. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnCurrentAudioInputDeviceChangedDelegate OnCurrentAudioInputDeviceChanged;
+	/** Triggered when errors occur after calling the Set Audio Input Device function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSetAudioInputDeviceError;
 
-	/** Triggered when the current audio output device is changed by the user or as a result of calling
-	 * Set Current Audio Output Device. */
+	/** Triggered when the current audio output device is changed by the user or as a result of calling Set Audio Output
+	 * Device. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnCurrentAudioOutputDeviceChangedDelegate OnCurrentAudioOutputDeviceChanged;
+	/** Triggered when errors occur after calling the Set Audio Output Device function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSetAudioOutputDeviceError;
+
+	/** Triggered when errors occur after calling the Update User Metadata function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnUpdateUserMetadataError;
+
+	/** Triggered when errors occur after calling the Set Audio Capture Mode function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSetAudioCaptureModeError;
 
 private:
 	void InitializeComponent() override;
@@ -429,13 +599,42 @@ private:
 	void FwdOnTokenNeeded() DLB_DEFINE_FORWARDER(OnTokenNeeded);
 
 	UFUNCTION() void FwdOnInitialized() DLB_DEFINE_FORWARDER(OnInitialized);
+	UFUNCTION() void FwdOnSetTokenError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnSetTokenError, ErrorMsg);
 
 	UFUNCTION()
 	void FwdOnConnected(const FString& LocalParticipantID, const FString& ConferenceID)
 	    DLB_DEFINE_FORWARDER(OnConnected, LocalParticipantID, ConferenceID);
+	UFUNCTION()
+	void FwdOnConnectError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnConnectError, ErrorMsg);
+	UFUNCTION()
+	void FwdOnDemoConferenceError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnDemoConferenceError, ErrorMsg);
 
 	UFUNCTION()
 	void FwdOnDisconnected() DLB_DEFINE_FORWARDER(OnDisconnected);
+	UFUNCTION()
+	void FwdOnDisconnectError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnDisconnectError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnSetSpatialEnvironmentScaleError(const FString& ErrorMsg)
+	    DLB_DEFINE_FORWARDER(OnSetSpatialEnvironmentScaleError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnMuteInputError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnMuteInputError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnUnmuteInputError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnUnmuteInputError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnMuteOutputError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnMuteOutputError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnUnmuteOutputError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnUnmuteOutputError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnMuteParticipantError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnMuteParticipantError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnUnmuteParticipantError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnUnmuteParticipantError, ErrorMsg);
 
 	UFUNCTION()
 	void FwdOnParticipantAdded(const EDolbyIOParticipantStatus Status, const FDolbyIOParticipantInfo& ParticipantInfo)
@@ -462,15 +661,34 @@ private:
 
 	UFUNCTION()
 	void FwdOnVideoEnabled(const FString& VideoTrackID) DLB_DEFINE_FORWARDER(OnVideoEnabled, VideoTrackID);
+	UFUNCTION()
+	void FwdOnEnableVideoError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnEnableVideoError, ErrorMsg);
 
 	UFUNCTION()
 	void FwdOnVideoDisabled(const FString& VideoTrackID) DLB_DEFINE_FORWARDER(OnVideoDisabled, VideoTrackID);
+	UFUNCTION()
+	void FwdOnDisableVideoError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnDisableVideoError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnScreenshareSourcesReceived(const TArray<FDolbyIOScreenshareSource>& Sources)
+	    DLB_DEFINE_FORWARDER(OnScreenshareSourcesReceived, Sources);
+	UFUNCTION()
+	void FwdOnGetScreenshareSourcesError(const FString& ErrorMsg)
+	    DLB_DEFINE_FORWARDER(OnGetScreenshareSourcesError, ErrorMsg);
 
 	UFUNCTION()
 	void FwdOnScreenshareStarted(const FString& VideoTrackID) DLB_DEFINE_FORWARDER(OnScreenshareStarted, VideoTrackID);
+	UFUNCTION()
+	void FwdOnStartScreenshareError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnStartScreenshareError, ErrorMsg);
 
 	UFUNCTION()
 	void FwdOnScreenshareStopped(const FString& VideoTrackID) DLB_DEFINE_FORWARDER(OnScreenshareStopped, VideoTrackID);
+	UFUNCTION()
+	void FwdOnStopScreenshareError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnStopScreenshareError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnChangeScreenshareParametersError(const FString& ErrorMsg)
+	    DLB_DEFINE_FORWARDER(OnChangeScreenshareParametersError, ErrorMsg);
 
 	UFUNCTION()
 	void FwdOnActiveSpeakersChanged(const TArray<FString>& ActiveSpeakers)
@@ -481,36 +699,75 @@ private:
 	    DLB_DEFINE_FORWARDER(OnAudioLevelsChanged, ActiveSpeakers, AudioLevels);
 
 	UFUNCTION()
-	void FwdOnScreenshareSourcesReceived(const TArray<FDolbyIOScreenshareSource>& Sources)
-	    DLB_DEFINE_FORWARDER(OnScreenshareSourcesReceived, Sources);
+	void FwdOnSetLocalPlayerLocationError(const FString& ErrorMsg)
+	    DLB_DEFINE_FORWARDER(OnSetLocalPlayerLocationError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnSetLocalPlayerRotationError(const FString& ErrorMsg)
+	    DLB_DEFINE_FORWARDER(OnSetLocalPlayerRotationError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnSetRemotePlayerLocationError(const FString& ErrorMsg)
+	    DLB_DEFINE_FORWARDER(OnSetRemotePlayerLocationError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnSetLogSettingsError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnSetLogSettingsError, ErrorMsg);
 
 	UFUNCTION()
 	void FwdOnAudioInputDevicesReceived(const TArray<FDolbyIOAudioDevice>& Devices)
 	    DLB_DEFINE_FORWARDER(OnAudioInputDevicesReceived, Devices);
+	UFUNCTION()
+	void FwdOnGetAudioInputDevicesError(const FString& ErrorMsg)
+	    DLB_DEFINE_FORWARDER(OnGetAudioInputDevicesError, ErrorMsg);
 
 	UFUNCTION()
 	void FwdOnAudioOutputDevicesReceived(const TArray<FDolbyIOAudioDevice>& Devices)
 	    DLB_DEFINE_FORWARDER(OnAudioOutputDevicesReceived, Devices);
+	UFUNCTION()
+	void FwdOnGetAudioOutputDevicesError(const FString& ErrorMsg)
+	    DLB_DEFINE_FORWARDER(OnGetAudioOutputDevicesError, ErrorMsg);
 
 	UFUNCTION()
 	void FwdOnCurrentAudioInputDeviceReceived(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
 	    DLB_DEFINE_FORWARDER(OnCurrentAudioInputDeviceReceived, IsNone, OptionalDevice);
+	UFUNCTION()
+	void FwdOnGetCurrentAudioInputDeviceError(const FString& ErrorMsg)
+	    DLB_DEFINE_FORWARDER(OnGetCurrentAudioInputDeviceError, ErrorMsg);
 
 	UFUNCTION()
 	void FwdOnCurrentAudioOutputDeviceReceived(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
 	    DLB_DEFINE_FORWARDER(OnCurrentAudioOutputDeviceReceived, IsNone, OptionalDevice);
+	UFUNCTION()
+	void FwdOnGetCurrentAudioOutputDeviceError(const FString& ErrorMsg)
+	    DLB_DEFINE_FORWARDER(OnGetCurrentAudioOutputDeviceError, ErrorMsg);
 
 	UFUNCTION()
 	void FwdOnVideoDevicesReceived(const TArray<FDolbyIOVideoDevice>& Devices)
 	    DLB_DEFINE_FORWARDER(OnVideoDevicesReceived, Devices);
+	UFUNCTION()
+	void FwdOnGetVideoDevicesError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnGetVideoDevicesError, ErrorMsg);
 
 	UFUNCTION()
 	void FwdOnCurrentAudioInputDeviceChanged(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
 	    DLB_DEFINE_FORWARDER(OnCurrentAudioInputDeviceChanged, IsNone, OptionalDevice);
+	UFUNCTION()
+	void FwdOnSetAudioInputDeviceError(const FString& ErrorMsg)
+	    DLB_DEFINE_FORWARDER(OnSetAudioInputDeviceError, ErrorMsg);
 
 	UFUNCTION()
 	void FwdOnCurrentAudioOutputDeviceChanged(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
 	    DLB_DEFINE_FORWARDER(OnCurrentAudioOutputDeviceChanged, IsNone, OptionalDevice);
+	UFUNCTION()
+	void FwdOnSetAudioOutputDeviceError(const FString& ErrorMsg)
+	    DLB_DEFINE_FORWARDER(OnSetAudioOutputDeviceError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnUpdateUserMetadataError(const FString& ErrorMsg)
+	    DLB_DEFINE_FORWARDER(OnUpdateUserMetadataError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnSetAudioCaptureModeError(const FString& ErrorMsg)
+	    DLB_DEFINE_FORWARDER(OnSetAudioCaptureModeError, ErrorMsg);
 
 #undef DLB_DEFINE_FORWARDER
 };

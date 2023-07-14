@@ -27,6 +27,11 @@ namespace DolbyIO
 		void SetAudioOutputDevice(const FString& NativeID);
 		void GetVideoDevices();
 
+		UDolbyIOSubsystem& GetSubsystem()
+		{
+			return Subsystem;
+		}
+
 	private:
 		UDolbyIOSubsystem& Subsystem;
 		FDeviceManagement& DeviceManagement;

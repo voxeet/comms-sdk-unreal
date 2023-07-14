@@ -15,7 +15,7 @@ void UDolbyIOSubsystem::GetScreenshareSources()
 {
 	if (!Sdk)
 	{
-		DLB_UE_WARN("Cannot get screenshare sources - not initialized");
+		DLB_WARNING(OnGetScreenshareSourcesError, "Cannot get screenshare sources - not initialized");
 		return;
 	}
 
@@ -35,7 +35,7 @@ void UDolbyIOSubsystem::GetScreenshareSources()
 		        }
 		        BroadcastEvent(OnScreenshareSourcesReceived, Sources);
 	        })
-	    .on_error(DLB_ERROR_HANDLER);
+	    .on_error(DLB_ERROR_HANDLER(OnGetScreenshareSourcesError));
 }
 
 void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source,
@@ -45,7 +45,7 @@ void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source
 {
 	if (!IsConnectedAsActive())
 	{
-		DLB_UE_WARN("Cannot start screenshare - not connected as active user");
+		DLB_WARNING(OnStartScreenshareError, "Cannot start screenshare - not connected as active user");
 		return;
 	}
 
@@ -59,7 +59,7 @@ void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source
 	                        LocalScreenshareFrameHandler,
 	                        ToSdkContentInfo(EncoderHint, MaxResolution, DownscaleQuality))
 	    .then([this] { BroadcastEvent(OnScreenshareStarted, LocalScreenshareTrackID); })
-	    .on_error(DLB_ERROR_HANDLER);
+	    .on_error(DLB_ERROR_HANDLER(OnStartScreenshareError));
 }
 
 void UDolbyIOSubsystem::StopScreenshare()
@@ -73,7 +73,7 @@ void UDolbyIOSubsystem::StopScreenshare()
 	Sdk->conference()
 	    .stop_screen_share()
 	    .then([this] { BroadcastEvent(OnScreenshareStopped, LocalScreenshareTrackID); })
-	    .on_error(DLB_ERROR_HANDLER);
+	    .on_error(DLB_ERROR_HANDLER(OnStopScreenshareError));
 }
 
 void UDolbyIOSubsystem::ChangeScreenshareParameters(EDolbyIOScreenshareEncoderHint EncoderHint,
@@ -88,5 +88,5 @@ void UDolbyIOSubsystem::ChangeScreenshareParameters(EDolbyIOScreenshareEncoderHi
 	           *UEnum::GetValueAsString(MaxResolution), *UEnum::GetValueAsString(DownscaleQuality));
 	Sdk->conference()
 	    .screen_share_content_info(ToSdkContentInfo(EncoderHint, MaxResolution, DownscaleQuality))
-	    .on_error(DLB_ERROR_HANDLER);
+	    .on_error(DLB_ERROR_HANDLER(OnChangeScreenshareParametersError));
 }

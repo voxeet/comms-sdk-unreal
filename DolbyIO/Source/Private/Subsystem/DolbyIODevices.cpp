@@ -11,41 +11,41 @@
 using namespace dolbyio::comms;
 using namespace DolbyIO;
 
-#define DLB_DEVICES                                                     \
-	if (!Devices)                                                       \
-	{                                                                   \
-		DLB_UE_WARN("Cannot %s - not initialized", *FString{__func__}); \
-		return;                                                         \
-	}                                                                   \
+#define DLB_DEVICES(OnError)                                 \
+	if (!Devices)                                            \
+	{                                                        \
+		DLB_WARNING(OnError, #OnError " - not initialized"); \
+		return;                                              \
+	}                                                        \
 	Devices
 
 void UDolbyIOSubsystem::GetAudioInputDevices()
 {
-	DLB_DEVICES->GetAudioInputDevices();
+	DLB_DEVICES(OnGetAudioInputDevicesError)->GetAudioInputDevices();
 }
 void UDolbyIOSubsystem::GetAudioOutputDevices()
 {
-	DLB_DEVICES->GetAudioOutputDevices();
+	DLB_DEVICES(OnGetAudioOutputDevicesError)->GetAudioOutputDevices();
 }
 void UDolbyIOSubsystem::GetCurrentAudioInputDevice()
 {
-	DLB_DEVICES->GetCurrentAudioInputDevice();
+	DLB_DEVICES(OnGetCurrentAudioInputDeviceError)->GetCurrentAudioInputDevice();
 }
 void UDolbyIOSubsystem::GetCurrentAudioOutputDevice()
 {
-	DLB_DEVICES->GetCurrentAudioOutputDevice();
+	DLB_DEVICES(OnGetCurrentAudioOutputDeviceError)->GetCurrentAudioOutputDevice();
 }
 void UDolbyIOSubsystem::SetAudioInputDevice(const FString& NativeID)
 {
-	DLB_DEVICES->SetAudioInputDevice(NativeID);
+	DLB_DEVICES(OnSetAudioInputDeviceError)->SetAudioInputDevice(NativeID);
 }
 void UDolbyIOSubsystem::SetAudioOutputDevice(const FString& NativeID)
 {
-	DLB_DEVICES->SetAudioOutputDevice(NativeID);
+	DLB_DEVICES(OnSetAudioOutputDeviceError)->SetAudioOutputDevice(NativeID);
 }
 void UDolbyIOSubsystem::GetVideoDevices()
 {
-	DLB_DEVICES->GetVideoDevices();
+	DLB_DEVICES(OnGetVideoDevicesError)->GetVideoDevices();
 }
 
 namespace DolbyIO
@@ -92,7 +92,7 @@ namespace DolbyIO
 						            return;
 					            }
 			            })
-			        .on_error(DLB_SUBSYSTEM_ERROR_HANDLER);
+			        .on_error(DLB_ERROR_HANDLER_NO_DELEGATE);
 		    });
 	}
 
@@ -114,7 +114,7 @@ namespace DolbyIO
 			        }
 			        BroadcastEvent(Subsystem.OnAudioInputDevicesReceived, Devices);
 		        })
-		    .on_error(DLB_SUBSYSTEM_ERROR_HANDLER);
+		    .on_error(DLB_ERROR_HANDLER(Subsystem.OnGetAudioInputDevicesError));
 	}
 
 	void FDevices::GetAudioOutputDevices()
@@ -135,7 +135,7 @@ namespace DolbyIO
 			        }
 			        BroadcastEvent(Subsystem.OnAudioOutputDevicesReceived, Devices);
 		        })
-		    .on_error(DLB_SUBSYSTEM_ERROR_HANDLER);
+		    .on_error(DLB_ERROR_HANDLER(Subsystem.OnGetAudioOutputDevicesError));
 	}
 
 	void FDevices::GetCurrentAudioInputDevice()
@@ -156,7 +156,7 @@ namespace DolbyIO
 			        BroadcastEvent(Subsystem.OnCurrentAudioInputDeviceReceived, !bIsDeviceNone,
 			                       ToFDolbyIOAudioDevice(*Device));
 		        })
-		    .on_error(DLB_SUBSYSTEM_ERROR_HANDLER);
+		    .on_error(DLB_ERROR_HANDLER(Subsystem.OnGetCurrentAudioInputDeviceError));
 	}
 
 	void FDevices::GetCurrentAudioOutputDevice()
@@ -177,7 +177,7 @@ namespace DolbyIO
 			        BroadcastEvent(Subsystem.OnCurrentAudioOutputDeviceReceived, !bIsDeviceNone,
 			                       ToFDolbyIOAudioDevice(*Device));
 		        })
-		    .on_error(DLB_SUBSYSTEM_ERROR_HANDLER);
+		    .on_error(DLB_ERROR_HANDLER(Subsystem.OnGetCurrentAudioOutputDeviceError));
 	}
 
 	void FDevices::SetAudioInputDevice(const FString& NativeID)
@@ -192,11 +192,11 @@ namespace DolbyIO
 				        {
 					        DLB_UE_LOG("Setting audio input device to %s", *ToString(Device));
 					        DeviceManagement.set_preferred_input_audio_device(Device).on_error(
-					            DLB_SUBSYSTEM_ERROR_HANDLER);
+					            DLB_ERROR_HANDLER(Subsystem.OnSetAudioInputDeviceError));
 					        return;
 				        }
 		        })
-		    .on_error(DLB_SUBSYSTEM_ERROR_HANDLER);
+		    .on_error(DLB_ERROR_HANDLER(Subsystem.OnSetAudioInputDeviceError));
 	}
 
 	void FDevices::SetAudioOutputDevice(const FString& NativeID)
@@ -211,11 +211,11 @@ namespace DolbyIO
 				        {
 					        DLB_UE_LOG("Setting audio output device to %s", *ToString(Device));
 					        DeviceManagement.set_preferred_output_audio_device(Device).on_error(
-					            DLB_SUBSYSTEM_ERROR_HANDLER);
+					            DLB_ERROR_HANDLER(Subsystem.OnSetAudioOutputDeviceError));
 					        return;
 				        }
 		        })
-		    .on_error(DLB_SUBSYSTEM_ERROR_HANDLER);
+		    .on_error(DLB_ERROR_HANDLER(Subsystem.OnSetAudioOutputDeviceError));
 	}
 
 	void FDevices::GetVideoDevices()
@@ -235,6 +235,6 @@ namespace DolbyIO
 			        }
 			        BroadcastEvent(Subsystem.OnVideoDevicesReceived, Devices);
 		        })
-		    .on_error(DLB_SUBSYSTEM_ERROR_HANDLER);
+		    .on_error(DLB_ERROR_HANDLER(Subsystem.OnGetVideoDevicesError));
 	}
 }

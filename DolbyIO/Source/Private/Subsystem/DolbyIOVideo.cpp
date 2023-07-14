@@ -16,7 +16,7 @@ void UDolbyIOSubsystem::EnableVideo(const FDolbyIOVideoDevice& VideoDevice, bool
 {
 	if (!Sdk)
 	{
-		DLB_UE_WARN("Cannot enable video - not initialized");
+		DLB_WARNING(OnEnableVideoError, "Cannot enable video - not initialized");
 		return;
 	}
 
@@ -30,7 +30,7 @@ void UDolbyIOSubsystem::EnableVideo(const FDolbyIOVideoDevice& VideoDevice, bool
 		VideoFrameHandler =
 		    std::make_shared<FVideoProcessingFrameHandler>(VideoProcessor, LocalCameraFrameHandler->sink());
 #else
-		DLB_UE_WARN("Cannot blur background on this platform");
+		DLB_WARNING(OnEnableVideoError, "Cannot blur background on this platform");
 #endif
 	}
 
@@ -43,7 +43,7 @@ void UDolbyIOSubsystem::EnableVideo(const FDolbyIOVideoDevice& VideoDevice, bool
 		        bIsVideoEnabled = true;
 		        BroadcastEvent(OnVideoEnabled, LocalCameraTrackID);
 	        })
-	    .on_error(DLB_ERROR_HANDLER);
+	    .on_error(DLB_ERROR_HANDLER(OnEnableVideoError));
 }
 
 void UDolbyIOSubsystem::DisableVideo()
@@ -63,5 +63,5 @@ void UDolbyIOSubsystem::DisableVideo()
 		        bIsVideoEnabled = false;
 		        BroadcastEvent(OnVideoDisabled, LocalCameraTrackID);
 	        })
-	    .on_error(DLB_ERROR_HANDLER);
+	    .on_error(DLB_ERROR_HANDLER(OnDisableVideoError));
 }
