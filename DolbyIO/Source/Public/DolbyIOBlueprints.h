@@ -2,10 +2,13 @@
 
 #pragma once
 
-#include "DolbyIOSubsystem.h"
-
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+
+#include "DolbyIO.h"
+
+#include "Engine/GameInstance.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "DolbyIOBlueprints.generated.h"
 
@@ -16,11 +19,17 @@
 		return Self;                                   \
 	}
 
-#define DLB_GET_SUBSYSTEM                                                             \
-	UDolbyIOSubsystem* DolbyIOSubsystem = UDolbyIOSubsystem::Get(WorldContextObject); \
-	if (!DolbyIOSubsystem)                                                            \
-	{                                                                                 \
-		return;                                                                       \
+inline UDolbyIOSubsystem* GetDolbyIOSubsystem(const UObject* WorldContextObject)
+{
+	UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(WorldContextObject);
+	return GameInstance ? GameInstance->GetSubsystem<UDolbyIOSubsystem>() : nullptr;
+}
+
+#define DLB_GET_SUBSYSTEM                                                          \
+	UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject); \
+	if (!DolbyIOSubsystem)                                                         \
+	{                                                                              \
+		return;                                                                    \
 	}
 
 #define DLB_DEFINE_ACTIVATE_METHOD(MethodName, SuccessEvent, ...)                                   \
@@ -583,12 +592,12 @@ class UDolbyIOBlueprintFunctionLibrary : public UBlueprintFunctionLibrary
 	DLB_GET_SUBSYSTEM;                                \
 	DolbyIOSubsystem->MethodName(__VA_ARGS__);
 
-#define DLB_EXECUTE_RETURNING_SUBSYSTEM_METHOD(MethodName, ...)                       \
-	UDolbyIOSubsystem* DolbyIOSubsystem = UDolbyIOSubsystem::Get(WorldContextObject); \
-	if (!DolbyIOSubsystem)                                                            \
-	{                                                                                 \
-		return {};                                                                    \
-	}                                                                                 \
+#define DLB_EXECUTE_RETURNING_SUBSYSTEM_METHOD(MethodName, ...)                    \
+	UDolbyIOSubsystem* DolbyIOSubsystem = GetDolbyIOSubsystem(WorldContextObject); \
+	if (!DolbyIOSubsystem)                                                         \
+	{                                                                              \
+		return {};                                                                 \
+	}                                                                              \
 	return DolbyIOSubsystem->MethodName(__VA_ARGS__);
 
 public:
@@ -838,3 +847,4 @@ public:
 #undef DLB_DEFINE_IMPL_METHOD
 #undef DLB_DEFINE_ACTIVATE_METHOD
 #undef DLB_GET_SUBSYSTEM
+#undef DLB_DEFINE_CONSTRUCTOR

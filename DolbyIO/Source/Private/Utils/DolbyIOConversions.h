@@ -2,16 +2,8 @@
 
 #pragma once
 
-#include "DolbyIOConnectionMode.h"
-#include "DolbyIOCppSdk.h"
-#include "DolbyIODevices.h"
-#include "DolbyIOLogLevel.h"
-#include "DolbyIOParticipantInfo.h"
-#include "DolbyIOScreenshareSource.h"
-#include "DolbyIOSpatialAudioStyle.h"
-#include "DolbyIOVideoTrack.h"
-
-#include <dolbyio/comms/utils/vfs_event.h>
+#include "DolbyIOTypes.h"
+#include "Utils/DolbyIOCppSdk.h"
 
 namespace DolbyIO
 {

@@ -2,7 +2,7 @@
 
 #include "DolbyIOAuthentication.h"
 
-#include "DolbyIOLogging.h"
+#include "Utils/DolbyIOLogging.h"
 
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
