@@ -14,6 +14,7 @@ The plugin is compatible with the following operating systems:
 - macOS 10.14 or later if you use UE4
 - macOS 12.5 or later if you use UE5
 - Ubuntu 20.04 or later
+- Android 8 or later
 
 ## Prerequisites
 
