@@ -24,7 +24,7 @@ class UDolbyIOSubsystem* DolbyIOSubsystem;
 ## 3. Edit FooCharacter.cpp
 Open `Foo/Source/Foo/FooCharacter.cpp` and replace the `BeginPlay` function definition with:
 ```
-#include "DolbyIOSubsystem.h"
+#include "DolbyIO.h"
 
 void AFooCharacter::BeginPlay()
 {
