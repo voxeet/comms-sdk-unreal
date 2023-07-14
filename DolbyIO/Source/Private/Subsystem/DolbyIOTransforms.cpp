@@ -34,6 +34,11 @@ void UDolbyIOSubsystem::SetLocalPlayerLocationImpl(const FVector& Location)
 	Sdk->conference()
 	    .set_spatial_position(ToStdString(LocalParticipantID), {Location.X, Location.Y, Location.Z})
 	    .on_error(DLB_ERROR_HANDLER(OnSetLocalPlayerLocationError));
+
+#if PLATFORM_ANDROID
+	GetGameInstance()->GetTimerManager().SetTimer(LocationTimerHandle, this,
+	                                              &UDolbyIOSubsystem::SetLocationUsingFirstPlayer, 0.1, true);
+#endif
 }
 
 void UDolbyIOSubsystem::SetLocalPlayerRotation(const FRotator& Rotation)
@@ -58,6 +63,11 @@ void UDolbyIOSubsystem::SetLocalPlayerRotationImpl(const FRotator& Rotation)
 	Sdk->conference()
 	    .set_spatial_direction({Rotation.Roll, Rotation.Pitch, Rotation.Yaw})
 	    .on_error(DLB_ERROR_HANDLER(OnSetLocalPlayerRotationError));
+
+#if PLATFORM_ANDROID
+	GetGameInstance()->GetTimerManager().SetTimer(RotationTimerHandle, this,
+	                                              &UDolbyIOSubsystem::SetRotationUsingFirstPlayer, 0.01, true);
+#endif
 }
 
 void UDolbyIOSubsystem::SetRemotePlayerLocation(const FString& ParticipantID, const FVector& Location)

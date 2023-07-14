@@ -7,6 +7,11 @@
 #include "Utils/DolbyIOErrorHandler.h"
 #include "Utils/DolbyIOLogging.h"
 
+#if PLATFORM_ANDROID
+#include "Engine/GameInstance.h"
+#include "TimerManager.h"
+#endif
+
 using namespace dolbyio::comms;
 using namespace DolbyIO;
 
@@ -135,6 +140,32 @@ void UDolbyIOSubsystem::Disconnect()
 
 void UDolbyIOSubsystem::UpdateStatus(conference_status Status)
 {
+#if PLATFORM_ANDROID
+	FEvent* TimersSet = FGenericPlatformProcess::GetSynchEventFromPool();
+	AsyncTask(ENamedThreads::GameThread,
+	          [=]
+	          {
+		          FTimerManager& TimerManager = GetGameInstance()->GetTimerManager();
+		          switch (Status)
+		          {
+			          case conference_status::joined:
+				          TimerManager.SetTimer(LocationTimerHandle, this,
+				                                &UDolbyIOSubsystem::SetLocationUsingFirstPlayer, 3, false);
+				          TimerManager.SetTimer(RotationTimerHandle, this,
+				                                &UDolbyIOSubsystem::SetRotationUsingFirstPlayer, 3, false);
+				          break;
+			          case conference_status::left:
+			          case conference_status::error:
+				          TimerManager.ClearTimer(LocationTimerHandle);
+				          TimerManager.ClearTimer(RotationTimerHandle);
+				          break;
+		          }
+		          TimersSet->Trigger();
+	          });
+	TimersSet->Wait();
+	FGenericPlatformProcess::ReturnSynchEventToPool(TimersSet);
+#endif
+
 	ConferenceStatus = Status;
 	DLB_UE_LOG("Conference status: %s", *ToString(ConferenceStatus));
 
