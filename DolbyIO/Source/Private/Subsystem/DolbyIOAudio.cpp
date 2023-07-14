@@ -103,3 +103,16 @@ bool UDolbyIOSubsystem::IsSpatialAudio() const
 {
 	return SpatialAudioStyle != EDolbyIOSpatialAudioStyle::Disabled;
 }
+
+void UDolbyIOSubsystem::SetAudioCaptureMode(EDolbyIONoiseReduction NoiseReduction, EDolbyIOVoiceFont VoiceFont)
+{
+	if (!Sdk)
+	{
+		DLB_UE_WARN("Cannot set audio capture mode - not initialized");
+		return;
+	}
+
+	DLB_UE_LOG("Setting audio capture mode to %s %s", *UEnum::GetValueAsString(NoiseReduction),
+	           *UEnum::GetValueAsString(VoiceFont));
+	Sdk->audio().local().set_capture_mode(ToSdkAudioCaptureMode(NoiseReduction, VoiceFont)).on_error(DLB_ERROR_HANDLER);
+}

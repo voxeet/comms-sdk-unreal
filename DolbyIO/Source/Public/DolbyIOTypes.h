@@ -277,3 +277,33 @@ enum class EDolbyIOLogLevel : uint8
 	/** The verbose level logging generates the highest number of logs, including even the HTTP requests. */
 	Verbose
 };
+
+/** The audio noise reduction level. */
+UENUM(BlueprintType, DisplayName = "Dolby.io Noise Reduction")
+enum class EDolbyIONoiseReduction : uint8
+{
+	/** Reduce all noise and isolate voice. */
+	High,
+
+	/** Remove steady/stationary background noise. */
+	Low
+};
+
+/** Voice modification effect. */
+UENUM(BlueprintType, DisplayName = "Dolby.io Voice Font")
+enum class EDolbyIOVoiceFont : uint8
+{
+	None,
+	Masculine,
+	Feminine,
+	Helium,
+	DarkModulation,
+	BrokenRobot,
+	Interference,
+	Abyss,
+	Wobble,
+	StarshipCaptain,
+	NervousRobot,
+	Swarm,
+	AMRadio
+};

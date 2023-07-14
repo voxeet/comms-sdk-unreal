@@ -499,3 +499,15 @@ Gets a list of all available video devices.
 | [**On Video Devices Received**](events.md#on-video-devices-received) | Successful |
 
 ---
+
+## Dolby.io Set Audio Capture Mode
+
+Sets the audio capture mode.
+
+![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_SetAudioCaptureMode.png)
+
+#### Inputs and outputs
+| Name | Direction | Type | Default value | Description |
+|---|:---|:---|:---|:---|
+| **Noise Reduction** | Input | [Dolby.io Noise Reduction](types.md#dolbyio-noise-reduction) | - | The noise reduction mode. |
+| **Voice Font** | Input | [Dolby.io Voice Font](types.md#dolbyio-voice-font) | - | The voice font. |

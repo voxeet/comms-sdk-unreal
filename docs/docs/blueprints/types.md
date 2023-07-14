@@ -167,3 +167,34 @@ Contains data about a Dolby.io video track.
 | **Is Screenshare** | bool | Indicates whether this is a screenshare video track (true) or a camera video track (false). |
 
 ---
+
+## Dolby.io Noise Reduction
+
+The audio noise reduction level.
+
+| Enum value | Description |
+|---|:---|
+| **High** | Reduce all noise and isolate voice. |
+| **Low** | Remove steady/stationary background noise. |
+
+---
+
+## Dolby.io Voice Font
+
+Voice modification effect.
+
+| Enum value | Description |
+|---|:---|
+| **None** | |
+| **Masculine** | |
+| **Feminine** | |
+| **Helium** | |
+| **Dark Modulation** | |
+| **Broken Robot** | |
+| **Interference** | |
+| **Abyss** | |
+| **Wobble** | |
+| **Starship Captain** | |
+| **Nervous Robot** | |
+| **Swarm** | |
+| **AMRadio** | |

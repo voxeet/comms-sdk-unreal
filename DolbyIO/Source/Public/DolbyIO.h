@@ -190,6 +190,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UpdateUserMetadata(const FString& UserName, const FString& AvatarURL);
 
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void SetAudioCaptureMode(EDolbyIONoiseReduction NoiseReduction, EDolbyIOVoiceFont VoiceFont);
+
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnTokenNeededDelegate OnTokenNeeded;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
