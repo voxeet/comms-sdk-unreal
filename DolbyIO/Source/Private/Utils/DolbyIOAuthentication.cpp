@@ -9,6 +9,59 @@
 #include "Misc/Base64.h"
 #include "Serialization/JsonSerializer.h"
 
+namespace
+{
+	bool TryBroadcastToken(const FHttpResponsePtr& Response, const FGetDolbyIOTokenOutputPin& Delegate)
+	{
+		TSharedPtr<FJsonObject> ResponseObj;
+		FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Response->GetContentAsString()), ResponseObj);
+		FString Token;
+		if (!ResponseObj->TryGetStringField("access_token", Token))
+		{
+			return false;
+		}
+		Delegate.Broadcast(Token);
+		return true;
+	}
+}
+
+void UDolbyIOGetTokenFromURL::Activate()
+{
+	if (URL.IsEmpty())
+	{
+		DLB_UE_WARN("URL must not be empty");
+		return;
+	}
+
+	FHttpRequestRef Request = FHttpModule::Get().CreateRequest();
+	Request->SetURL(URL);
+	Request->SetVerb("GET");
+	Request->AppendToHeader("Content-Type", "application/x-www-form-urlencoded");
+	Request->OnProcessRequestComplete().BindUObject(this, &UDolbyIOGetTokenFromURL::OnTokenObtainedImpl);
+	Request->ProcessRequest();
+}
+
+void UDolbyIOGetTokenFromURL::OnTokenObtainedImpl(FHttpRequestPtr, FHttpResponsePtr Response,
+                                                  bool bConnectedSuccessfully)
+{
+	if (!bConnectedSuccessfully)
+	{
+		DLB_UE_ERROR("Could not connect to given URL: %s", *URL);
+		return;
+	}
+	if (!TryBroadcastToken(Response, OnTokenObtained))
+	{
+		DLB_UE_ERROR("Could not get access token - no token in response from %s", *URL);
+	}
+}
+
+UDolbyIOGetTokenFromURL* UDolbyIOGetTokenFromURL::DolbyIOGetTokenFromURL(const FString& URL)
+{
+	UDolbyIOGetTokenFromURL* Self = NewObject<UDolbyIOGetTokenFromURL>();
+	Self->URL = URL;
+	return Self;
+}
+
 void UGetDolbyIOToken::Activate()
 {
 	if (AppKey.IsEmpty() || AppSecret.IsEmpty())
@@ -40,15 +93,7 @@ void UGetDolbyIOToken::OnTokenObtained(FHttpRequestPtr, FHttpResponsePtr Respons
 		DLB_UE_ERROR("Could not connect to backend serving access tokens");
 		return;
 	}
-
-	TSharedPtr<FJsonObject> ResponseObj;
-	FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Response->GetContentAsString()), ResponseObj);
-	FString Token;
-	if (ResponseObj->TryGetStringField("access_token", Token))
-	{
-		TokenObtained.Broadcast(Token);
-	}
-	else
+	if (!TryBroadcastToken(Response, TokenObtained))
 	{
 		DLB_UE_ERROR("Could not get access token - verify app key and secret and validity");
 	}

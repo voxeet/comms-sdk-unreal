@@ -16,7 +16,7 @@ The tutorials and samples are designed to work with the Unreal Engine 5 First Pe
 
 > **_NOTE:_** If you do not see this item, go to the `Content Browser` settings and tick `Show Plugin Content`.
 
-2. Make sure the newly-placed actor is selected and enter your client access token or app key and secret combination in the `Details` panel.
+2. Make sure the newly-placed actor is selected and enter your client access token or authentication URL or app key and secret combination in the `Details` panel.
 
 You can modify other parameters of this actor as you see fit, but using the demo conference does not make sense for some tutorials, because it is an audio-only conference.
 

@@ -11,6 +11,39 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGetDolbyIOTokenOutputPin, FString, Token);
 
 UCLASS()
+class DOLBYIO_API UDolbyIOGetTokenFromURL : public UBlueprintAsyncActionBase
+{
+	GENERATED_BODY()
+
+public:
+	/** Gets a Dolby.io client access token.
+	 *
+	 * For convenience during early development and prototyping, this function is provided to acquire an client access
+	 * token directly from the game.
+	 *
+	 * Using this function effectively distributes the permanent app credential with your Unreal application, which is
+	 * not safe for production deployment. Follow our security best practices
+	 * (https://docs.dolby.io/communications-apis/docs/guides-client-authentication) to set up a server through which
+	 * you can acquire a temporary client access token.
+	 *
+	 * @param URL - The URL to use to obtain the token.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Demo",
+	          Meta = (BlueprintInternalUseOnly = "true", DisplayName = "Dolby.io Get Token From URL"))
+	static UDolbyIOGetTokenFromURL* DolbyIOGetTokenFromURL(const FString& URL);
+
+	UPROPERTY(BlueprintAssignable)
+	FGetDolbyIOTokenOutputPin OnTokenObtained;
+
+private:
+	void Activate() override;
+
+	void OnTokenObtainedImpl(FHttpRequestPtr, FHttpResponsePtr, bool bConnectedSuccessfully);
+
+	FString URL;
+};
+
+UCLASS()
 class DOLBYIO_API UGetDolbyIOToken : public UBlueprintAsyncActionBase
 {
 	GENERATED_BODY()

@@ -20,6 +20,28 @@ For quick testing, you can manually obtain a token from the [Dolby.io dashboard]
 
 ---
 
+## Dolby.io Get Token From URL
+
+Gets a Dolby.io client access token.
+
+For convenience during early development and prototyping, this function is provided to acquire an client access token directly from the game.
+
+> ⚠️ Using this function effectively distributes the permanent app credential with your Unreal application, which is not safe for production deployment. Follow our [security best practices](https://docs.dolby.io/communications-apis/docs/guides-client-authentication) to set up a server through which you can acquire a temporary client access token.
+
+![](../../static/img/generated/DolbyIOGetTokenFromURL/img/nd_img_UK2Node_AsyncAction.png)
+
+#### Inputs and outputs
+| Name | Direction | Type | Default value | Description |
+|---|:---|:---|:---|:---|
+| **URL** | Input | string | - | The URL to use to obtain the token. |
+
+#### Triggered events
+| Event | When |
+|---|:---|
+| [**On Token Obtained**](events.md#on-token-obtained) | Successful |
+
+---
+
 ## Get Dolby.io Token
 
 Gets a Dolby.io client access token.
