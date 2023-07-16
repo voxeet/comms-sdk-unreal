@@ -71,30 +71,33 @@ void UDolbyIOSubsystem::SetRemotePlayerLocation(const FString& ParticipantID, co
 	    .on_error(DLB_ERROR_HANDLER);
 }
 
-void UDolbyIOSubsystem::SetLocationUsingFirstPlayer()
+namespace
 {
-	if (UWorld* World = GetGameInstance()->GetWorld())
+	APawn* GetFirstPlayerPawn(UGameInstance* GameInstance)
 	{
-		if (APlayerController* FirstPlayerController = World->GetFirstPlayerController())
+		if (UWorld* World = GameInstance->GetWorld())
 		{
-			if (APawn* Pawn = FirstPlayerController->GetPawn())
+			if (APlayerController* FirstPlayerController = World->GetFirstPlayerController())
 			{
-				SetLocalPlayerLocationImpl(Pawn->GetActorLocation());
+				return FirstPlayerController->GetPawn();
 			}
 		}
+		return nullptr;
+	}
+}
+
+void UDolbyIOSubsystem::SetLocationUsingFirstPlayer()
+{
+	if (APawn* Pawn = GetFirstPlayerPawn(GetGameInstance()))
+	{
+		SetLocalPlayerLocationImpl(Pawn->GetActorLocation());
 	}
 }
 
 void UDolbyIOSubsystem::SetRotationUsingFirstPlayer()
 {
-	if (UWorld* World = GetGameInstance()->GetWorld())
+	if (APawn* Pawn = GetFirstPlayerPawn(GetGameInstance()))
 	{
-		if (APlayerController* FirstPlayerController = World->GetFirstPlayerController())
-		{
-			if (APawn* Pawn = FirstPlayerController->GetPawn())
-			{
-				SetLocalPlayerRotationImpl(Pawn->GetActorRotation());
-			}
-		}
+		SetLocalPlayerRotationImpl(Pawn->GetActorRotation());
 	}
 }
