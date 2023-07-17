@@ -31,7 +31,7 @@ Select the added component and check its details in the `Details` panel. Scroll 
 
 ![](../../static/img/first-conf-get-token-from-url.png)
 
-3. Provide your app key and app secret to the [`Get Dolby.io Token`](../blueprints/functions#get-dolbyio-token) function.
+3. Provide your URL to the [`Get Dolby.io Token From URL`](../blueprints/functions#dolbyio-get-token-from-url) function.
 
 ### Option C - Use app key and secret
 1. Place a [`Get Dolby.io Token`](../blueprints/functions#get-dolbyio-token) node and connect it to the `On Token Needed (DolbyIOObserver)` node.

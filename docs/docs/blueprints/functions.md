@@ -63,7 +63,7 @@ For convenience during early development and prototyping, this function is provi
 #### Triggered events
 | Event | When |
 |---|:---|
-| [**Token Obtained**](events.md#token-obtained) | Successful |
+| [**Token Obtained**](events.md#on-token-obtained) | Successful |
 | [**On Error**](events.md#on-error) | Errors occur |
 
 ---
