@@ -33,7 +33,7 @@ void UDolbyIOSubsystem::SetLocalPlayerLocationImpl(const FVector& Location)
 
 	Sdk->conference()
 	    .set_spatial_position(ToStdString(LocalParticipantID), {Location.X, Location.Y, Location.Z})
-	    .on_error(DLB_ERROR_HANDLER);
+	    .on_error(DLB_ERROR_HANDLER(OnSetLocalPlayerLocationError));
 }
 
 void UDolbyIOSubsystem::SetLocalPlayerRotation(const FRotator& Rotation)
@@ -55,7 +55,9 @@ void UDolbyIOSubsystem::SetLocalPlayerRotationImpl(const FRotator& Rotation)
 
 	// The SDK expects the direction values to mean rotations around the {x,y,z} axes as specified by the
 	// environment. In Unreal, rotation around x is roll (because x is forward), y is pitch and z is yaw.
-	Sdk->conference().set_spatial_direction({Rotation.Roll, Rotation.Pitch, Rotation.Yaw}).on_error(DLB_ERROR_HANDLER);
+	Sdk->conference()
+	    .set_spatial_direction({Rotation.Roll, Rotation.Pitch, Rotation.Yaw})
+	    .on_error(DLB_ERROR_HANDLER(OnSetLocalPlayerRotationError));
 }
 
 void UDolbyIOSubsystem::SetRemotePlayerLocation(const FString& ParticipantID, const FVector& Location)
@@ -68,7 +70,7 @@ void UDolbyIOSubsystem::SetRemotePlayerLocation(const FString& ParticipantID, co
 
 	Sdk->conference()
 	    .set_spatial_position(ToStdString(ParticipantID), {Location.X, Location.Y, Location.Z})
-	    .on_error(DLB_ERROR_HANDLER);
+	    .on_error(DLB_ERROR_HANDLER(OnSetRemotePlayerLocationError));
 }
 
 namespace

@@ -5,25 +5,32 @@
 #include "Templates/Function.h"
 
 class UDolbyIOSubsystem;
+class FDolbyIOOnErrorDelegate;
 
 namespace DolbyIO
 {
 	class FErrorHandler final
 	{
 	public:
-#define DLB_ERROR_HANDLER_BASE(Subsystem) FErrorHandler(Subsystem, __LINE__)
-#define DLB_ERROR_HANDLER DLB_ERROR_HANDLER_BASE(*this)
-#define DLB_SUBSYSTEM_ERROR_HANDLER DLB_ERROR_HANDLER_BASE(Subsystem)
-		FErrorHandler(UDolbyIOSubsystem& DolbyIOSubsystem, int Line);
+#define DLB_ERROR_HANDLER(OnError) FErrorHandler(__LINE__, GetSubsystem(), OnError)
+#define DLB_ERROR_HANDLER_NO_DELEGATE FErrorHandler(__LINE__, GetSubsystem())
+
+#define DLB_WARNING(OnError, Msg) FErrorHandler::Warn(OnError, Msg)
+
+		FErrorHandler(int Line, UDolbyIOSubsystem& DolbyIOSubsystem);
+		FErrorHandler(int Line, UDolbyIOSubsystem& DolbyIOSubsystem, const FDolbyIOOnErrorDelegate& OnError);
 
 		void operator()(std::exception_ptr&& ExcPtr) const;
 		void HandleError() const;
+
+		static void Warn(const FDolbyIOOnErrorDelegate& OnError, const FString& Msg);
 
 	private:
 		void HandleError(TFunction<void()> Callee) const;
 		void LogException(const FString& Type, const FString& What) const;
 
-		UDolbyIOSubsystem& DolbyIOSubsystem;
 		int Line;
+		UDolbyIOSubsystem& DolbyIOSubsystem;
+		const FDolbyIOOnErrorDelegate* const OnError{};
 	};
 }

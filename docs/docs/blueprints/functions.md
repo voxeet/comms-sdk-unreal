@@ -17,6 +17,7 @@ For quick testing, you can manually obtain a token from the [Dolby.io dashboard]
 | Event | When |
 |---|:---|
 | [**On Initialized**](events.md#on-initialized) | Initialization is successful |
+| [**On Error**](events.md#on-error) | Errors occur |
 
 ---
 
@@ -62,7 +63,8 @@ For convenience during early development and prototyping, this function is provi
 #### Triggered events
 | Event | When |
 |---|:---|
-| [**On Token Obtained**](events.md#on-token-obtained) | Successful |
+| [**Token Obtained**](events.md#token-obtained) | Successful |
+| [**On Error**](events.md#on-error) | Errors occur |
 
 ---
 
@@ -78,6 +80,7 @@ The demo automatically brings in 3 invisible bots into the conference as a quick
 | Event | When |
 |---|:---|
 | [**On Connected**](events.md#on-connected) | Successful |
+| [**On Error**](events.md#on-error) | Errors occur |
 
 ---
 
@@ -103,6 +106,7 @@ Connects to a conference.
 | Event | When |
 |---|:---|
 | [**On Connected**](events.md#on-connected) | Successful |
+| [**On Error**](events.md#on-error) | Errors occur |
 
 ---
 
@@ -116,6 +120,7 @@ Disconnects from the current conference.
 | Event | When |
 |---|:---|
 | [**On Disconnected**](events.md#on-connected) | Successful |
+| [**On Error**](events.md#on-error) | Errors occur |
 
 ---
 
@@ -139,6 +144,7 @@ The larger the scale, the longer the distance at which the spatial audio attenua
 Mutes audio input.
 
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_MuteInput.png)
+
 ---
 
 ## Dolby.io Unmute Input
@@ -234,6 +240,7 @@ Enables video streaming from the given video device or the default device if no 
 | Event | When |
 |---|:---|
 | [**On Video Enabled**](events.md#on-video-enabled) | Successful |
+| [**On Error**](events.md#on-error) | Errors occur |
 
 ---
 
@@ -247,6 +254,7 @@ Disables video streaming.
 | Event | When |
 |---|:---|
 | [**On Video Disabled**](events.md#on-video-disabled) | Successful |
+| [**On Error**](events.md#on-error) | Errors occur |
 
 ---
 
@@ -302,6 +310,7 @@ Gets a list of all possible screen sharing sources. These can be entire screens 
 | Event | When |
 |---|:---|
 | [**On Screenshare Sources Received**](events.md#on-screenshare-sources-received) | Successful |
+| [**On Error**](events.md#on-error) | Errors occur |
 
 ---
 
@@ -325,6 +334,7 @@ Users should make use of the parameters to optimize for the content they are sha
 | Event | When |
 |---|:---|
 | [**On Screenshare Started**](events.md#on-screenshare-started) | Successful |
+| [**On Error**](events.md#on-error) | Errors occur |
 
 ---
 
@@ -338,6 +348,7 @@ Stops screen sharing.
 | Event | When |
 |---|:---|
 | [**On Screenshare Stopped**](events.md#on-screenshare-stopped) | Successful |
+| [**On Error**](events.md#on-error) | Errors occur |
 
 ---
 
@@ -431,6 +442,7 @@ Gets a list of all available audio input devices.
 | Event | When |
 |---|:---|
 | [**On Audio Input Devices Received**](events.md#on-audio-input-devices-received) | Successful |
+| [**On Error**](events.md#on-error) | Errors occur |
 
 ---
 
@@ -444,6 +456,7 @@ Gets a list of all available audio output devices.
 | Event | When |
 |---|:---|
 | [**On Audio Output Devices Received**](events.md#on-audio-output-devices-received) | Successful |
+| [**On Error**](events.md#on-error) | Errors occur |
 
 ---
 
@@ -457,6 +470,7 @@ Gets the current audio input device.
 | Event | When |
 |---|:---|
 | [**On Current Audio Input Device Received**](events.md#on-current-audio-input-device-received) | Successful |
+| [**On Error**](events.md#on-error) | Errors occur |
 
 ---
 
@@ -470,6 +484,7 @@ Gets the current audio output device.
 | Event | When |
 |---|:---|
 | [**On Current Audio Output Device Received**](events.md#on-current-audio-output-device-received) | Successful |
+| [**On Error**](events.md#on-error) | Errors occur |
 
 ---
 
@@ -519,6 +534,7 @@ Gets a list of all available video devices.
 | Event | When |
 |---|:---|
 | [**On Video Devices Received**](events.md#on-video-devices-received) | Successful |
+| [**On Error**](events.md#on-error) | Errors occur |
 
 ---
 

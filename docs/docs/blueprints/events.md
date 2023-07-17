@@ -256,3 +256,23 @@ Triggered by [**Dolby.io Set Output Device**](functions.md#dolbyio-set-output-de
 | **Optional Device** | [Dolby.io Audio Device](types.md#dolbyio-audio-device) | The current device. |
 
 ---
+
+## On Token Obtained
+
+Triggered by [**Dolby.io Get Token From URL**](functions.md#dolbyio-get-token-from-url) and [**Get Dolby.io Token**](functions.md#get-dolbyio-token) when a client access token is obtained.
+
+#### Data provided
+| Provides | Type | Description |
+|---|:---|:---|
+| **Token** | string | The client access token. |
+
+---
+
+## On Error
+
+Triggered by functions if errors occur.
+
+#### Data provided
+| Provides | Type | Description |
+|---|:---|:---|
+| **Error Msg** | string | The error message. |

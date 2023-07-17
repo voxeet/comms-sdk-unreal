@@ -49,7 +49,14 @@ void UDolbyIOSubsystem::SetLogSettings(EDolbyIOLogLevel SdkLogLevel, EDolbyIOLog
 	LogSettings.dvc_log_level = ToSdkLogLevel(DvcLogLevel);
 	LogSettings.log_directory = ToStdString(LogDir);
 	LogSettings.suppress_stdout_logs = true;
-	sdk::set_log_settings(LogSettings);
+	try
+	{
+		sdk::set_log_settings(LogSettings);
+	}
+	catch (...)
+	{
+		DLB_ERROR_HANDLER(OnSetLogSettingsError).HandleError();
+	}
 }
 
 void UDolbyIOSubsystem::SetToken(const FString& Token)
@@ -68,7 +75,7 @@ void UDolbyIOSubsystem::SetToken(const FString& Token)
 		}
 		catch (...)
 		{
-			DLB_ERROR_HANDLER.HandleError();
+			DLB_ERROR_HANDLER(OnSetTokenError).HandleError();
 		}
 		RefreshTokenCb.Reset(); // RefreshToken callback can be called only once
 	}
@@ -89,7 +96,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	}
 	catch (...)
 	{
-		DLB_ERROR_HANDLER.HandleError();
+		DLB_ERROR_HANDLER(OnSetTokenError).HandleError();
 		return;
 	}
 
@@ -195,7 +202,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            Sdk->video()
 			                .remote()
 			                .set_video_sink(Event.track, VideoSinks[VideoTrack.TrackID])
-			                .on_error(DLB_ERROR_HANDLER);
+			                .on_error(DLB_ERROR_HANDLER_NO_DELEGATE);
 
 			            FScopeLock Lock{&RemoteParticipantsLock};
 			            if (RemoteParticipants.Contains(VideoTrack.ParticipantID))
@@ -270,7 +277,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		        DLB_UE_LOG("Initialized");
 		        BroadcastEvent(OnInitialized);
 	        })
-	    .on_error(DLB_ERROR_HANDLER);
+	    .on_error(DLB_ERROR_HANDLER(OnSetTokenError));
 }
 
 void UDolbyIOObserver::InitializeComponent()
@@ -283,29 +290,97 @@ void UDolbyIOObserver::InitializeComponent()
 			{
 #define DLB_BIND(Event) DolbyIOSubsystem->Event.AddDynamic(this, &UDolbyIOObserver::Fwd##Event);
 				DLB_BIND(OnTokenNeeded);
+
 				DLB_BIND(OnInitialized);
+				DLB_BIND(OnSetTokenError);
+
 				DLB_BIND(OnConnected);
-				DLB_BIND(OnDisconnected);
+				DLB_BIND(OnConnectError);
+				DLB_BIND(OnDemoConferenceError);
+
+				DLB_BIND(OnDisconnected)
+				DLB_BIND(OnDisconnectError);
+
+				DLB_BIND(OnSetSpatialEnvironmentScaleError)
+
+				DLB_BIND(OnMuteInputError);
+
+				DLB_BIND(OnUnmuteInputError);
+
+				DLB_BIND(OnMuteOutputError);
+
+				DLB_BIND(OnUnmuteOutputError);
+
+				DLB_BIND(OnMuteParticipantError);
+
+				DLB_BIND(OnUnmuteParticipantError);
+
 				DLB_BIND(OnParticipantAdded);
+
 				DLB_BIND(OnParticipantUpdated);
+
 				DLB_BIND(OnVideoTrackAdded);
+
 				DLB_BIND(OnVideoTrackRemoved);
+
 				DLB_BIND(OnVideoTrackEnabled);
+
 				DLB_BIND(OnVideoTrackDisabled);
-				DLB_BIND(OnVideoEnabled);
+
+				DLB_BIND(OnVideoEnabled)
+				DLB_BIND(OnEnableVideoError);
+
 				DLB_BIND(OnVideoDisabled);
-				DLB_BIND(OnScreenshareStarted);
-				DLB_BIND(OnScreenshareStopped);
-				DLB_BIND(OnActiveSpeakersChanged);
-				DLB_BIND(OnAudioLevelsChanged);
+				DLB_BIND(OnDisableVideoError);
+
 				DLB_BIND(OnScreenshareSourcesReceived);
+				DLB_BIND(OnGetScreenshareSourcesError);
+
+				DLB_BIND(OnScreenshareStarted);
+				DLB_BIND(OnStartScreenshareError);
+
+				DLB_BIND(OnScreenshareStopped);
+				DLB_BIND(OnStopScreenshareError)
+
+				DLB_BIND(OnChangeScreenshareParametersError);
+
+				DLB_BIND(OnActiveSpeakersChanged);
+
+				DLB_BIND(OnAudioLevelsChanged);
+
+				DLB_BIND(OnSetLocalPlayerLocationError);
+
+				DLB_BIND(OnSetLocalPlayerRotationError);
+
+				DLB_BIND(OnSetRemotePlayerLocationError);
+
+				DLB_BIND(OnSetLogSettingsError);
+
 				DLB_BIND(OnAudioInputDevicesReceived);
-				DLB_BIND(OnAudioOutputDevicesReceived)
+				DLB_BIND(OnGetAudioInputDevicesError);
+
+				DLB_BIND(OnAudioOutputDevicesReceived);
+				DLB_BIND(OnGetAudioOutputDevicesError);
+
 				DLB_BIND(OnCurrentAudioInputDeviceReceived);
+				DLB_BIND(OnGetCurrentAudioInputDeviceError);
+
 				DLB_BIND(OnCurrentAudioOutputDeviceReceived);
+				DLB_BIND(OnGetCurrentAudioOutputDeviceError);
+
 				DLB_BIND(OnVideoDevicesReceived);
+				DLB_BIND(OnGetVideoDevicesError);
+
 				DLB_BIND(OnCurrentAudioInputDeviceChanged);
+				DLB_BIND(OnSetAudioInputDeviceError);
+
 				DLB_BIND(OnCurrentAudioOutputDeviceChanged);
+				DLB_BIND(OnSetAudioOutputDeviceError);
+
+				DLB_BIND(OnUpdateUserMetadataError);
+
+				DLB_BIND(OnSetAudioCaptureModeError);
+
 				FwdOnTokenNeeded();
 			}
 		}

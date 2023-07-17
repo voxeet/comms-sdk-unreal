@@ -23,7 +23,9 @@ void UDolbyIOSubsystem::SetSpatialEnvironment()
 	const spatial_position Forward{1, 0, 0};
 	const spatial_position Up{0, 0, 1};
 	const spatial_position Right{0, 1, 0};
-	Sdk->conference().set_spatial_environment(Scale, Forward, Up, Right).on_error(DLB_ERROR_HANDLER);
+	Sdk->conference()
+	    .set_spatial_environment(Scale, Forward, Up, Right)
+	    .on_error(DLB_ERROR_HANDLER(OnSetSpatialEnvironmentScaleError));
 }
 
 void UDolbyIOSubsystem::SetSpatialEnvironmentScale(float Scale)
@@ -65,7 +67,9 @@ void UDolbyIOSubsystem::ToggleInputMute()
 {
 	if (IsConnectedAsActive())
 	{
-		Sdk->conference().mute(bIsInputMuted).on_error(DLB_ERROR_HANDLER);
+		Sdk->conference()
+		    .mute(bIsInputMuted)
+		    .on_error(DLB_ERROR_HANDLER(bIsInputMuted ? OnMuteInputError : OnUnmuteInputError));
 	}
 }
 
@@ -73,7 +77,9 @@ void UDolbyIOSubsystem::ToggleOutputMute()
 {
 	if (IsConnected() && ConnectionMode != EDolbyIOConnectionMode::ListenerRTS)
 	{
-		Sdk->conference().mute_output(bIsOutputMuted).on_error(DLB_ERROR_HANDLER);
+		Sdk->conference()
+		    .mute_output(bIsOutputMuted)
+		    .on_error(DLB_ERROR_HANDLER(bIsOutputMuted ? OnMuteOutputError : OnUnmuteOutputError));
 	}
 }
 
@@ -85,7 +91,7 @@ void UDolbyIOSubsystem::MuteParticipant(const FString& ParticipantID)
 	}
 
 	DLB_UE_LOG("Muting participant ID %s", *ParticipantID);
-	Sdk->audio().remote().stop(ToStdString(ParticipantID)).on_error(DLB_ERROR_HANDLER);
+	Sdk->audio().remote().stop(ToStdString(ParticipantID)).on_error(DLB_ERROR_HANDLER(OnMuteParticipantError));
 }
 
 void UDolbyIOSubsystem::UnmuteParticipant(const FString& ParticipantID)
@@ -96,7 +102,7 @@ void UDolbyIOSubsystem::UnmuteParticipant(const FString& ParticipantID)
 	}
 
 	DLB_UE_LOG("Unmuting participant ID %s", *ParticipantID);
-	Sdk->audio().remote().start(ToStdString(ParticipantID)).on_error(DLB_ERROR_HANDLER);
+	Sdk->audio().remote().start(ToStdString(ParticipantID)).on_error(DLB_ERROR_HANDLER(OnUnmuteParticipantError));
 }
 
 bool UDolbyIOSubsystem::IsSpatialAudio() const
@@ -114,5 +120,8 @@ void UDolbyIOSubsystem::SetAudioCaptureMode(EDolbyIONoiseReduction NoiseReductio
 
 	DLB_UE_LOG("Setting audio capture mode to %s %s", *UEnum::GetValueAsString(NoiseReduction),
 	           *UEnum::GetValueAsString(VoiceFont));
-	Sdk->audio().local().set_capture_mode(ToSdkAudioCaptureMode(NoiseReduction, VoiceFont)).on_error(DLB_ERROR_HANDLER);
+	Sdk->audio()
+	    .local()
+	    .set_capture_mode(ToSdkAudioCaptureMode(NoiseReduction, VoiceFont))
+	    .on_error(DLB_ERROR_HANDLER(OnSetAudioCaptureModeError));
 }

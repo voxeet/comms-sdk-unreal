@@ -3,6 +3,7 @@
 #include "Utils/DolbyIOErrorHandler.h"
 
 #include "DolbyIO.h"
+#include "Utils/DolbyIOBroadcastEvent.h"
 #include "Utils/DolbyIOConversions.h"
 #include "Utils/DolbyIOLogging.h"
 
@@ -11,8 +12,13 @@ using namespace DolbyIO;
 
 namespace DolbyIO
 {
-	FErrorHandler::FErrorHandler(UDolbyIOSubsystem& DolbyIOSubsystem, int Line)
-	    : DolbyIOSubsystem(DolbyIOSubsystem), Line(Line)
+	FErrorHandler::FErrorHandler(int Line, UDolbyIOSubsystem& DolbyIOSubsystem)
+	    : Line(Line), DolbyIOSubsystem(DolbyIOSubsystem)
+	{
+	}
+
+	FErrorHandler::FErrorHandler(int Line, UDolbyIOSubsystem& DolbyIOSubsystem, const FDolbyIOOnErrorDelegate& OnError)
+	    : Line(Line), DolbyIOSubsystem(DolbyIOSubsystem), OnError(&OnError)
 	{
 	}
 
@@ -62,7 +68,18 @@ namespace DolbyIO
 
 	void FErrorHandler::LogException(const FString& Type, const FString& What) const
 	{
-		DLB_UE_ERROR("Caught %s: %s (conference status: %s, line: %d)", *Type, *What,
+		const FString ErrorMsg = Type + ": " + What;
+		DLB_UE_ERROR("Caught %s (conference status: %s, line: %d)", *ErrorMsg,
 		             *ToString(DolbyIOSubsystem.ConferenceStatus), Line);
+		if (OnError)
+		{
+			BroadcastEvent(*OnError, ErrorMsg);
+		}
+	}
+
+	void FErrorHandler::Warn(const FDolbyIOOnErrorDelegate& OnError, const FString& Msg)
+	{
+		DLB_UE_WARN("%s", *Msg);
+		BroadcastEvent(OnError, Msg);
 	}
 }

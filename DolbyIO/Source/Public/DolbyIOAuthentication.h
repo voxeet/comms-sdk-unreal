@@ -8,7 +8,8 @@
 
 #include "DolbyIOAuthentication.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGetDolbyIOTokenOutputPin, FString, Token);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGetDolbyIOTokenOutputPin, const FString&, Token, const FString&,
+                                             ErrorMsg);
 
 UCLASS()
 class DOLBYIO_API UDolbyIOGetTokenFromURL : public UBlueprintAsyncActionBase
@@ -34,6 +35,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FGetDolbyIOTokenOutputPin OnTokenObtained;
+
+	UPROPERTY(BlueprintAssignable)
+	FGetDolbyIOTokenOutputPin OnError;
 
 private:
 	void Activate() override;
@@ -70,6 +74,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FGetDolbyIOTokenOutputPin TokenObtained;
+
+	UPROPERTY(BlueprintAssignable)
+	FGetDolbyIOTokenOutputPin OnError;
 
 private:
 	void Activate() override;
