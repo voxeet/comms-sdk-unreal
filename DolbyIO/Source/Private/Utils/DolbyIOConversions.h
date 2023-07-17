@@ -28,6 +28,10 @@ namespace DolbyIO
 	dolbyio::comms::screen_share_content_info ToSdkContentInfo(EDolbyIOScreenshareEncoderHint EncoderHint,
 	                                                           EDolbyIOScreenshareMaxResolution MaxResolution,
 	                                                           EDolbyIOScreenshareDownscaleQuality DownscaleQuality);
+	dolbyio::comms::noise_reduction ToSdkNoiseReduction(EDolbyIONoiseReduction NoiseReduction);
+	dolbyio::comms::voice_font ToSdkVoiceFont(EDolbyIOVoiceFont VoiceFont);
+	dolbyio::comms::audio_capture_mode::standard ToSdkAudioCaptureMode(EDolbyIONoiseReduction NoiseReduction,
+	                                                                   EDolbyIOVoiceFont VoiceFont);
 	dolbyio::comms::log_level ToSdkLogLevel(EDolbyIOLogLevel Level);
 	dolbyio::comms::camera_device ToSdkVideoDevice(const FDolbyIOVideoDevice& VideoDevice);
 

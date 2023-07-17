@@ -840,6 +840,18 @@ public:
 	{
 		DLB_EXECUTE_SUBSYSTEM_METHOD(SetAudioOutputDevice, NativeID);
 	}
+
+	/** Sets the audio capture mode.
+	 *
+	 * @param NoiseReduction - The noise reduction mode.
+	 * @param VoiceFont - The voice font.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Audio Capture Mode"))
+	static void SetAudioCaptureMode(const UObject* WorldContextObject, EDolbyIONoiseReduction NoiseReduction, EDolbyIOVoiceFont VoiceFont)
+	{
+		DLB_EXECUTE_SUBSYSTEM_METHOD(SetAudioCaptureMode, NoiseReduction, VoiceFont);
+	}
 };
 
 #undef DLB_EXECUTE_RETURNING_SUBSYSTEM_METHOD

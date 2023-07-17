@@ -237,6 +237,56 @@ namespace DolbyIO
 		}
 	}
 
+	noise_reduction ToSdkNoiseReduction(EDolbyIONoiseReduction NoiseReduction)
+	{
+		switch (NoiseReduction)
+		{
+			case EDolbyIONoiseReduction::Low:
+				return noise_reduction::low;
+			default:
+				return noise_reduction::high;
+		}
+	}
+
+	voice_font ToSdkVoiceFont(EDolbyIOVoiceFont VoiceFont)
+	{
+		switch (VoiceFont)
+		{
+			case EDolbyIOVoiceFont::Masculine:
+				return voice_font::masculine;
+			case EDolbyIOVoiceFont::Feminine:
+				return voice_font::feminine;
+			case EDolbyIOVoiceFont::Helium:
+				return voice_font::helium;
+			case EDolbyIOVoiceFont::DarkModulation:
+				return voice_font::dark_modulation;
+			case EDolbyIOVoiceFont::BrokenRobot:
+				return voice_font::broken_robot;
+			case EDolbyIOVoiceFont::Interference:
+				return voice_font::interference;
+			case EDolbyIOVoiceFont::Abyss:
+				return voice_font::abyss;
+			case EDolbyIOVoiceFont::Wobble:
+				return voice_font::wobble;
+			case EDolbyIOVoiceFont::StarshipCaptain:
+				return voice_font::starship_captain;
+			case EDolbyIOVoiceFont::NervousRobot:
+				return voice_font::nervous_robot;
+			case EDolbyIOVoiceFont::Swarm:
+				return voice_font::swarm;
+			case EDolbyIOVoiceFont::AMRadio:
+				return voice_font::am_radio;
+			default:
+				return voice_font::none;
+		}
+	}
+
+	audio_capture_mode::standard ToSdkAudioCaptureMode(EDolbyIONoiseReduction NoiseReduction,
+	                                                   EDolbyIOVoiceFont VoiceFont)
+	{
+		return {ToSdkNoiseReduction(NoiseReduction), ToSdkVoiceFont(VoiceFont)};
+	}
+
 	FSdkNativeDeviceID ToSdkNativeDeviceID(const FString& ID)
 	{
 #if PLATFORM_WINDOWS
