@@ -126,11 +126,7 @@ void UDolbyIOSubsystem::Disconnect()
 	}
 
 	DLB_UE_LOG("Disconnecting");
-	Sdk->conference()
-	    .leave()
-	    .then([this]() { return Sdk->session().close(); })
-	    .then([this] { BroadcastEvent(OnDisconnected); })
-	    .on_error(DLB_ERROR_HANDLER);
+	Sdk->conference().leave().on_error(DLB_ERROR_HANDLER);
 }
 
 void UDolbyIOSubsystem::UpdateStatus(conference_status Status)
@@ -142,6 +138,10 @@ void UDolbyIOSubsystem::UpdateStatus(conference_status Status)
 	{
 		case conference_status::joined:
 			BroadcastEvent(OnConnected, LocalParticipantID, ConferenceID);
+			break;
+		case conference_status::left:
+		case conference_status::error:
+			Sdk->session().close().then([this] { BroadcastEvent(OnDisconnected); }).on_error(DLB_ERROR_HANDLER);
 			break;
 	}
 }

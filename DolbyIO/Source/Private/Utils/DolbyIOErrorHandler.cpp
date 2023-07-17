@@ -38,7 +38,6 @@ namespace DolbyIO
 	catch (const invalid_token_exception& Ex)
 	{
 		LogException("dolbyio::comms::invalid_token_exception", Ex.what());
-		DolbyIOSubsystem.Sdk.Reset();
 	}
 	catch (const dvc_error_exception& Ex)
 	{
