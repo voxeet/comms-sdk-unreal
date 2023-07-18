@@ -1,3 +1,5 @@
+import VoiceFontsTable from '@site/src/components/VoiceFontsTable';
+
 # Types
 
 ## Dolby.io Connection Mode
@@ -174,27 +176,13 @@ The audio noise reduction level.
 
 | Enum value | Description |
 |---|:---|
-| **High** | Reduce all noise and isolate voice. |
-| **Low** | Remove steady/stationary background noise. |
+| **High** | Removes all background sounds to improve voice quality. Use this mode if you want to send only voice to a conference. |
+| **Low** | Removes stationary background sounds, such as the sound of a computer fan, air conditioning, or microphone hum, from audio transmitted to a conference. In this mode, non-stationary sounds are transmitted to give participants full context of other participants' environments and create a more realistic audio experience. |
 
 ---
 
 ## Dolby.io Voice Font
 
-Voice modification effect.
+The preferred voice modification effect that you can use to change the local participant's voice in real time.
 
-| Enum value | Description |
-|---|:---|
-| **None** | |
-| **Masculine** | |
-| **Feminine** | |
-| **Helium** | |
-| **Dark Modulation** | |
-| **Broken Robot** | |
-| **Interference** | |
-| **Abyss** | |
-| **Wobble** | |
-| **Starship Captain** | |
-| **Nervous Robot** | |
-| **Swarm** | |
-| **AMRadio** | |
+<VoiceFontsTable></VoiceFontsTable>
