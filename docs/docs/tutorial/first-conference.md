@@ -25,22 +25,22 @@ Select the added component and check its details in the `Details` panel. Scroll 
 2. Paste your client access token copied from the Dolby.io dashboard to the [`Dolby.io Set Token`](../blueprints/functions#dolbyio-set-token) node.
 
 ### Option B - Use authentication URL
-1. Place a [`Get Dolby.io Token From URL`](../blueprints/functions#dolbyio-get-token-from-url) node and connect it to the `On Token Needed (DolbyIOObserver)` node.
+1. Place a [`Dolby.io Get Token From URL`](../blueprints/functions#dolbyio-get-token-from-url) node and connect it to the `On Token Needed (DolbyIOObserver)` node.
 
-2. Place a [`Dolby.io Set Token`](../blueprints/functions#dolbyio-set-token) node and connect it to the [`Get Dolby.io Token From URL`](../blueprints/functions#dolbyio-get-token-from-url) node as shown below:
+2. Place a [`Dolby.io Set Token`](../blueprints/functions#dolbyio-set-token) node and connect it to the [`Dolby.io Get Token From URL`](../blueprints/functions#dolbyio-get-token-from-url) node as shown below:
 
 ![](../../static/img/first-conf-get-token-from-url.png)
 
-3. Provide your URL to the [`Get Dolby.io Token From URL`](../blueprints/functions#dolbyio-get-token-from-url) function.
+3. Provide your URL to the [`Dolby.io Get Token From URL`](../blueprints/functions#dolbyio-get-token-from-url) function.
 
 ### Option C - Use app key and secret
-1. Place a [`Get Dolby.io Token`](../blueprints/functions#get-dolbyio-token) node and connect it to the `On Token Needed (DolbyIOObserver)` node.
+1. Place a [`Dolby.io Get Token Using App Key And Secret`](../blueprints/functions#dolbyio-get-token-using-app-key-and-secret) node and connect it to the `On Token Needed (DolbyIOObserver)` node.
 
-2. Place a [`Dolby.io Set Token`](../blueprints/functions#dolbyio-set-token) node and connect it to the [`Get Dolby.io Token`](../blueprints/functions#get-dolbyio-token) node as shown below:
+2. Place a [`Dolby.io Set Token`](../blueprints/functions#dolbyio-set-token) node and connect it to the [`Dolby.io Get Token Using App Key And Secret`](../blueprints/functions#dolbyio-get-token-using-app-key-and-secret) node as shown below:
 
-![](../../static/img/first-conf-get-token.png)
+![](../../static/img/first-conf-get-token-using-key-secret.png)
 
-3. Provide your app key and app secret to the [`Get Dolby.io Token`](../blueprints/functions#get-dolbyio-token) function.
+3. Provide your app key and app secret to the [`Dolby.io Get Token Using App Key And Secret`](../blueprints/functions#dolbyio-get-token-using-app-key-and-secret) function.
 
 ## 4. Connect to demo conference
 Place a [`Dolby.io Demo Conference`](../blueprints/functions#dolbyio-demo-conference) node and connect it to the [`Dolby.io Set Token`](../blueprints/functions#dolbyio-set-token) node as shown below:

@@ -17,7 +17,7 @@ class DOLBYIO_API UDolbyIOGetTokenFromURL : public UBlueprintAsyncActionBase
 	GENERATED_BODY()
 
 public:
-	/** Gets a Dolby.io client access token.
+	/** Gets a Dolby.io client access token from a URL.
 	 *
 	 * For convenience during early development and prototyping, this function is provided to acquire an client access
 	 * token directly from the game.
@@ -53,7 +53,7 @@ class DOLBYIO_API UGetDolbyIOToken : public UBlueprintAsyncActionBase
 	GENERATED_BODY()
 
 public:
-	/** Gets a Dolby.io client access token.
+	/** Gets a Dolby.io client access token using an app key and secret combination.
 	 *
 	 * For convenience during early development and prototyping, this function is provided to acquire an client access
 	 * token directly from the game.
@@ -68,7 +68,7 @@ public:
 	 * @param TokenExpirationTimeInSeconds - The token's expiration time (in seconds).
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
-	          Meta = (BlueprintInternalUseOnly = "true", DisplayName = "Get Dolby.io Token"))
+	          Meta = (BlueprintInternalUseOnly = "true", DisplayName = "Dolby.io Get Token Using App Key And Secret"))
 	static UGetDolbyIOToken* GetDolbyIOToken(const FString& AppKey, const FString& AppSecret,
 	                                         int TokenExpirationTimeInSeconds = 3600);
 

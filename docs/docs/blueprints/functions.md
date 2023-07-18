@@ -218,7 +218,7 @@ Gets the texture to which video from a given track is being rendered.
 
 ## Dolby.io Get Token From URL
 
-Gets a Dolby.io client access token.
+Gets a Dolby.io client access token from a URL.
 
 For convenience during early development and prototyping, this function is provided to acquire a client access token directly from the game.
 
@@ -235,6 +235,31 @@ For convenience during early development and prototyping, this function is provi
 | Event | When |
 |---|:---|
 | [**On Token Obtained**](events.md#on-token-obtained) | Successful |
+
+---
+
+## Dolby.io Get Token Using App Key And Secret
+
+Gets a Dolby.io client access token using an app key and secret combination.
+
+For convenience during early development and prototyping, this function is provided to acquire a client access token directly from the game.
+
+> ⚠️ Using this function effectively distributes the permanent app credential with your Unreal application, which is not safe for production deployment. Follow our [security best practices](https://docs.dolby.io/communications-apis/docs/guides-client-authentication) to set up a server through which you can acquire a temporary client access token.
+
+![](../../static/img/generated/GetDolbyIOToken/img/nd_img_UK2Node_AsyncAction.png)
+
+#### Inputs and outputs
+| Name | Direction | Type | Default value | Description |
+|---|:---|:---|:---|:---|
+| **App Key** | Input | string | - | The app key. |
+| **App Secret** | Input | string | - | The app secret. |
+| **Token Expiration Time In Seconds** | Input | integer | 3600 (1 hour) | The token's expiration time (in seconds). |
+
+#### Triggered events
+| Event | When |
+|---|:---|
+| [**Token Obtained**](events.md#on-token-obtained) | Successful |
+| [**On Error**](events.md#on-error) | Errors occur |
 
 ---
 
@@ -415,7 +440,7 @@ The larger the scale, the longer the distance at which the spatial audio attenua
 
 Initializes or refreshes the client access token. Initializes the plugin unless already initialized.
 
-For quick testing, you can manually obtain a token from the [Dolby.io dashboard](https://dashboard.dolby.io) and paste it directly into the node or use the [Get Dolby.io Token](#get-dolbyio-token) function.
+For quick testing, you can manually obtain a token from the [Dolby.io dashboard](https://dashboard.dolby.io) and paste it directly into the node. Alternatively, you can obtain a token using the [Dolby.io Get Token From URL](#dolbyio-get-token-from-url) function or the [Dolby.io Get Token Using App Key And Secret](#dolbyio-get-token-using-app-key-and-secret) function.
 
 ![](../../static/img/generated/DolbyIOSetToken/img/nd_img_UK2Node_AsyncAction.png)
 
@@ -524,30 +549,3 @@ Updates information about the local participant.
 |---|:---|:---|:---|:---|
 | **User Name** | Input | String | - | The name of the participant. |
 | **Avatar URL** | Input | String | - | The URL of the participant's avatar. |
-
----
-
-## Get Dolby.io Token
-
-Gets a Dolby.io client access token.
-
-For convenience during early development and prototyping, this function is provided to acquire a client access token directly from the game.
-
-> ⚠️ Using this function effectively distributes the permanent app credential with your Unreal application, which is not safe for production deployment. Follow our [security best practices](https://docs.dolby.io/communications-apis/docs/guides-client-authentication) to set up a server through which you can acquire a temporary client access token.
-
-![](../../static/img/generated/GetDolbyIOToken/img/nd_img_UK2Node_AsyncAction.png)
-
-#### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **App Key** | Input | string | - | The app key. |
-| **App Secret** | Input | string | - | The app secret. |
-| **Token Expiration Time In Seconds** | Input | integer | 3600 (1 hour) | The token's expiration time (in seconds). |
-
-#### Triggered events
-| Event | When |
-|---|:---|
-| [**Token Obtained**](events.md#on-token-obtained) | Successful |
-| [**On Error**](events.md#on-error) | Errors occur |
-
----
