@@ -175,6 +175,20 @@ Gets the current audio output device.
 
 ---
 
+## Dolby.io Get Current Video Device
+
+Gets the current video device.
+
+![](../../static/img/generated/DolbyIOGetCurrentVideoDevice/img/nd_img_UK2Node_AsyncAction.png)
+
+#### Triggered events
+| Event | When |
+|---|:---|
+| [**On Current Video Device Received**](events.md#on-current-video-device-received) | Successful |
+| [**On Error**](events.md#on-error) | Errors occur |
+
+---
+
 ## Dolby.io Get Participants
 
 Gets a list of all remote participants.

@@ -725,6 +725,47 @@ private:
 	const UObject* WorldContextObject;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FDolbyIOGetCurrentVideoDeviceOutputPin, bool, IsNone,
+                                               const FDolbyIOVideoDevice&, OptionalDevice, const FString&, ErrorMsg);
+
+UCLASS()
+class DOLBYIO_API UDolbyIOGetCurrentVideoDevice : public UBlueprintAsyncActionBase
+{
+	GENERATED_BODY()
+
+public:
+	/** Gets the current video device.
+	 *
+	 * Triggers On Current Video Device Received if successful.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
+	                  DisplayName = "Dolby.io Get Current Video Device"))
+	static UDolbyIOGetCurrentVideoDevice* DolbyIOGetVideoDevice(const UObject* WorldContextObject)
+	    DLB_DEFINE_CONSTRUCTOR(UDolbyIOGetCurrentVideoDevice);
+
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOGetCurrentVideoDeviceOutputPin OnCurrentVideoDeviceReceived;
+
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOSetTokenOutputPin OnError;
+
+private:
+	DLB_DEFINE_ACTIVATE_METHOD(GetCurrentVideoDevice, OnCurrentVideoDeviceReceived);
+
+	UFUNCTION()
+	void OnCurrentVideoDeviceReceivedImpl(bool IsNone, const FDolbyIOVideoDevice& OptionalDevice)
+	    DLB_DEFINE_IMPL_METHOD(GetCurrentVideoDevice, OnCurrentVideoDeviceReceived, IsNone, OptionalDevice, "");
+
+	UFUNCTION()
+	void OnErrorImpl(const FString& ErrorMsg)
+	{
+		DLB_DEFINE_ERROR_METHOD(GetCurrentVideoDevice, OnCurrentVideoDeviceReceived, ErrorMsg);
+	}
+
+	const UObject* WorldContextObject;
+};
+
 // --------------------------------------------------------------------------------------------------------------------
 
 UCLASS()
@@ -992,7 +1033,8 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Audio Capture Mode"))
-	static void SetAudioCaptureMode(const UObject* WorldContextObject, EDolbyIONoiseReduction NoiseReduction, EDolbyIOVoiceFont VoiceFont)
+	static void SetAudioCaptureMode(const UObject* WorldContextObject, EDolbyIONoiseReduction NoiseReduction,
+	                                EDolbyIOVoiceFont VoiceFont)
 	{
 		DLB_EXECUTE_SUBSYSTEM_METHOD(SetAudioCaptureMode, NoiseReduction, VoiceFont);
 	}
