@@ -1,16 +1,6 @@
+import VoiceFontsTable from '@site/src/components/VoiceFontsTable';
+
 # Types
-
-## Dolby.io Connection Mode
-
-Defines whether to connect as an active user or a listener.
-
-| Enum value | Description |
-|---|:---|
-| **Active** | Join a conference as an active user. |
-| **Listener Regular** | Receive multiple video streams from senders. |
-| **Listener RTS** | Receive a realtime mixed stream. |
-
----
 
 ## Dolby.io Audio Device
 
@@ -23,14 +13,15 @@ The platform-agnostic description of an audio device.
 
 ---
 
-## Dolby.io Video Device
+## Dolby.io Connection Mode
 
-The platform agnostic description of a video device.
+Defines whether to connect as an active user or a listener.
 
-| Struct member | Type | Description |
-|---|:---|:---|
-| **Name** | [text](https://docs.unrealengine.com/5.2/en-US/ftext-in-unreal-engine/) | The name of the device. |
-| **Unique ID** | string | The unique ID of the device. |
+| Enum value | Description |
+|---|:---|
+| **Active** | Join a conference as an active user. |
+| **Listener Regular** | Receive multiple video streams from senders. |
+| **Listener RTS** | Receive a realtime mixed stream. |
 
 ---
 
@@ -49,20 +40,14 @@ The level of logs of the Dolby.io C++ SDK.
 
 ---
 
-## Dolby.io Participant Status
+## Dolby.io Noise Reduction
+
+The audio noise reduction level.
 
 | Enum value | Description |
 |---|:---|
-| **Reserved** | A participant is invited to a conference. |
-| **Connecting** | A participant received the conference invitation and is connecting to a conference. |
-| **On Air** | A participant successfully connected to a conference. |
-| **Decline** | An invited participant declined the conference invitation. Currently, the Web SDK does not offer the decline method, although participants who use Web SDK can receive the Decline status from other application users who use the Android or iOS SDK. The Web SDK does not receive the notification if the invited participant uses the decline method after joining a conference. |
-| **Left** | A participant left the conference. |
-| **Inactive** | A participant did not enable audio, video, or screen-share and, therefore, is not connected to any stream. |
-| **Warning** | A participant experiences a peer connection problem, which may result in the Error or Connected status. |
-| **Error** | A peer connection failed, and the participant cannot connect to a conference. |
-| **Kicked** | A participant was kicked from the conference. |
-| **Unknown** | |
+| **High** | Removes all background sounds to improve voice quality. Use this mode if you want to send only voice to a conference. |
+| **Low** | Removes stationary background sounds, such as the sound of a computer fan, air conditioning, or microphone hum, from audio transmitted to a conference. In this mode, non-stationary sounds are transmitted to give participants full context of other participants' environments and create a more realistic audio experience. |
 
 ---
 
@@ -83,15 +68,33 @@ Contains the current status of a conference participant and information whether 
 
 ---
 
-## Dolby.io Screenshare Source
+## Dolby.io Participant Status
 
-The platform agnostic description of source for screen sharing.
+| Enum value | Description |
+|---|:---|
+| **Reserved** | A participant is invited to a conference. |
+| **Connecting** | A participant received the conference invitation and is connecting to a conference. |
+| **On Air** | A participant successfully connected to a conference. |
+| **Decline** | An invited participant declined the conference invitation. Currently, the Web SDK does not offer the decline method, although participants who use Web SDK can receive the Decline status from other application users who use the Android or iOS SDK. The Web SDK does not receive the notification if the invited participant uses the decline method after joining a conference. |
+| **Left** | A participant left the conference. |
+| **Inactive** | A participant did not enable audio, video, or screen-share and, therefore, is not connected to any stream. |
+| **Warning** | A participant experiences a peer connection problem, which may result in the Error or Connected status. |
+| **Error** | A peer connection failed, and the participant cannot connect to a conference. |
+| **Kicked** | A participant was kicked from the conference. |
+| **Unknown** | |
 
-| Struct member | Type | Description |
-|---|:---|:---|
-| **ID** | int64 | Unique id of the screen in question. |
-| **Is Screen** | bool | Indicates whether this is an entire screen (true) or an application window (false). |
-| **Title** | [text](https://docs.unrealengine.com/5.2/en-US/ftext-in-unreal-engine/) | Title of the screen. |
+---
+
+## Dolby.io Screenshare Downscale Quality
+
+The quality for the downscaling algorithm to be used. The higher the quality, the clearer the picture will be, but the higher the CPU usage will be.
+
+| Enum value | Description |
+|---|:---|
+| **Low** | Use the quicker algorithm, fast and lowest CPU used but low quality. |
+| **Medium** | Use the linear filter algorithm used mainly for horizontal scaling. |
+| **High** | Use the bilinear filter algorithm, faster than highest, but quality not as good. If downscaling fluid screen content from 4K to 1080p this option should be used. |
+| **Highest** | Use the box filter algorithm, uses the most CPU and is the slowest but produces the best quality. If downscaling detailed screen content from 4K to 2K this option should be used. |
 
 ---
 
@@ -120,16 +123,15 @@ The max resolution for the capture screen content to be shared as. If the actual
 
 ---
 
-## Dolby.io Screenshare Downscale Quality
+## Dolby.io Screenshare Source
 
-The quality for the downscaling algorithm to be used. The higher the quality, the clearer the picture will be, but the higher the CPU usage will be.
+The platform agnostic description of source for screen sharing.
 
-| Enum value | Description |
-|---|:---|
-| **Low** | Use the quicker algorithm, fast and lowest CPU used but low quality. |
-| **Medium** | Use the linear filter algorithm used mainly for horizontal scaling. |
-| **High** | Use the bilinear filter algorithm, faster than highest, but quality not as good. If downscaling fluid screen content from 4K to 1080p this option should be used. |
-| **Highest** | Use the box filter algorithm, uses the most CPU and is the slowest but produces the best quality. If downscaling detailed screen content from 4K to 2K this option should be used. |
+| Struct member | Type | Description |
+|---|:---|:---|
+| **ID** | int64 | Unique id of the screen in question. |
+| **Is Screen** | bool | Indicates whether this is an entire screen (true) or an application window (false). |
+| **Title** | [text](https://docs.unrealengine.com/5.2/en-US/ftext-in-unreal-engine/) | Title of the screen. |
 
 ---
 
@@ -142,6 +144,17 @@ The possible spatial audio styles of the conference.
 | **Disabled** | Spatial audio is disabled. |
 | **Individual** | The individual option sets the spatial location that is based on the spatial scene, local participant's position, and remote participants' positions. This allows a client to control the position using the local, self-contained logic. However, the client has to communicate a large set of requests constantly to the server, which increases network traffic, log subsystem pressure, and complexity of the client-side application. |
 | **Shared** | Spatial audio for shared scenes, The shared option sets the spatial location that is based on the spatial scene and the local participant's position, while the relative positions among participants are calculated by the Dolby.io server. This way, the spatial scene is shared by all participants, so that each client can set its own position and participate in the shared scene. This approach simplifies communication between the client and the server and decreases network traffic. |
+
+---
+
+## Dolby.io Video Device
+
+The platform agnostic description of a video device.
+
+| Struct member | Type | Description |
+|---|:---|:---|
+| **Name** | [text](https://docs.unrealengine.com/5.2/en-US/ftext-in-unreal-engine/) | The name of the device. |
+| **Unique ID** | string | The unique ID of the device. |
 
 ---
 
@@ -168,33 +181,8 @@ Contains data about a Dolby.io video track.
 
 ---
 
-## Dolby.io Noise Reduction
-
-The audio noise reduction level.
-
-| Enum value | Description |
-|---|:---|
-| **High** | Reduce all noise and isolate voice. |
-| **Low** | Remove steady/stationary background noise. |
-
----
-
 ## Dolby.io Voice Font
 
-Voice modification effect.
+The preferred voice modification effect that you can use to change the local participant's voice in real time.
 
-| Enum value | Description |
-|---|:---|
-| **None** | |
-| **Masculine** | |
-| **Feminine** | |
-| **Helium** | |
-| **Dark Modulation** | |
-| **Broken Robot** | |
-| **Interference** | |
-| **Abyss** | |
-| **Wobble** | |
-| **Starship Captain** | |
-| **Nervous Robot** | |
-| **Swarm** | |
-| **AMRadio** | |
+<VoiceFontsTable></VoiceFontsTable>
