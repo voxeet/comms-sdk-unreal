@@ -10,3 +10,8 @@
 #endif
 
 #include <dolbyio/comms/sdk.h>
+#include <dolbyio/comms/utils/vfs_event.h>
+
+#if PLATFORM_WINDOWS | PLATFORM_MAC
+#include <dolbyio/comms/video_processor.h>
+#endif

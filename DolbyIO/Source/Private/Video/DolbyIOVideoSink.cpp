@@ -2,8 +2,8 @@
 
 #include "DolbyIOVideoSink.h"
 
-#include "DolbyIOLogging.h"
 #include "DolbyIOVideoTexture.h"
+#include "Utils/DolbyIOLogging.h"
 
 #include <dolbyio/comms/media_engine/video_utils.h>
 
