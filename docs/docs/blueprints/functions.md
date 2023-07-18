@@ -23,9 +23,9 @@ Changes the screen sharing parameters if already sharing screen.
 #### Inputs and outputs
 | Name | Direction | Type | Default value | Description |
 |---|:---|:---|:---|:---|
-| **Encoder Hint** | Input | [Dolby.io Screenshare Encoder Hint](types.md#dolbyio-screenshare-encoder-hint) | Detailed | Provides a hint to the plugin as to what type of content is being captured by the screen share. |
-| **Max Resolution** | Input | [Dolby.io Screenshare Max Resolution](types.md#dolbyio-screenshare-max-resolution) | Actual Captured | The maximum resolution for the capture screen content to be shared as. |
-| **Downscale Quality** | Input | [Dolby.io Screenshare Downscale Quality](types.md#dolbyio-screenshare-downscale-quality) | Low | The quality for the downscaling algorithm to be used. |
+| **Encoder Hint** | Input | [Dolby.io Screenshare Encoder Hint](types.mdxx#dolbyio-screenshare-encoder-hint) | Detailed | Provides a hint to the plugin as to what type of content is being captured by the screen share. |
+| **Max Resolution** | Input | [Dolby.io Screenshare Max Resolution](types.mdxx#dolbyio-screenshare-max-resolution) | Actual Captured | The maximum resolution for the capture screen content to be shared as. |
+| **Downscale Quality** | Input | [Dolby.io Screenshare Downscale Quality](types.mdxx#dolbyio-screenshare-downscale-quality) | Low | The quality for the downscaling algorithm to be used. |
 
 ---
 
@@ -42,10 +42,10 @@ Connects to a conference.
 | **User Name** | Input | string | "" | The name of the participant. |
 | **External ID** | Input | string | "" | The external unique identifier that the customer's application can add to the participant while opening a session. If a participant uses the same external ID in conferences, the participant's ID also remains the same across all sessions. |
 | **Avatar URL** | Input | string | "" | The URL of the participant's avatar. |
-| **Connection Mode** | Input | [Dolby.io Connection Mode](types.md#dolbyio-connection-mode) | Active | Defines whether to connect as an active user or a listener. |
-| **Spatial Audio Style** | Input | [Dolby.io Spatial Audio Style](types.md#dolbyio-spatial-audio-style) | Shared | The spatial audio style of the conference. |
+| **Connection Mode** | Input | [Dolby.io Connection Mode](types.mdxx#dolbyio-connection-mode) | Active | Defines whether to connect as an active user or a listener. |
+| **Spatial Audio Style** | Input | [Dolby.io Spatial Audio Style](types.mdxx#dolbyio-spatial-audio-style) | Shared | The spatial audio style of the conference. |
 | **Max Video Streams** | Input | integer | 25 | Sets the maximum number of video streams that may be transmitted to the user. |
-| **Video Forwarding Strategy** | Input | [Dolby.io Video Forwarding Strategy](types.md#dolbyio-video-forwarding-strategy) | LastSpeaker | Defines how the plugin should select conference participants whose videos will be transmitted to the local participant. |
+| **Video Forwarding Strategy** | Input | [Dolby.io Video Forwarding Strategy](types.mdxx#dolbyio-video-forwarding-strategy) | LastSpeaker | Defines how the plugin should select conference participants whose videos will be transmitted to the local participant. |
 
 #### Triggered events
 | Event | When |
@@ -108,7 +108,7 @@ Enables video streaming from the given video device or the default device if no 
 #### Inputs and outputs
 | Name | Direction | Type | Default value | Description |
 |---|:---|:---|:---|:---|
-| **VideoDevice** | Input | [Dolby.io Video Device](types.md#dolbyio-video-device) | default device | The video device to use. |
+| **VideoDevice** | Input | [Dolby.io Video Device](types.mdxx#dolbyio-video-device) | default device | The video device to use. |
 | **Blur Background** | Input | bool | false | Indicates whether the background should be blurred. This parameter is ignored on platforms other than Windows and macOS. |
 
 #### Triggered events
@@ -184,7 +184,7 @@ Gets a list of all remote participants.
 #### Inputs and outputs
 | Name | Direction | Type | Default value | Description |
 |---|:---|:---|:---|:---|
-| **Return Value** | Output | array of [Dolby.io Participant Info](types.md#dolbyio-participant-info) | - | An array of current Dolby.io Participant Info's. |
+| **Return Value** | Output | array of [Dolby.io Participant Info](types.mdxx#dolbyio-participant-info) | - | An array of current Dolby.io Participant Info's. |
 
 ---
 
@@ -290,8 +290,8 @@ Sets the preferred noise reduction mode and voice font.
 #### Inputs and outputs
 | Name | Direction | Type | Default value | Description |
 |---|:---|:---|:---|:---|
-| **Noise Reduction** | Input | [Dolby.io Noise Reduction](types.md#dolbyio-noise-reduction) | - | The noise reduction mode. |
-| **Voice Font** | Input | [Dolby.io Voice Font](types.md#dolbyio-voice-font) | - | The voice font. |
+| **Noise Reduction** | Input | [Dolby.io Noise Reduction](types.mdxx#dolbyio-noise-reduction) | - | The noise reduction mode. |
+| **Voice Font** | Input | [Dolby.io Voice Font](types.mdxx#dolbyio-voice-font) | - | The voice font. |
 
 ---
 
@@ -372,9 +372,9 @@ This function should be called before the first call to [Set Token](#dolbyio-set
 #### Inputs and outputs
 | Name | Direction | Type | Default value | Description |
 |---|:---|:---|:---|:---|
-| **Sdk Log Level** | Input | [Dolby.io Log Level](types.md#dolbyio-log-level) | Info | Log level for SDK logs. |
-| **Media Log Level** | Input | [Dolby.io Log Level](types.md#dolbyio-log-level) | Info | Log level for Media Engine logs. |
-| **Dvc Log Level** | Input | [Dolby.io Log Level](types.md#dolbyio-log-level) | Info | Log level for DVC logs. |
+| **Sdk Log Level** | Input | [Dolby.io Log Level](types.mdxx#dolbyio-log-level) | Info | Log level for SDK logs. |
+| **Media Log Level** | Input | [Dolby.io Log Level](types.mdxx#dolbyio-log-level) | Info | Log level for Media Engine logs. |
+| **Dvc Log Level** | Input | [Dolby.io Log Level](types.mdxx#dolbyio-log-level) | Info | Log level for DVC logs. |
 
 ---
 
@@ -443,10 +443,10 @@ Users should make use of the parameters to optimize for the content they are sha
 #### Inputs and outputs
 | Name | Direction | Type | Default value | Description |
 |---|:---|:---|:---|:---|
-| **Source** | Input | [Dolby.io Screenshare Source](types.md#dolbyio-screenshare-source) | - | The source to use. |
-| **Encoder Hint** | Input | [Dolby.io Screenshare Encoder Hint](types.md#dolbyio-screenshare-encoder-hint) | Detailed | Provides a hint to the plugin as to what type of content is being captured by the screen share. |
-| **Max Resolution** | Input | [Dolby.io Screenshare Max Resolution](types.md#dolbyio-screenshare-max-resolution) | Actual Captured | The maximum resolution for the capture screen content to be shared as. |
-| **Downscale Quality** | Input | [Dolby.io Screenshare Downscale Quality](types.md#dolbyio-screenshare-downscale-quality) | Low | The quality for the downscaling algorithm to be used. |
+| **Source** | Input | [Dolby.io Screenshare Source](types.mdxx#dolbyio-screenshare-source) | - | The source to use. |
+| **Encoder Hint** | Input | [Dolby.io Screenshare Encoder Hint](types.mdxx#dolbyio-screenshare-encoder-hint) | Detailed | Provides a hint to the plugin as to what type of content is being captured by the screen share. |
+| **Max Resolution** | Input | [Dolby.io Screenshare Max Resolution](types.mdxx#dolbyio-screenshare-max-resolution) | Actual Captured | The maximum resolution for the capture screen content to be shared as. |
+| **Downscale Quality** | Input | [Dolby.io Screenshare Downscale Quality](types.mdxx#dolbyio-screenshare-downscale-quality) | Low | The quality for the downscaling algorithm to be used. |
 
 #### Triggered events
 | Event | When |

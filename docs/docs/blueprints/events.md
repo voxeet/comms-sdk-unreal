@@ -18,7 +18,7 @@ Triggered by [**Dolby.io Get Audio Input Devices**](functions.md#dolbyio-get-aud
 #### Data provided
 | Provides | Type | Description |
 |---|:---|:---|
-| **Devices** | array of [Dolby.io Audio Device](types.md#dolbyio-audio-device) | The available devices. |
+| **Devices** | array of [Dolby.io Audio Device](types.mdx#dolbyio-audio-device) | The available devices. |
 
 ---
 
@@ -41,7 +41,7 @@ Triggered by [**Dolby.io Get Audio Output Devices**](functions.md#dolbyio-get-au
 #### Data provided
 | Provides | Type | Description |
 |---|:---|:---|
-| **Devices** | array of [Dolby.io Audio Device](types.md#dolbyio-audio-device) | The available devices. |
+| **Devices** | array of [Dolby.io Audio Device](types.mdx#dolbyio-audio-device) | The available devices. |
 
 ---
 
@@ -65,7 +65,7 @@ Triggered by [**Dolby.io Set Input Device**](functions.md#dolbyio-set-input-devi
 | Provides | Type | Description |
 |---|:---|:---|
 | **Is None** | bool | If this value is "true", then there is no device set and the information in the Optional Device parameter is meaningless. |
-| **Optional Device** | [Dolby.io Audio Device](types.md#dolbyio-audio-device) | The current device. |
+| **Optional Device** | [Dolby.io Audio Device](types.mdx#dolbyio-audio-device) | The current device. |
 
 ---
 
@@ -77,7 +77,7 @@ Triggered by [**Dolby.io Get Current Audio Input Device**](functions.md#dolbyio-
 | Provides | Type | Description |
 |---|:---|:---|
 | **Is None** | bool | If this value is "true", then there is no device set and the information in the Optional Device parameter is meaningless. |
-| **Optional Device** | [Dolby.io Audio Device](types.md#dolbyio-audio-device) | The current device. |
+| **Optional Device** | [Dolby.io Audio Device](types.mdx#dolbyio-audio-device) | The current device. |
 
 ---
 
@@ -89,7 +89,7 @@ Triggered by [**Dolby.io Set Output Device**](functions.md#dolbyio-set-output-de
 | Provides | Type | Description |
 |---|:---|:---|
 | **Is None** | bool | If this value is "true", then there is no device set and the information in the Optional Device parameter is meaningless. |
-| **Optional Device** | [Dolby.io Audio Device](types.md#dolbyio-audio-device) | The current device. |
+| **Optional Device** | [Dolby.io Audio Device](types.mdx#dolbyio-audio-device) | The current device. |
 
 ---
 
@@ -101,7 +101,7 @@ Triggered by [**Dolby.io Get Current Audio Output Device**](functions.md#dolbyio
 | Provides | Type | Description |
 |---|:---|:---|
 | **Is None** | bool | If this value is "true", then there is no device set and the information in the Optional Device parameter is meaningless. |
-| **Optional Device** | [Dolby.io Audio Device](types.md#dolbyio-audio-device) | The current device. |
+| **Optional Device** | [Dolby.io Audio Device](types.mdx#dolbyio-audio-device) | The current device. |
 
 ---
 
@@ -135,8 +135,8 @@ Triggered automatically when a remote participant is added to the conference.
 #### Data provided
 | Provides | Type | Description |
 |---|:---|:---|
-| **Status** | [Dolby.io Participant Status](types.md#dolbyio-participant-status) | The status of the participant. |
-| **Participant Info** | [Dolby.io Participant Info](types.md#dolbyio-participant-info) | Information about the participant. |
+| **Status** | [Dolby.io Participant Status](types.mdx#dolbyio-participant-status) | The status of the participant. |
+| **Participant Info** | [Dolby.io Participant Info](types.mdx#dolbyio-participant-info) | Information about the participant. |
 
 ---
 
@@ -147,8 +147,8 @@ Triggered automatically when a remote participant's status is updated. For more 
 #### Data provided
 | Provides | Type | Description |
 |---|:---|:---|
-| **Status** | [Dolby.io Participant Status](types.md#dolbyio-participant-status) | The status of the participant. |
-| **Participant Info** | [Dolby.io Participant Info](types.md#dolbyio-participant-info) | Information about the participant. |
+| **Status** | [Dolby.io Participant Status](types.mdx#dolbyio-participant-status) | The status of the participant. |
+| **Participant Info** | [Dolby.io Participant Info](types.mdx#dolbyio-participant-info) | Information about the participant. |
 
 ---
 
@@ -159,7 +159,7 @@ Triggered by [**Dolby.io Get Screenshare Sources**](functions.md#dolbyio-get-scr
 #### Data provided
 | Provides | Type | Description |
 |---|:---|:---|
-| **Sources** | array of [Dolby.io Screenshare Source](types.md#dolbyio-screenshare-source) | The available screen share sources. |
+| **Sources** | array of [Dolby.io Screenshare Source](types.mdx#dolbyio-screenshare-source) | The available screen share sources. |
 
 ---
 
@@ -209,7 +209,7 @@ Triggered by [**Dolby.io Get Video Devices**](functions.md#dolbyio-get-video-dev
 #### Data provided
 | Provides | Type | Description |
 |---|:---|:---|
-| **Devices** | array of [Dolby.io Video Device](types.md#dolbyio-video-device) | The available devices. |
+| **Devices** | array of [Dolby.io Video Device](types.mdx#dolbyio-video-device) | The available devices. |
 
 ---
 
@@ -242,7 +242,7 @@ Triggered automatically when a video track is added.
 #### Data provided
 | Provides | Type | Description |
 |---|:---|:---|
-| **Video Track** | [Dolby.io Video Track](types.md#dolbyio-video-track) | Information about the video track. |
+| **Video Track** | [Dolby.io Video Track](types.mdx#dolbyio-video-track) | Information about the video track. |
 
 ---
 
@@ -253,7 +253,7 @@ Triggered automatically when a video track is disabled as a result of the video 
 #### Data provided
 | Provides | Type | Description |
 |---|:---|:---|
-| **Video Track** | [Dolby.io Video Track](types.md#dolbyio-video-track) | Information about the video track. |
+| **Video Track** | [Dolby.io Video Track](types.mdx#dolbyio-video-track) | Information about the video track. |
 
 ---
 
@@ -264,7 +264,7 @@ Triggered automatically when a video track is enabled as a result of the video f
 #### Data provided
 | Provides | Type | Description |
 |---|:---|:---|
-| **Video Track** | [Dolby.io Video Track](types.md#dolbyio-video-track) | Information about the video track. |
+| **Video Track** | [Dolby.io Video Track](types.mdx#dolbyio-video-track) | Information about the video track. |
 
 ---
 
@@ -275,6 +275,6 @@ Triggered automatically when a video track is removed.
 #### Data provided
 | Provides | Type | Description |
 |---|:---|:---|
-| **Video Track** | [Dolby.io Video Track](types.md#dolbyio-video-track) | Information about the video track. |
+| **Video Track** | [Dolby.io Video Track](types.mdx#dolbyio-video-track) | Information about the video track. |
 
 ---
