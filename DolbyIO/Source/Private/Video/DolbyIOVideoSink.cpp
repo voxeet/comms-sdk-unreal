@@ -27,6 +27,15 @@ namespace DolbyIO
 
 	FVideoSink::FVideoSink(const FString& VideoTrackID) : VideoTrackID(VideoTrackID) {}
 
+	void FVideoSink::OnTextureCreated(FOnTextureCreated OnTextureCreated)
+	{
+		if (Texture)
+		{
+			return OnTextureCreated();
+		}
+		OnTexCreated = MoveTemp(OnTextureCreated);
+	}
+
 	UTexture2D* FVideoSink::GetTexture()
 	{
 		return Texture ? Texture->GetTexture() : nullptr;
@@ -96,6 +105,7 @@ namespace DolbyIO
 		          });
 		TexCreated->Wait();
 		FGenericPlatformProcess::ReturnSynchEventToPool(TexCreated);
+		OnTexCreated();
 		DLB_UE_LOG("Created texture %u for video track ID %s %dx%d", GetTexture()->GetUniqueID(), *VideoTrackID, Width,
 		           Height);
 	}
