@@ -438,6 +438,10 @@ private:
 	void ToggleInputMute();
 	void ToggleOutputMute();
 
+	void BroadcastVideoTrackAdded(const FDolbyIOVideoTrack& VideoTrack);
+	void BroadcastVideoTrackEnabled(const FDolbyIOVideoTrack& VideoTrack);
+	void ProcessBufferedVideoTracks(const FString& ParticipantID);
+
 	void SetLocationUsingFirstPlayer();
 	void SetLocalPlayerLocationImpl(const FVector& Location);
 	void SetRotationUsingFirstPlayer();
@@ -450,7 +454,8 @@ private:
 	FString ConferenceID;
 	EDolbyIOConnectionMode ConnectionMode;
 	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
-	TMap<FString, TArray<FDolbyIOVideoTrack>> BufferedVideoTracks;
+	TMap<FString, TArray<FDolbyIOVideoTrack>> BufferedAddedVideoTracks;
+	TMap<FString, TArray<FDolbyIOVideoTrack>> BufferedEnabledVideoTracks;
 	TMap<FString, FDolbyIOParticipantInfo> RemoteParticipants;
 	FCriticalSection RemoteParticipantsLock;
 

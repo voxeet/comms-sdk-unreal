@@ -117,17 +117,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            }
 
 			            BroadcastEvent(OnParticipantAdded, Info.Status, Info);
-
-			            if (TArray<FDolbyIOVideoTrack>* ParticipantTracks = BufferedVideoTracks.Find(Info.UserID))
-			            {
-				            for (const FDolbyIOVideoTrack& VideoTrack : *ParticipantTracks)
-				            {
-					            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID,
-					                       *VideoTrack.ParticipantID);
-					            BroadcastEvent(OnVideoTrackAdded, VideoTrack);
-				            }
-				            BufferedVideoTracks.Remove(Info.UserID);
-			            }
+			            ProcessBufferedVideoTracks(Info.UserID);
 		            });
 	        })
 	    .then(
@@ -198,13 +188,14 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            FScopeLock Lock{&RemoteParticipantsLock};
 			            if (RemoteParticipants.Contains(VideoTrack.ParticipantID))
 			            {
-				            DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID,
-				                       *VideoTrack.ParticipantID);
-				            BroadcastEvent(OnVideoTrackAdded, VideoTrack);
+				            VideoSinks[VideoTrack.TrackID]->OnTextureCreated([this, VideoTrack]
+				                                                             { BroadcastVideoTrackAdded(VideoTrack); });
 			            }
 			            else
 			            {
-				            BufferedVideoTracks.FindOrAdd(VideoTrack.ParticipantID).Add(VideoTrack);
+				            DLB_UE_LOG("Buffering video track added: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID,
+				                       *VideoTrack.ParticipantID);
+				            BufferedAddedVideoTracks.FindOrAdd(VideoTrack.ParticipantID).Add(VideoTrack);
 			            }
 		            });
 	        })
@@ -269,26 +260,33 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 #endif
 	        {
 		        using namespace dolbyio::comms::utils;
-		        vfs_event::add_event_handler(*Sdk,
-		                                     [this](const vfs_event& Event)
-		                                     {
-			                                     for (const auto& TrackMapItem : Event.new_enabled)
-			                                     {
-				                                     const FDolbyIOVideoTrack VideoTrack =
-				                                         ToFDolbyIOVideoTrack(TrackMapItem);
-				                                     DLB_UE_LOG("Video track ID %s for participant ID %s enabled",
-				                                                *VideoTrack.TrackID, *VideoTrack.ParticipantID);
-				                                     BroadcastEvent(OnVideoTrackEnabled, VideoTrack);
-			                                     }
-			                                     for (const auto& TrackMapItem : Event.new_disabled)
-			                                     {
-				                                     const FDolbyIOVideoTrack VideoTrack =
-				                                         ToFDolbyIOVideoTrack(TrackMapItem);
-				                                     DLB_UE_LOG("Video track ID %s for participant ID %s disabled",
-				                                                *VideoTrack.TrackID, *VideoTrack.ParticipantID);
-				                                     BroadcastEvent(OnVideoTrackDisabled, VideoTrack);
-			                                     }
-		                                     });
+		        vfs_event::add_event_handler(
+		            *Sdk,
+		            [this](const vfs_event& Event)
+		            {
+			            for (const auto& TrackMapItem : Event.new_enabled)
+			            {
+				            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(TrackMapItem);
+
+				            if (GetTexture(VideoTrack.TrackID))
+				            {
+					            BroadcastVideoTrackEnabled(VideoTrack);
+				            }
+				            else
+				            {
+					            DLB_UE_LOG("Buffering video track enabled: TrackID=%s ParticipantID=%s",
+					                       *VideoTrack.TrackID, *VideoTrack.ParticipantID);
+					            BufferedEnabledVideoTracks.FindOrAdd(VideoTrack.ParticipantID).Add(VideoTrack);
+				            }
+			            }
+			            for (const auto& TrackMapItem : Event.new_disabled)
+			            {
+				            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(TrackMapItem);
+				            DLB_UE_LOG("Video track ID %s for participant ID %s disabled", *VideoTrack.TrackID,
+				                       *VideoTrack.ParticipantID);
+				            BroadcastEvent(OnVideoTrackDisabled, VideoTrack);
+			            }
+		            });
 
 		        DLB_UE_LOG("Initialized");
 		        BroadcastEvent(OnInitialized);
@@ -609,6 +607,52 @@ void UDolbyIOSubsystem::DisableVideo()
 		        OnVideoDisabled.Broadcast(LocalCameraTrackID);
 	        })
 	    .on_error(MAKE_DLB_ERROR_HANDLER);
+}
+
+void UDolbyIOSubsystem::BroadcastVideoTrackAdded(const FDolbyIOVideoTrack& VideoTrack)
+{
+	DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID, *VideoTrack.ParticipantID);
+	BroadcastEvent(OnVideoTrackAdded, VideoTrack);
+}
+
+void UDolbyIOSubsystem::BroadcastVideoTrackEnabled(const FDolbyIOVideoTrack& VideoTrack)
+{
+	DLB_UE_LOG("Video track enabled: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID, *VideoTrack.ParticipantID);
+	BroadcastEvent(OnVideoTrackEnabled, VideoTrack);
+}
+
+void UDolbyIOSubsystem::ProcessBufferedVideoTracks(const FString& ParticipantID)
+{
+	if (TArray<FDolbyIOVideoTrack>* AddedTracks = BufferedAddedVideoTracks.Find(ParticipantID))
+	{
+		for (const FDolbyIOVideoTrack& AddedTrack : *AddedTracks)
+		{
+			VideoSinks[AddedTrack.TrackID]->OnTextureCreated(
+			    [=]
+			    {
+				    BroadcastVideoTrackAdded(AddedTrack);
+
+				    if (TArray<FDolbyIOVideoTrack>* EnabledTracks = BufferedEnabledVideoTracks.Find(ParticipantID))
+				    {
+					    TArray<FDolbyIOVideoTrack>& EnabledTracksRef = *EnabledTracks;
+					    for (int i = 0; i < EnabledTracksRef.Num(); ++i)
+					    {
+						    if (EnabledTracksRef[i].TrackID == AddedTrack.TrackID)
+						    {
+							    BroadcastVideoTrackEnabled(EnabledTracksRef[i]);
+							    EnabledTracksRef.RemoveAt(i);
+							    if (!EnabledTracksRef.Num())
+							    {
+								    BufferedEnabledVideoTracks.Remove(ParticipantID);
+							    }
+							    return;
+						    }
+					    }
+				    }
+			    });
+		}
+		BufferedAddedVideoTracks.Remove(ParticipantID);
+	}
 }
 
 UTexture2D* UDolbyIOSubsystem::GetTexture(const FString& VideoTrackID)
