@@ -5,6 +5,8 @@
 #include "Utils/DolbyIOCppSdk.h"
 
 #include "Containers/UnrealString.h"
+#include "DolbyIOTypes.h"
+#include "Misc/Optional.h"
 
 class UDolbyIOSubsystem;
 
@@ -26,14 +28,18 @@ namespace DolbyIO
 		void SetAudioInputDevice(const FString& NativeID);
 		void SetAudioOutputDevice(const FString& NativeID);
 		void GetVideoDevices();
+		void GetCurrentVideoDevice();
 
 		UDolbyIOSubsystem& GetSubsystem()
 		{
 			return Subsystem;
 		}
 
+		void SetCurrentVideoDevice(TOptional<FDolbyIOVideoDevice> Device);
+
 	private:
 		UDolbyIOSubsystem& Subsystem;
 		FDeviceManagement& DeviceManagement;
+		TOptional<FDolbyIOVideoDevice> CurrentVideoDevice;
 	};
 }

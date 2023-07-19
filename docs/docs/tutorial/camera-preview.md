@@ -26,7 +26,7 @@ Before you start, [set up](common-setup) your project.
 
 ## How it works
 
-`W_DolbyIOSampleMenu` is a sample widget whose "Video devices" combo box is filled using [`Get Video Devices`](../blueprints/functions#dolbyio-get-video-devices) (and an additional "None" device) each time the widget becomes visible. We also save the devices in a variable.
+`W_DolbyIOSampleMenu` is a sample widget whose "Video devices" combo box is filled using [`Get Video Devices`](../blueprints/functions#dolbyio-get-video-devices) (and an additional "None" device) each time the widget becomes visible. We also save the devices in a variable and use [`Get Current Video Device`](../blueprints/functions#dolbyio-get-current-video-device) to select the device that is currently in use.
 
 ![](../../static/img/camera-preview-combobox.png)
 

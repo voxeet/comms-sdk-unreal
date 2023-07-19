@@ -47,6 +47,10 @@ void UDolbyIOSubsystem::GetVideoDevices()
 {
 	DLB_DEVICES(OnGetVideoDevicesError)->GetVideoDevices();
 }
+void UDolbyIOSubsystem::GetCurrentVideoDevice()
+{
+	DLB_DEVICES(OnGetCurrentVideoDeviceError)->GetCurrentVideoDevice();
+}
 
 namespace DolbyIO
 {
@@ -236,5 +240,26 @@ namespace DolbyIO
 			        BroadcastEvent(Subsystem.OnVideoDevicesReceived, Devices);
 		        })
 		    .on_error(DLB_ERROR_HANDLER(Subsystem.OnGetVideoDevicesError));
+	}
+
+	void FDevices::GetCurrentVideoDevice()
+	{
+		DLB_UE_LOG("Getting current video device");
+		if (CurrentVideoDevice)
+		{
+			DLB_UE_LOG("Got current video device - %s, UniqueID=%s", *CurrentVideoDevice->Name.ToString(),
+			           *CurrentVideoDevice->UniqueID);
+			BroadcastEvent(Subsystem.OnCurrentVideoDeviceReceived, false, *CurrentVideoDevice);
+		}
+		else
+		{
+			DLB_UE_LOG("Got current video device - none");
+			BroadcastEvent(Subsystem.OnCurrentVideoDeviceReceived, true, FDolbyIOVideoDevice{});
+		}
+	}
+
+	void FDevices::SetCurrentVideoDevice(TOptional<FDolbyIOVideoDevice> Device)
+	{
+		CurrentVideoDevice = MoveTemp(Device);
 	}
 }

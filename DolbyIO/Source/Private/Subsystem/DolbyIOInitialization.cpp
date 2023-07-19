@@ -371,6 +371,9 @@ void UDolbyIOObserver::InitializeComponent()
 				DLB_BIND(OnVideoDevicesReceived);
 				DLB_BIND(OnGetVideoDevicesError);
 
+				DLB_BIND(OnCurrentVideoDeviceReceived);
+				DLB_BIND(OnGetCurrentVideoDeviceError);
+
 				DLB_BIND(OnCurrentAudioInputDeviceChanged);
 				DLB_BIND(OnSetAudioInputDeviceError);
 

@@ -105,6 +105,18 @@ Triggered by [**Dolby.io Get Current Audio Output Device**](functions.md#dolbyio
 
 ---
 
+## On Current Video Device Received
+
+Triggered by [**Dolby.io Get Current Video Device**](functions.md#dolbyio-get-current-video-device) when the device is received.
+
+#### Data provided
+| Provides | Type | Description |
+|---|:---|:---|
+| **Is None** | bool | If this value is "true", then there is no device set and the information in the Optional Device parameter is meaningless. |
+| **Optional Device** | [Dolby.io Video Device](types.mdx#dolbyio-video-device) | The current device. |
+
+---
+
 ## On Disconnected
 
 Triggered by [**Dolby.io Disconnect**](functions.md#dolbyio-disconnect) when the client is disconnected from the conference. The event is also triggered automatically after receiving an error that disconnected the client from the conference.
