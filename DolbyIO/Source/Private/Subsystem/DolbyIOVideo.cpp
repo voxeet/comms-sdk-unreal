@@ -2,6 +2,7 @@
 
 #include "DolbyIO.h"
 
+#include "DolbyIODevices.h"
 #include "Utils/DolbyIOBroadcastEvent.h"
 #include "Utils/DolbyIOConversions.h"
 #include "Utils/DolbyIOErrorHandler.h"
@@ -38,9 +39,10 @@ void UDolbyIOSubsystem::EnableVideo(const FDolbyIOVideoDevice& VideoDevice, bool
 	    .local()
 	    .start(ToSdkVideoDevice(VideoDevice), VideoFrameHandler)
 	    .then(
-	        [this]
+	        [this, VideoDevice]
 	        {
 		        bIsVideoEnabled = true;
+		        Devices->SetCurrentVideoDevice(VideoDevice);
 		        BroadcastEvent(OnVideoEnabled, LocalCameraTrackID);
 	        })
 	    .on_error(DLB_ERROR_HANDLER(OnEnableVideoError));
@@ -61,6 +63,7 @@ void UDolbyIOSubsystem::DisableVideo()
 	        [this]
 	        {
 		        bIsVideoEnabled = false;
+		        Devices->SetCurrentVideoDevice({});
 		        BroadcastEvent(OnVideoDisabled, LocalCameraTrackID);
 	        })
 	    .on_error(DLB_ERROR_HANDLER(OnDisableVideoError));

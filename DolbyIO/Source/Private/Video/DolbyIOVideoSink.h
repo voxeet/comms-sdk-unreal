@@ -13,8 +13,12 @@ namespace DolbyIO
 {
 	class FVideoSink final : public dolbyio::comms::video_sink
 	{
+		using FOnTextureCreated = TFunction<void(void)>;
+
 	public:
 		FVideoSink(const FString& VideoTrackID);
+
+		void OnTextureCreated(FOnTextureCreated OnTextureCreated);
 
 		UTexture2D* GetTexture();
 		void BindMaterial(UMaterialInstanceDynamic* Material);
@@ -31,5 +35,6 @@ namespace DolbyIO
 		TSharedPtr<class FVideoTexture> Texture;
 		TSet<UMaterialInstanceDynamic*> Materials;
 		const FString VideoTrackID;
+		FOnTextureCreated OnTexCreated = [] {};
 	};
 }

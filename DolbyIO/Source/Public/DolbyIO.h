@@ -45,6 +45,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentAudioOutputDeviceR
                                              const FDolbyIOAudioDevice&, OptionalDevice);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnVideoDevicesReceivedDelegate, const TArray<FDolbyIOVideoDevice>&,
                                             Devices);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentVideoDeviceReceivedDelegate, bool, IsNone,
+                                             const FDolbyIOVideoDevice&, OptionalDevice);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentAudioInputDeviceChangedDelegate, bool, IsNone,
                                              const FDolbyIOAudioDevice&, OptionalDevice);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentAudioOutputDeviceChangedDelegate, bool, IsNone,
@@ -275,6 +277,13 @@ public:
 	FDolbyIOOnErrorDelegate OnGetVideoDevicesError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void GetCurrentVideoDevice();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnCurrentVideoDeviceReceivedDelegate OnCurrentVideoDeviceReceived;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetCurrentVideoDeviceError;
+
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void UpdateUserMetadata(const FString& UserName, const FString& AvatarURL);
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnErrorDelegate OnUpdateUserMetadataError;
@@ -318,6 +327,10 @@ private:
 	void ToggleInputMute();
 	void ToggleOutputMute();
 
+	void BroadcastVideoTrackAdded(const FDolbyIOVideoTrack& VideoTrack);
+	void BroadcastVideoTrackEnabled(const FDolbyIOVideoTrack& VideoTrack);
+	void ProcessBufferedVideoTracks(const FString& ParticipantID);
+
 	void SetLocationUsingFirstPlayer();
 	void SetLocalPlayerLocationImpl(const FVector& Location);
 	void SetRotationUsingFirstPlayer();
@@ -333,7 +346,8 @@ private:
 	FString ConferenceID;
 	EDolbyIOConnectionMode ConnectionMode;
 	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
-	TMap<FString, TArray<FDolbyIOVideoTrack>> BufferedVideoTracks;
+	TMap<FString, TArray<FDolbyIOVideoTrack>> BufferedAddedVideoTracks;
+	TMap<FString, TArray<FDolbyIOVideoTrack>> BufferedEnabledVideoTracks;
 	TMap<FString, FDolbyIOParticipantInfo> RemoteParticipants;
 	FCriticalSection RemoteParticipantsLock;
 
@@ -563,6 +577,13 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnErrorDelegate OnGetVideoDevicesError;
 
+	/** Triggered when the current video device is received as a result of calling Get Current Video Device. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnCurrentVideoDeviceReceivedDelegate OnCurrentVideoDeviceReceived;
+	/** Triggered when errors occur after calling the Get Current Video Device function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetCurrentVideoDeviceError;
+
 	/** Triggered when the current audio input device is changed by the user or as a result of calling Set Audio Input
 	 * Device. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
@@ -746,6 +767,13 @@ private:
 	    DLB_DEFINE_FORWARDER(OnVideoDevicesReceived, Devices);
 	UFUNCTION()
 	void FwdOnGetVideoDevicesError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnGetVideoDevicesError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnCurrentVideoDeviceReceived(bool IsNone, const FDolbyIOVideoDevice& OptionalDevice)
+	    DLB_DEFINE_FORWARDER(OnCurrentVideoDeviceReceived, IsNone, OptionalDevice);
+	UFUNCTION()
+	void FwdOnGetCurrentVideoDeviceError(const FString& ErrorMsg)
+	    DLB_DEFINE_FORWARDER(OnGetCurrentVideoDeviceError, ErrorMsg);
 
 	UFUNCTION()
 	void FwdOnCurrentAudioInputDeviceChanged(bool IsNone, const FDolbyIOAudioDevice& OptionalDevice)
