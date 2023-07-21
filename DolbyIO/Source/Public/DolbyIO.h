@@ -153,6 +153,10 @@ namespace DolbyIO
 	class FErrorHandler;
 	class FVideoFrameHandler;
 	class FVideoSink;
+
+#if PLATFORM_ANDROID
+	class FSdkLogCallback;
+#endif
 }
 
 UCLASS(DisplayName = "Dolby.io Subsystem")
@@ -488,6 +492,10 @@ private:
 	bool bIsInputMuted = false;
 	bool bIsOutputMuted = false;
 	bool bIsVideoEnabled = false;
+#if PLATFORM_ANDROID
+	friend class DolbyIO::FSdkLogCallback;
+	bool bIsRtpStarted = false;
+#endif
 
 	FTimerHandle LocationTimerHandle;
 	FTimerHandle RotationTimerHandle;
