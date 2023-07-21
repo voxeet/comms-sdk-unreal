@@ -24,7 +24,7 @@ ANDROID_TOOLS_BUILD_GRADLE_VERSION=com.android.tools.build:gradle:7.3.1
           repositories {
             flatDir {
     </insert>
-    <insertValue value="dirs '$S(AbsPluginDir)/sdk-release-android'"/>
+    <insertValue value="dirs '$S(AbsPluginDir)/../sdk-release-android'"/>
     <insertNewline/>
     <insert>}}}}</insert>
   </baseBuildGradleAdditions>
@@ -32,7 +32,7 @@ ANDROID_TOOLS_BUILD_GRADLE_VERSION=com.android.tools.build:gradle:7.3.1
   <buildGradleAdditions>
     <insert>
       dependencies {
-        implementation(name: 'comms-sdk-android-cppsdk-noprefab-2.6.0', ext: 'aar')
+        implementation(name: 'comms-sdk-android-cppsdk-noprefab-2.7.0', ext: 'aar')
         implementation('org.jetbrains.kotlin:kotlin-stdlib:1.7.20')
       }
       android {
@@ -52,7 +52,7 @@ ANDROID_TOOLS_BUILD_GRADLE_VERSION=com.android.tools.build:gradle:7.3.1
         mavenCentral()
       }
       dependencies {
-        implementation('io.dolby:comms-sdk-android-cppsdk-noprefab:2.6.0')
+        implementation('io.dolby:comms-sdk-android-cppsdk-noprefab:2.7.0')
         implementation('org.jetbrains.kotlin:kotlin-stdlib:1.7.20')
       }
       android {

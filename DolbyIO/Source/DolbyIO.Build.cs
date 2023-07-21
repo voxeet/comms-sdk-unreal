@@ -114,8 +114,7 @@ public class DolbyIO : ModuleRules
 
             AdditionalPropertiesForReceipt.Add(
                 "AndroidPlugin",
-                Path.Combine(Utils.MakePathRelativeTo(PluginDirectory, Target.RelativeEnginePath),
-                             "DolbyIO.Android.xml"));
+                Path.Combine(Utils.MakePathRelativeTo(ModuleDirectory, Target.RelativeEnginePath), "DolbyIO_UPL.xml"));
         }
     }
 }
