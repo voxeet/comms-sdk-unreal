@@ -100,7 +100,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		return;
 	}
 
-	Sdk->register_component_version("unreal-sdk", "1.2.0-beta.3")
+	Sdk->register_component_version("unreal-sdk", "1.2.0-beta.4")
 	    .then(
 	        [this](sdk::component_data)
 	        {
