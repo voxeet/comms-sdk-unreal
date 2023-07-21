@@ -20,7 +20,7 @@ public class DolbyIO : ModuleRules
         {
             ReleaseDir += "-ubuntu-20.04-clang10-libc++10";
         }
-        if (Target.Platform == UnrealTargetPlatform.Android)
+        else if (Target.Platform == UnrealTargetPlatform.Android)
         {
             ReleaseDir += "-android";
         }
@@ -103,33 +103,19 @@ public class DolbyIO : ModuleRules
         }
         else if (Target.Platform == UnrealTargetPlatform.Android)
         {
-            LibDir = Path.Combine(SdkDir, "libs/android.arm64-v8a");
-
-            // since sdk & media are also provided by the regular app, just to make sure
-            // that nothing is duplicated in some way, we just need to "register" them
-            // for the compilation part. Not the actual package. Right now we just duplicate
-
-            string[] Libs = new string[] {
-                Path.Combine(LibDir, "libdolbyio_comms_sdk.so"),
-                Path.Combine(LibDir, "libdolbyio_comms_media.so"),
-                Path.Combine(LibDir, "libdolbyio_comms_sdk_android_cppsdk.so")
-            };
-
-            PublicAdditionalLibraries.AddRange(new string[] {
-                Path.Combine(LibDir, "libdolbyio_comms_sdk.so"),
-                Path.Combine(LibDir, "libdolbyio_comms_media.so"),
-                Path.Combine(LibDir, "libdolbyio_comms_sdk_android_cppsdk.so")
-            });
-            PublicDelayLoadDLLs.AddRange(Libs);
-
-            foreach (string Lib in Libs)
+            foreach (string Arch in new string[] { "arm64-v8a", "armeabi-v7a", "x86", "x86_64" })
             {
-                RuntimeDependencies.Add(Lib);
+                LibDir = Path.Combine(SdkDir, "libs", "android." + Arch);
+                string[] Libs = new string[] { Path.Combine(LibDir, "libdolbyio_comms_media.so"),
+                                               Path.Combine(LibDir, "libdolbyio_comms_sdk.so") };
+                PublicAdditionalLibraries.AddRange(Libs);
+                PublicDelayLoadDLLs.AddRange(Libs);
             }
 
             AdditionalPropertiesForReceipt.Add(
                 "AndroidPlugin",
-                Path.Combine(Utils.MakePathRelativeTo(PluginDirectory, Target.RelativeEnginePath), "DolbyIO.Android.xml"));
+                Path.Combine(Utils.MakePathRelativeTo(PluginDirectory, Target.RelativeEnginePath),
+                             "DolbyIO.Android.xml"));
         }
     }
 }
