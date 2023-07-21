@@ -84,6 +84,7 @@ void UDolbyIOSubsystem::ChangeScreenshareParameters(EDolbyIOScreenshareEncoderHi
 	{
 		return;
 	}
+
 	DLB_UE_LOG("Changing screenshare parameters to %s %s %s", *UEnum::GetValueAsString(EncoderHint),
 	           *UEnum::GetValueAsString(MaxResolution), *UEnum::GetValueAsString(DownscaleQuality));
 	Sdk->conference()
