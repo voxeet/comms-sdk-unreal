@@ -71,8 +71,8 @@ namespace DolbyIO
 	void FErrorHandler::LogException(const FString& Type, const FString& What) const
 	{
 		const FString ErrorMsg = Type + ": " + What;
-		DLB_UE_ERROR("Caught %s (conference status: %s, %s:%d)", *ErrorMsg,
-		             *ToString(DolbyIOSubsystem.ConferenceStatus), *File, Line);
+		DLB_UE_LOG_BASE(Error, "Caught %s (conference status: %s, %s:%d)", *ErrorMsg,
+		                *ToString(DolbyIOSubsystem.ConferenceStatus), *File, Line);
 		if (OnError)
 		{
 			BroadcastEvent(*OnError, ErrorMsg);
@@ -81,7 +81,7 @@ namespace DolbyIO
 
 	void FErrorHandler::Warn(const FDolbyIOOnErrorDelegate& OnError, const FString& Msg)
 	{
-		DLB_UE_WARN("%s", *Msg);
+		DLB_UE_LOG_BASE(Warning, "%s", *Msg);
 		BroadcastEvent(OnError, Msg);
 	}
 }
