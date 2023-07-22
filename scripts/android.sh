@@ -13,10 +13,14 @@ mkdir ${RELEASE_PATH}
 
 unzip ${AAR_PATH} -d ${AAR_TMP}
 
-cp -r ${AAR_TMP}/prefab/modules/sdk/* ${RELEASE_PATH}
+cp -r ${AAR_TMP}/prefab/modules/sdk/include ${RELEASE_PATH}
 
-for ARCH in arm64-v8a armeabi-v7a x86 x86_64
+for ARCH in arm64-v8a
 do
+  LIBS_PATH=libs/android.${ARCH}
+  mkdir -p ${RELEASE_PATH}/${LIBS_PATH}
+  cp -r ${AAR_TMP}/prefab/modules/sdk/${LIBS_PATH} ${RELEASE_PATH}/libs
+
   LIB_PATH=${AAR_TMP}/jni/${ARCH}
   cp ${LIB_PATH}/libdolbyio_comms_media.so ${LIB_PATH}/libdolbyio_comms_sdk_android_cppsdk.so ${RELEASE_PATH}/libs/android.${ARCH}
 done

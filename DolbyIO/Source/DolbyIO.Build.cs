@@ -103,14 +103,11 @@ public class DolbyIO : ModuleRules
         }
         else if (Target.Platform == UnrealTargetPlatform.Android)
         {
-            foreach (string Arch in new string[] { "arm64-v8a", "armeabi-v7a", "x86", "x86_64" })
-            {
-                LibDir = Path.Combine(SdkDir, "libs", "android." + Arch);
-                string[] Libs = new string[] { Path.Combine(LibDir, "libdolbyio_comms_media.so"),
-                                               Path.Combine(LibDir, "libdolbyio_comms_sdk.so") };
-                PublicAdditionalLibraries.AddRange(Libs);
-                PublicDelayLoadDLLs.AddRange(Libs);
-            }
+            LibDir = Path.Combine(SdkDir, "libs", "android.arm64-v8a");
+            string[] Libs = new string[] { Path.Combine(LibDir, "libdolbyio_comms_media.so"),
+                                           Path.Combine(LibDir, "libdolbyio_comms_sdk.so") };
+            PublicAdditionalLibraries.AddRange(Libs);
+            PublicDelayLoadDLLs.AddRange(Libs);
 
             AdditionalPropertiesForReceipt.Add(
                 "AndroidPlugin",
