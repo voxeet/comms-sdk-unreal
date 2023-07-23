@@ -20,7 +20,7 @@ Before you start, follow the [common setup](common-setup) tutorial.
 
 ## How it works
 
-`W_DolbyIOSampleMenu` is a sample widget whose "Audio input devices" and "Audio output devices" combo boxes are filled using [`Get Audio Input Devices`](../blueprints/functions#dolbyio-get-audio-input-devices) and [`Get Audio Output Devices`](../blueprints/functions#dolbyio-get-audio-output-devices) each time the widget becomes visible. We also save the input and output devices in variables and use [`Get Current Audio Input Device`](../blueprints/functions#dolbyio-get-current-audio-input-device) and [`Get Current Audio Output Device`](../blueprints/functions#dolbyio-get-current-audio-output-device) to select the devices that are currently in use.
+`W_DolbyIOSampleDeviceControls` is a sample widget whose "Audio input devices" and "Audio output devices" combo boxes are filled using [`Get Audio Input Devices`](../blueprints/functions#dolbyio-get-audio-input-devices) and [`Get Audio Output Devices`](../blueprints/functions#dolbyio-get-audio-output-devices). We also save the input and output devices in variables and use [`Get Current Audio Input Device`](../blueprints/functions#dolbyio-get-current-audio-input-device) and [`Get Current Audio Output Device`](../blueprints/functions#dolbyio-get-current-audio-output-device) to select the devices that are currently in use.
 
 ![](../../static/img/device-management-comboboxes.png)
 
