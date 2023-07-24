@@ -245,21 +245,20 @@ namespace DolbyIO
 	void FDevices::GetCurrentVideoDevice()
 	{
 		DLB_UE_LOG("Getting current video device");
-		if (CurrentVideoDevice)
-		{
-			DLB_UE_LOG("Got current video device - %s, UniqueID=%s", *CurrentVideoDevice->Name.ToString(),
-			           *CurrentVideoDevice->UniqueID);
-			BroadcastEvent(Subsystem.OnCurrentVideoDeviceReceived, false, *CurrentVideoDevice);
-		}
-		else
-		{
-			DLB_UE_LOG("Got current video device - none");
-			BroadcastEvent(Subsystem.OnCurrentVideoDeviceReceived, true, FDolbyIOVideoDevice{});
-		}
-	}
-
-	void FDevices::SetCurrentVideoDevice(TOptional<FDolbyIOVideoDevice> Device)
-	{
-		CurrentVideoDevice = MoveTemp(Device);
+		DeviceManagement.get_current_video_device()
+		    .then(
+		        [this](std::optional<camera_device> Device)
+		        {
+			        if (!Device)
+			        {
+				        DLB_UE_LOG("Got current video device - none");
+				        BroadcastEvent(Subsystem.OnCurrentVideoDeviceReceived, bIsDeviceNone, FDolbyIOVideoDevice{});
+				        return;
+			        }
+			        DLB_UE_LOG("Got current video device - %s", *ToString(*Device));
+			        BroadcastEvent(Subsystem.OnCurrentVideoDeviceReceived, !bIsDeviceNone,
+			                       ToFDolbyIOVideoDevice(*Device));
+		        })
+		    .on_error(DLB_ERROR_HANDLER(Subsystem.OnGetCurrentVideoDeviceError));
 	}
 }
