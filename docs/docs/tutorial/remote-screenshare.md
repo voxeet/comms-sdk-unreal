@@ -12,7 +12,7 @@ Before you start, follow the [common setup](common-setup) tutorial.
 
 ## Set up a remote screen share preview
 
-1. Find `BP_DolbyIOScreensharePlane` in the plugin's content in `Content Browser` and drag it onto the scene.
+1. Find `BP_DolbyIOScreensharePlane` in the `VideoSamples` folder of the plugin's content in `Content Browser` and drag it onto the scene.
 
 > **_NOTE:_** If you do not see this item, go to the `Content Browser` settings and tick `Show Plugin Content`.
 
