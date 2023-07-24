@@ -7,18 +7,20 @@
 #include "Utils/DolbyIOConversions.h"
 #include "Utils/DolbyIOLogging.h"
 
-using namespace dolbyio::comms;
-using namespace DolbyIO;
+#include "Misc/Paths.h"
 
 namespace DolbyIO
 {
-	FErrorHandler::FErrorHandler(int Line, UDolbyIOSubsystem& DolbyIOSubsystem)
-	    : Line(Line), DolbyIOSubsystem(DolbyIOSubsystem)
+	using namespace dolbyio::comms;
+
+	FErrorHandler::FErrorHandler(const FString& File, int Line, UDolbyIOSubsystem& DolbyIOSubsystem)
+	    : File(FPaths::GetCleanFilename(File)), Line(Line), DolbyIOSubsystem(DolbyIOSubsystem)
 	{
 	}
 
-	FErrorHandler::FErrorHandler(int Line, UDolbyIOSubsystem& DolbyIOSubsystem, const FDolbyIOOnErrorDelegate& OnError)
-	    : Line(Line), DolbyIOSubsystem(DolbyIOSubsystem), OnError(&OnError)
+	FErrorHandler::FErrorHandler(const FString& File, int Line, UDolbyIOSubsystem& DolbyIOSubsystem,
+	                             const FDolbyIOOnErrorDelegate& OnError)
+	    : File(FPaths::GetCleanFilename(File)), Line(Line), DolbyIOSubsystem(DolbyIOSubsystem), OnError(&OnError)
 	{
 	}
 
@@ -69,8 +71,8 @@ namespace DolbyIO
 	void FErrorHandler::LogException(const FString& Type, const FString& What) const
 	{
 		const FString ErrorMsg = Type + ": " + What;
-		DLB_UE_ERROR("Caught %s (conference status: %s, line: %d)", *ErrorMsg,
-		             *ToString(DolbyIOSubsystem.ConferenceStatus), Line);
+		DLB_UE_LOG_BASE(Error, "Caught %s (conference status: %s, %s:%d)", *ErrorMsg,
+		                *ToString(DolbyIOSubsystem.ConferenceStatus), *File, Line);
 		if (OnError)
 		{
 			BroadcastEvent(*OnError, ErrorMsg);
@@ -79,7 +81,7 @@ namespace DolbyIO
 
 	void FErrorHandler::Warn(const FDolbyIOOnErrorDelegate& OnError, const FString& Msg)
 	{
-		DLB_UE_WARN("%s", *Msg);
+		DLB_UE_LOG_BASE(Warning, "%s", *Msg);
 		BroadcastEvent(OnError, Msg);
 	}
 }

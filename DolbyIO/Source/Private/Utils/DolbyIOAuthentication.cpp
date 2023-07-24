@@ -26,7 +26,7 @@ namespace
 
 	void BroadcastError(const FGetDolbyIOTokenOutputPin& Delegate, const FString& ErrorMsg)
 	{
-		DLB_UE_ERROR("%s", *ErrorMsg);
+		DLB_UE_LOG_BASE(Error, "%s", *ErrorMsg);
 		Delegate.Broadcast("", ErrorMsg);
 	}
 }

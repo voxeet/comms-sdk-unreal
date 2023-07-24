@@ -132,6 +132,16 @@ namespace DolbyIO
 			return;
 		}
 
+#if !PLATFORM_MAC
+		if (VideoFrameBuffer->type() == video_frame_buffer::type::native)
+		{
+			if (std::shared_ptr<video_frame_buffer_i420_interface> BufferI420 = VideoFrameBuffer->to_i420())
+			{
+				VideoFrameBuffer = std::move(BufferI420);
+			}
+		}
+#endif
+
 		const int Width = VideoFrame.width();
 		const int Height = VideoFrame.height();
 		const int DestStride = Width * FVideoTexture::Stride;

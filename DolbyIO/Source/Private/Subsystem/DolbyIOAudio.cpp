@@ -114,7 +114,7 @@ void UDolbyIOSubsystem::SetAudioCaptureMode(EDolbyIONoiseReduction NoiseReductio
 {
 	if (!Sdk)
 	{
-		DLB_UE_WARN("Cannot set audio capture mode - not initialized");
+		DLB_WARNING(OnSetAudioCaptureModeError, "Cannot set audio capture mode - not initialized");
 		return;
 	}
 

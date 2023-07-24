@@ -53,7 +53,7 @@ void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source
 	           *Source.Title.ToString(), *UEnum::GetValueAsString(EncoderHint), *UEnum::GetValueAsString(MaxResolution),
 	           *UEnum::GetValueAsString(DownscaleQuality));
 	Sdk->conference()
-	    .start_screen_share(screen_share_source{ToStdString(Source.Title.ToString()), Source.ID,
+	    .start_screen_share(screen_share_source{ToStdString(Source.Title.ToString()), static_cast<intptr_t>(Source.ID),
 	                                            Source.bIsScreen ? screen_share_source::type::screen
 	                                                             : screen_share_source::type::window},
 	                        LocalScreenshareFrameHandler,
@@ -84,6 +84,7 @@ void UDolbyIOSubsystem::ChangeScreenshareParameters(EDolbyIOScreenshareEncoderHi
 	{
 		return;
 	}
+
 	DLB_UE_LOG("Changing screenshare parameters to %s %s %s", *UEnum::GetValueAsString(EncoderHint),
 	           *UEnum::GetValueAsString(MaxResolution), *UEnum::GetValueAsString(DownscaleQuality));
 	Sdk->conference()
