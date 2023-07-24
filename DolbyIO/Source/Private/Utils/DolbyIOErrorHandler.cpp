@@ -34,31 +34,42 @@ namespace DolbyIO
 		HandleError([] { throw; });
 	}
 
+#define DLB_CATCH(Exception)                                    \
+	catch (const dolbyio::comms::Exception& Ex)                 \
+	{                                                           \
+		LogException("dolbyio::comms::" #Exception, Ex.what()); \
+	}
 	void FErrorHandler::HandleError(TFunction<void()> Callee) const
 	try
 	{
 		Callee();
 	}
-	catch (const conference_state_exception& Ex)
-	{
-		LogException("dolbyio::comms::conference_state_exception", Ex.what());
-	}
-	catch (const invalid_token_exception& Ex)
-	{
-		LogException("dolbyio::comms::invalid_token_exception", Ex.what());
-	}
-	catch (const dvc_error_exception& Ex)
-	{
-		LogException("dolbyio::comms::dvc_error_exception", Ex.what());
-	}
-	catch (const peer_connection_failed_exception& Ex)
-	{
-		LogException("dolbyio::comms::peer_connection_failed_exception", Ex.what());
-	}
-	catch (const dolbyio::comms::exception& Ex)
-	{
-		LogException("dolbyio::comms::exception", Ex.what());
-	}
+	DLB_CATCH(async_operation_canceled)               // : exception
+	DLB_CATCH(certificate_exception)                  // : exception
+	DLB_CATCH(conference_state_exception)             // : conference_exception
+	DLB_CATCH(dvc_error_exception)                    // : media_engine_exception
+	DLB_CATCH(create_answer_exception)                // : media_engine_exception
+	DLB_CATCH(create_peer_connection_exception)       // : media_engine_exception
+	DLB_CATCH(ice_candidate_exception)                // : media_engine_exception
+	DLB_CATCH(media_stream_exception)                 // : media_engine_exception
+	DLB_CATCH(peer_connection_disconnected_exception) // : media_engine_exception
+	DLB_CATCH(peer_connection_failed_exception)       // : media_engine_exception
+	DLB_CATCH(sdp_exception)                          // : media_engine_exception
+	DLB_CATCH(media_engine_exception)                 // : conference_exception
+	DLB_CATCH(conference_exception)                   // : exception
+	DLB_CATCH(http_exception)                         // : io_exception
+	DLB_CATCH(invalid_token_exception)                // : restapi_exception
+	DLB_CATCH(restapi_exception)                      // : io_exception
+	DLB_CATCH(security_check_exception)               // : io_exception
+	DLB_CATCH(signaling_channel_exception)            // : io_exception
+	DLB_CATCH(io_exception)                           // : exception
+	DLB_CATCH(json_exception)                         // : exception
+	DLB_CATCH(jwt_exception)                          // : exception
+	DLB_CATCH(dvc_exception)                          // : media_exception
+	DLB_CATCH(media_exception)                        // : exception
+	DLB_CATCH(session_exception)                      // : exception
+	DLB_CATCH(spatial_placement_exception)            // : exception
+	DLB_CATCH(exception)
 	catch (const std::exception& Ex)
 	{
 		LogException("std::exception", Ex.what());
