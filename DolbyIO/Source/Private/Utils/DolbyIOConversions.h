@@ -18,6 +18,7 @@ namespace DolbyIO
 	FString ToString(const dolbyio::comms::audio_device& Device);
 	FString ToString(enum dolbyio::comms::audio_device::direction Direction);
 	FString ToString(const dolbyio::comms::camera_device& Device);
+	FString ToString(const dolbyio::comms::screen_share_source& Source);
 
 	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<dolbyio::comms::participant_status> Status);
 	FDolbyIOParticipantInfo ToFDolbyIOParticipantInfo(const dolbyio::comms::participant_info& Info);
@@ -47,4 +48,7 @@ namespace DolbyIO
 
 	FDolbyIOAudioDevice ToFDolbyIOAudioDevice(const dolbyio::comms::audio_device& Device);
 	FDolbyIOVideoDevice ToFDolbyIOVideoDevice(const dolbyio::comms::camera_device& Device);
+
+	FDolbyIOScreenshareSource ToFDolbyIOScreenshareSource(const dolbyio::comms::screen_share_source& Source);
+	dolbyio::comms::screen_share_source ToSdkScreenshareSource(const FDolbyIOScreenshareSource& Source);
 }

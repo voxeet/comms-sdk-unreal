@@ -28,10 +28,7 @@ void UDolbyIOSubsystem::GetScreenshareSources()
 		        TArray<FDolbyIOScreenshareSource> Sources;
 		        for (const screen_share_source& Source : ScreenShareSource)
 		        {
-			        Sources.Add(FDolbyIOScreenshareSource{
-			            Source.id, Source.type == screen_share_source::type::screen,
-			            Source.title.empty() ? FText::FromString(FString{"Screen "} + FString::FromInt(Source.id + 1))
-			                                 : ToFText(Source.title)});
+			        Sources.Add(ToFDolbyIOScreenshareSource(Source));
 		        }
 		        BroadcastEvent(OnScreenshareSourcesReceived, Sources);
 	        })
@@ -49,14 +46,12 @@ void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source
 		return;
 	}
 
-	DLB_UE_LOG("Starting screenshare using source: ID=%d IsScreen=%d Title=%s %s %s %s", Source.ID, Source.bIsScreen,
-	           *Source.Title.ToString(), *UEnum::GetValueAsString(EncoderHint), *UEnum::GetValueAsString(MaxResolution),
+	const screen_share_source SdkSource = ToSdkScreenshareSource(Source);
+	DLB_UE_LOG("Starting screenshare using source: %s %s %s %s", *ToString(SdkSource),
+	           *UEnum::GetValueAsString(EncoderHint), *UEnum::GetValueAsString(MaxResolution),
 	           *UEnum::GetValueAsString(DownscaleQuality));
 	Sdk->conference()
-	    .start_screen_share(screen_share_source{ToStdString(Source.Title.ToString()), static_cast<intptr_t>(Source.ID),
-	                                            Source.bIsScreen ? screen_share_source::type::screen
-	                                                             : screen_share_source::type::window},
-	                        LocalScreenshareFrameHandler,
+	    .start_screen_share(SdkSource, LocalScreenshareFrameHandler,
 	                        ToSdkContentInfo(EncoderHint, MaxResolution, DownscaleQuality))
 	    .then([this] { BroadcastEvent(OnScreenshareStarted, LocalScreenshareTrackID); })
 	    .on_error(DLB_ERROR_HANDLER(OnStartScreenshareError));
