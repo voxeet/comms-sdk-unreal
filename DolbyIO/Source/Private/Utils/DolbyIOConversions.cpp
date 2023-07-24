@@ -299,6 +299,19 @@ namespace DolbyIO
 		return {ToSdkNoiseReduction(NoiseReduction), ToSdkVoiceFont(VoiceFont)};
 	}
 
+	video_codec ToSdkVideoCodec(EDolbyIOVideoCodec Codec)
+	{
+		switch (Codec)
+		{
+			case EDolbyIOVideoCodec::H264:
+				return video_codec::h264;
+			case EDolbyIOVideoCodec::VP8:
+				return video_codec::vp8;
+			default:
+				return video_codec::none;
+		}
+	}
+
 	FSdkNativeDeviceID ToSdkNativeDeviceID(const FString& ID)
 	{
 #if PLATFORM_WINDOWS

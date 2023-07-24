@@ -91,11 +91,12 @@ public:
 	FDolbyIOOnErrorDelegate OnSetTokenError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void Connect(
-	    const FString& ConferenceName = "unreal", const FString& UserName = "", const FString& ExternalID = "",
-	    const FString& AvatarURL = "", EDolbyIOConnectionMode ConnectionMode = EDolbyIOConnectionMode::Active,
-	    EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared, int MaxVideoStreams = 25,
-	    EDolbyIOVideoForwardingStrategy VideoForwardingStrategy = EDolbyIOVideoForwardingStrategy::LastSpeaker);
+	void Connect(const FString& ConferenceName = "unreal", const FString& UserName = "", const FString& ExternalID = "",
+	             const FString& AvatarURL = "", EDolbyIOConnectionMode ConnectionMode = EDolbyIOConnectionMode::Active,
+	             EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared,
+	             int MaxVideoStreams = 25,
+	             EDolbyIOVideoForwardingStrategy VideoForwardingStrategy = EDolbyIOVideoForwardingStrategy::LastSpeaker,
+	             EDolbyIOVideoCodec VideoCodec = EDolbyIOVideoCodec::H264);
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnConnectedDelegate OnConnected;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
