@@ -1081,6 +1081,33 @@ public:
 	{
 		DLB_EXECUTE_SUBSYSTEM_METHOD(SetAudioCaptureMode, NoiseReduction, VoiceFont);
 	}
+
+	/** Sends a message to the current conference. The message size is limited to 16KB.
+	 *
+	 * @param Message - The message to send.
+	 * @param ParticipantIDs - The participants to whom the message should be sent. If an empty array is provided, the
+	 * message will be broadcast to all participants.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Send Message"))
+	static void SendMessage(const UObject* WorldContextObject, const FString& Message,
+	                        const TArray<FString>& ParticipantIDs)
+	{
+		DLB_EXECUTE_SUBSYSTEM_METHOD(SendMessage, Message, ParticipantIDs);
+	}
+
+	/** Sends a message to all participants in the current conference. The message size is limited to 16KB.
+	 *
+	 * This function calls Send Message with an empty array of selected participants.
+	 *
+	 * @param Message - The message to send.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Broadcast Message"))
+	static void BroadcastMessage(const UObject* WorldContextObject, const FString& Message)
+	{
+		DLB_EXECUTE_SUBSYSTEM_METHOD(SendMessage, Message, {});
+	}
 };
 
 #undef DLB_EXECUTE_RETURNING_SUBSYSTEM_METHOD

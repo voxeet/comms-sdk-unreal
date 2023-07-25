@@ -242,6 +242,27 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	    .then(
 	        [this](event_handler_id)
 	        {
+		        return Sdk->conference().add_event_handler(
+		            [this](const conference_message_received& Event)
+		            {
+			            const FString Message = ToFString(Event.message);
+			            FScopeLock Lock{&RemoteParticipantsLock};
+			            if (const FDolbyIOParticipantInfo* Sender = RemoteParticipants.Find(ToFString(Event.user_id)))
+			            {
+				            DLB_UE_LOG("Message received: \"%s\" from %s (%s)", *Message, *Sender->Name,
+				                       *Sender->UserID);
+				            BroadcastEvent(OnMessageReceived, Message, *Sender);
+			            }
+			            else
+			            {
+				            DLB_UE_LOG("Message received: %s from unknown participant", *Message);
+				            BroadcastEvent(OnMessageReceived, Message, FDolbyIOParticipantInfo{});
+			            }
+		            });
+	        })
+	    .then(
+	        [this](event_handler_id)
+	        {
 		        Devices = MakeShared<FDevices>(*this, Sdk->device_management());
 		        return Devices->RegisterDeviceEventHandlers();
 	        })
@@ -400,6 +421,10 @@ void UDolbyIOObserver::InitializeComponent()
 				DLB_BIND(OnUpdateUserMetadataError);
 
 				DLB_BIND(OnSetAudioCaptureModeError);
+
+				DLB_BIND(OnSendMessageError);
+
+				DLB_BIND(OnMessageReceived);
 
 				FwdOnTokenNeeded();
 			}

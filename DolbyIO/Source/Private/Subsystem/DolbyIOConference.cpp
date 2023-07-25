@@ -204,3 +204,23 @@ void UDolbyIOSubsystem::UpdateUserMetadata(const FString& UserName, const FStrin
 	UserInfo.avatarUrl = ToStdString(AvatarURL);
 	Sdk->session().update(MoveTemp(UserInfo)).on_error(DLB_ERROR_HANDLER(OnUpdateUserMetadataError));
 }
+
+void UDolbyIOSubsystem::SendMessage(const FString& Message, const TArray<FString>& ParticipantIDs)
+{
+	if (!IsConnected())
+	{
+		DLB_WARNING(OnSendMessageError, "Cannot send message - not connected");
+		return;
+	}
+
+	DLB_UE_LOG("Sending message %s", *Message);
+	std::vector<std::string> SdkParticipantIDs;
+	SdkParticipantIDs.reserve(ParticipantIDs.Num());
+	for (const FString& ID : ParticipantIDs)
+	{
+		SdkParticipantIDs.emplace_back(ToStdString(ID));
+	}
+	Sdk->conference()
+	    .send(ToStdString(Message), MoveTemp(SdkParticipantIDs))
+	    .on_error(DLB_ERROR_HANDLER(OnSendMessageError));
+}
