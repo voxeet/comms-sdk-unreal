@@ -162,7 +162,7 @@ public:
 	FDolbyIOConnectOutputPin OnConnected;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOConnectOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(Connect, OnConnected, ConferenceName, UserName, ExternalID, AvatarURL, ConnectionMode,
@@ -177,7 +177,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(Connect, OnConnected, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(Connect, OnConnected, {}, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -214,7 +214,7 @@ public:
 	FDolbyIOConnectOutputPin OnConnected;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOConnectOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(DemoConference, OnConnected);
@@ -226,7 +226,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(DemoConference, OnConnected, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(DemoConference, OnConnected, {}, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -305,7 +305,7 @@ public:
 	FDolbyIOEnableVideoOutputPin OnVideoEnabled;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIODisconnectOutputPin OnError;
+	FDolbyIOEnableVideoOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(EnableVideo, OnVideoEnabled, VideoDevice, bBlurBackground);
@@ -317,7 +317,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(EnableVideo, OnVideoEnabled, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(EnableVideo, OnVideoEnabled, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -348,7 +348,7 @@ public:
 	FDolbyIODisableVideoOutputPin OnVideoDisabled;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIODisableVideoOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(DisableVideo, OnVideoDisabled)
@@ -360,7 +360,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(DisableVideo, OnVideoDisabled, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(DisableVideo, OnVideoDisabled, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -391,7 +391,7 @@ public:
 	FDolbyIOGetScreenshareSourcesOutputPin OnScreenshareSourcesReceived;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOGetScreenshareSourcesOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetScreenshareSources, OnScreenshareSourcesReceived);
@@ -403,7 +403,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(GetScreenshareSources, OnScreenshareSourcesReceived, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(GetScreenshareSources, OnScreenshareSourcesReceived, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -454,7 +454,7 @@ public:
 	FDolbyIOStartScreenshareOutputPin OnScreenshareStarted;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOStartScreenshareOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(StartScreenshare, OnScreenshareStarted, Source, EncoderHint, MaxResolution,
@@ -467,7 +467,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(StartScreenshare, OnScreenshareStarted, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(StartScreenshare, OnScreenshareStarted, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -500,7 +500,7 @@ public:
 	FDolbyIOStopScreenshareOutputPin OnScreenshareStopped;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOStopScreenshareOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(StopScreenshare, OnScreenshareStopped);
@@ -512,7 +512,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(StopScreenshare, OnScreenshareStopped, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(StopScreenshare, OnScreenshareStopped, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -541,7 +541,7 @@ public:
 	FDolbyIOGetAudioInputDevicesOutputPin OnAudioInputDevicesReceived;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOGetAudioInputDevicesOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetAudioInputDevices, OnAudioInputDevicesReceived);
@@ -553,7 +553,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(GetAudioInputDevices, OnAudioInputDevicesReceived, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(GetAudioInputDevices, OnAudioInputDevicesReceived, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -582,7 +582,7 @@ public:
 	FDolbyIOGetAudioOutputDevicesOutputPin OnAudioOutputDevicesReceived;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOGetAudioOutputDevicesOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetAudioOutputDevices, OnAudioOutputDevicesReceived);
@@ -594,7 +594,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(GetAudioOutputDevices, OnAudioOutputDevicesReceived, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(GetAudioOutputDevices, OnAudioOutputDevicesReceived, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -623,7 +623,7 @@ public:
 	FDolbyIOGetCurrentAudioInputDeviceOutputPin OnCurrentAudioInputDeviceReceived;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOGetCurrentAudioInputDeviceOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetCurrentAudioInputDevice, OnCurrentAudioInputDeviceReceived);
@@ -636,7 +636,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(GetCurrentAudioInputDevice, OnCurrentAudioInputDeviceReceived, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(GetCurrentAudioInputDevice, OnCurrentAudioInputDeviceReceived, {}, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -665,7 +665,7 @@ public:
 	FDolbyIOGetCurrentAudioOutputDeviceOutputPin OnCurrentAudioOutputDeviceReceived;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOGetCurrentAudioOutputDeviceOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetCurrentAudioOutputDevice, OnCurrentAudioOutputDeviceReceived);
@@ -678,7 +678,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(GetCurrentAudioOutputDevice, OnCurrentAudioOutputDeviceReceived, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(GetCurrentAudioOutputDevice, OnCurrentAudioOutputDeviceReceived, {}, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -707,7 +707,7 @@ public:
 	FDolbyIOGetVideoDevicesOutputPin OnVideoDevicesReceived;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOGetVideoDevicesOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetVideoDevices, OnVideoDevicesReceived);
@@ -719,7 +719,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(GetVideoDevices, OnVideoDevicesReceived, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(GetVideoDevices, OnVideoDevicesReceived, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -748,7 +748,7 @@ public:
 	FDolbyIOGetCurrentVideoDeviceOutputPin OnCurrentVideoDeviceReceived;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOGetCurrentVideoDeviceOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetCurrentVideoDevice, OnCurrentVideoDeviceReceived);
@@ -760,7 +760,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(GetCurrentVideoDevice, OnCurrentVideoDeviceReceived, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(GetCurrentVideoDevice, OnCurrentVideoDeviceReceived, {}, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
