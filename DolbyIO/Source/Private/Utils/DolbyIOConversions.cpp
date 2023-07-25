@@ -71,6 +71,12 @@ namespace DolbyIO
 		};
 	}
 
+	FString ToString(const audio_device& Device)
+	{
+		return FString::Printf(TEXT("%s, direction: %s, native_id: %s"), *ToFText(Device.name()).ToString(),
+		                       *ToString(Device.direction()), *ToUnrealDeviceID(Device.native_id()));
+	}
+
 	FString ToString(enum audio_device::direction Direction)
 	{
 		switch (Direction)
@@ -87,10 +93,10 @@ namespace DolbyIO
 		}
 	}
 
-	FString ToString(const audio_device& Device)
+	FString ToString(const camera_device& Device)
 	{
-		return FString::Printf(TEXT("%s, direction: %s, native_id: %s"), *ToFText(Device.name()).ToString(),
-		                       *ToString(Device.direction()), *ToUnrealDeviceID(Device.native_id()));
+		return FString::Printf(TEXT("%s, unique_id: %s"), *ToFText(Device.display_name).ToString(),
+		                       *ToFText(Device.unique_id).ToString());
 	}
 
 	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<participant_status> Status)
