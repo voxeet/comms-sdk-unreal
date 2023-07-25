@@ -358,6 +358,9 @@ void UDolbyIOObserver::InitializeComponent()
 
 				DLB_BIND(OnChangeScreenshareParametersError);
 
+				DLB_BIND(OnCurrentScreenshareSourceReceived);
+				DLB_BIND(OnGetCurrentScreenshareSourceError);
+
 				DLB_BIND(OnActiveSpeakersChanged);
 
 				DLB_BIND(OnAudioLevelsChanged);

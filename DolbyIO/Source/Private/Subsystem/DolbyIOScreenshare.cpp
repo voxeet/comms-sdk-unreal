@@ -86,3 +86,32 @@ void UDolbyIOSubsystem::ChangeScreenshareParameters(EDolbyIOScreenshareEncoderHi
 	    .screen_share_content_info(ToSdkContentInfo(EncoderHint, MaxResolution, DownscaleQuality))
 	    .on_error(DLB_ERROR_HANDLER(OnChangeScreenshareParametersError));
 }
+
+void UDolbyIOSubsystem::GetCurrentScreenshareSource()
+{
+	constexpr static bool bIsSourceNone = true;
+
+	if (!Sdk)
+	{
+		DLB_WARNING(OnGetCurrentScreenshareSourceError, "Cannot get current screenshare source - not initialized");
+		return;
+	}
+
+	DLB_UE_LOG("Getting current screenshare source");
+	Sdk->device_management()
+	    .get_current_screen_share_source()
+	    .then(
+	        [this](std::optional<screen_share_source> Source)
+	        {
+		        if (!Source)
+		        {
+			        DLB_UE_LOG("Got current screenshare source - none");
+			        BroadcastEvent(OnCurrentScreenshareSourceReceived, bIsSourceNone, FDolbyIOScreenshareSource{});
+			        return;
+		        }
+		        DLB_UE_LOG("Got current screenshare source - %s", *ToString(*Source));
+		        BroadcastEvent(OnCurrentScreenshareSourceReceived, !bIsSourceNone,
+		                       ToFDolbyIOScreenshareSource(*Source));
+	        })
+	    .on_error(DLB_ERROR_HANDLER(OnGetScreenshareSourcesError));
+}

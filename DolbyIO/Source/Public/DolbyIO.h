@@ -35,6 +35,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnAudioLevelsChangedDelegat
                                              ActiveSpeakers, const TArray<float>&, AudioLevels);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnScreenshareSourcesReceivedDelegate,
                                             const TArray<FDolbyIOScreenshareSource>&, Sources);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentScreenshareSourceReceivedDelegate, bool, IsNone,
+                                             const FDolbyIOScreenshareSource&, OptionalSource);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnAudioInputDevicesReceivedDelegate,
                                             const TArray<FDolbyIOAudioDevice>&, Devices);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnAudioOutputDevicesReceivedDelegate,
@@ -204,6 +206,13 @@ public:
 	    EDolbyIOScreenshareDownscaleQuality DownscaleQuality = EDolbyIOScreenshareDownscaleQuality::Low);
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnErrorDelegate OnChangeScreenshareParametersError;
+
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void GetCurrentScreenshareSource();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnCurrentScreenshareSourceReceivedDelegate OnCurrentScreenshareSourceReceived;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetCurrentScreenshareSourceError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetLocalPlayerLocation(const FVector& Location);
@@ -512,6 +521,14 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnErrorDelegate OnChangeScreenshareParametersError;
 
+	/** Triggered when the current screenshare source is received as a result of calling Get Current Screenshare Source.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnCurrentScreenshareSourceReceivedDelegate OnCurrentScreenshareSourceReceived;
+	/** Triggered when errors occur after calling the Get Current Screenshare Source function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetCurrentScreenshareSourceError;
+
 	/** Triggered when participants start or stop speaking. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnActiveSpeakersChangedDelegate OnActiveSpeakersChanged;
@@ -710,6 +727,13 @@ private:
 	UFUNCTION()
 	void FwdOnChangeScreenshareParametersError(const FString& ErrorMsg)
 	    DLB_DEFINE_FORWARDER(OnChangeScreenshareParametersError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnCurrentScreenshareSourceReceived(bool IsNone, const FDolbyIOScreenshareSource& OptionalSource)
+	    DLB_DEFINE_FORWARDER(OnCurrentScreenshareSourceReceived, IsNone, OptionalSource);
+	UFUNCTION()
+	void FwdOnGetCurrentScreenshareSourceError(const FString& ErrorMsg)
+	    DLB_DEFINE_FORWARDER(OnGetCurrentScreenshareSourceError, ErrorMsg);
 
 	UFUNCTION()
 	void FwdOnActiveSpeakersChanged(const TArray<FString>& ActiveSpeakers)

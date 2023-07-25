@@ -766,6 +766,49 @@ private:
 	const UObject* WorldContextObject;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FDolbyIOGetCurrentScreenshareSourceOutputPin, bool, IsNone,
+                                               const FDolbyIOScreenshareSource&, OptionalSource, const FString&,
+                                               ErrorMsg);
+
+UCLASS()
+class DOLBYIO_API UDolbyIOGetCurrentScreenshareSource : public UBlueprintAsyncActionBase
+{
+	GENERATED_BODY()
+
+public:
+	/** Gets the current screenshare source.
+	 *
+	 * Triggers On Current Screenshare Source Received if successful.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
+	                  DisplayName = "Dolby.io Get Current Screenshare Source"))
+	static UDolbyIOGetCurrentScreenshareSource* DolbyIOGetScreenshareSource(const UObject* WorldContextObject)
+	    DLB_DEFINE_CONSTRUCTOR(UDolbyIOGetCurrentScreenshareSource);
+
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOGetCurrentScreenshareSourceOutputPin OnCurrentScreenshareSourceReceived;
+
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOGetCurrentScreenshareSourceOutputPin OnError;
+
+private:
+	DLB_DEFINE_ACTIVATE_METHOD(GetCurrentScreenshareSource, OnCurrentScreenshareSourceReceived);
+
+	UFUNCTION()
+	void OnCurrentScreenshareSourceReceivedImpl(bool IsNone, const FDolbyIOScreenshareSource& OptionalSource)
+	    DLB_DEFINE_IMPL_METHOD(GetCurrentScreenshareSource, OnCurrentScreenshareSourceReceived, IsNone, OptionalSource,
+	                           "");
+
+	UFUNCTION()
+	void OnErrorImpl(const FString& ErrorMsg)
+	{
+		DLB_DEFINE_ERROR_METHOD(GetCurrentScreenshareSource, OnCurrentScreenshareSourceReceived, {}, {}, ErrorMsg);
+	}
+
+	const UObject* WorldContextObject;
+};
+
 // --------------------------------------------------------------------------------------------------------------------
 
 UCLASS()
