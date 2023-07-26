@@ -143,7 +143,8 @@ public:
 	    const FString& ExternalID = "", const FString& AvatarURL = "",
 	    EDolbyIOConnectionMode ConnectionMode = EDolbyIOConnectionMode::Active,
 	    EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared, int MaxVideoStreams = 25,
-	    EDolbyIOVideoForwardingStrategy VideoForwardingStrategy = EDolbyIOVideoForwardingStrategy::LastSpeaker)
+	    EDolbyIOVideoForwardingStrategy VideoForwardingStrategy = EDolbyIOVideoForwardingStrategy::LastSpeaker,
+	    EDolbyIOVideoCodec VideoCodec = EDolbyIOVideoCodec::H264)
 	{
 		UDolbyIOConnect* Self = NewObject<UDolbyIOConnect>();
 		Self->WorldContextObject = WorldContextObject;
@@ -155,6 +156,7 @@ public:
 		Self->SpatialAudioStyle = SpatialAudioStyle;
 		Self->MaxVideoStreams = MaxVideoStreams;
 		Self->VideoForwardingStrategy = VideoForwardingStrategy;
+		Self->VideoCodec = VideoCodec;
 		return Self;
 	}
 
@@ -166,7 +168,7 @@ public:
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(Connect, OnConnected, ConferenceName, UserName, ExternalID, AvatarURL, ConnectionMode,
-	                           SpatialAudioStyle, MaxVideoStreams, VideoForwardingStrategy);
+	                           SpatialAudioStyle, MaxVideoStreams, VideoForwardingStrategy, VideoCodec);
 
 	UFUNCTION()
 	void OnConnectedImpl(const FString& LocalParticipantID, const FString& ConferenceID)
@@ -189,6 +191,7 @@ private:
 	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
 	int MaxVideoStreams;
 	EDolbyIOVideoForwardingStrategy VideoForwardingStrategy;
+	EDolbyIOVideoCodec VideoCodec;
 };
 
 UCLASS()

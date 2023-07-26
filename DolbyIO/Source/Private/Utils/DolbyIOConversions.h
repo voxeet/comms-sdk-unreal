@@ -36,6 +36,7 @@ namespace DolbyIO
 	                                                                   EDolbyIOVoiceFont VoiceFont);
 	dolbyio::comms::log_level ToSdkLogLevel(EDolbyIOLogLevel Level);
 	dolbyio::comms::camera_device ToSdkVideoDevice(const FDolbyIOVideoDevice& VideoDevice);
+	dolbyio::comms::video_codec ToSdkVideoCodec(EDolbyIOVideoCodec Codec);
 
 	using FSdkNativeDeviceID =
 #if PLATFORM_WINDOWS
