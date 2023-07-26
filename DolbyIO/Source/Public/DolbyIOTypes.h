@@ -56,7 +56,7 @@ enum class EDolbyIOVideoForwardingStrategy : uint8
 UENUM(BlueprintType, DisplayName = "Dolby.io Video Codec")
 enum class EDolbyIOVideoCodec : uint8
 {
-	/** The H264 codec. */
+	/** The H.264 codec. */
 	H264,
 	/** The VP8 codec. */
 	VP8,
