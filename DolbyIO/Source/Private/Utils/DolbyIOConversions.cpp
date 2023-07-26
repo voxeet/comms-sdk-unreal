@@ -99,6 +99,12 @@ namespace DolbyIO
 		                       *ToFText(Device.unique_id).ToString());
 	}
 
+	FString ToString(const screen_share_source& Source)
+	{
+		return FString::Printf(TEXT("id=%d, type=%d, title=%s"), static_cast<int64>(Source.id), Source.type,
+		                       *(ToFText(Source.title).ToString()));
+	}
+
 	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<participant_status> Status)
 	{
 		if (Status)
@@ -326,5 +332,18 @@ namespace DolbyIO
 	camera_device ToSdkVideoDevice(const FDolbyIOVideoDevice& VideoDevice)
 	{
 		return camera_device{ToStdString(VideoDevice.Name.ToString()), ToStdString(VideoDevice.UniqueID)};
+	}
+
+	FDolbyIOScreenshareSource ToFDolbyIOScreenshareSource(const screen_share_source& Source)
+	{
+		return {Source.id, Source.type == screen_share_source::type::screen,
+		        Source.title.empty() ? FText::FromString(FString{"Screen "} + FString::FromInt(Source.id + 1))
+		                             : ToFText(Source.title)};
+	}
+
+	screen_share_source ToSdkScreenshareSource(const FDolbyIOScreenshareSource& Source)
+	{
+		return {ToStdString(Source.Title.ToString()), static_cast<intptr_t>(Source.ID),
+		        Source.bIsScreen ? screen_share_source::type::screen : screen_share_source::type::window};
 	}
 }

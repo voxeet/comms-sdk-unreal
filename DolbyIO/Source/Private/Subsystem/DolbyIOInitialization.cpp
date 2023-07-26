@@ -226,6 +226,22 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	    .then(
 	        [this](event_handler_id)
 	        {
+		        return Sdk->device_management().add_event_handler(
+		            [this](const screen_share_error& Event)
+		            {
+			            DLB_UE_LOG_BASE(
+			                Warning,
+			                "Received screen_share_error event source=%s type=%s description=%s force_stopped=%d",
+			                *ToString(Event.source), Event.type, *ToFString(Event.description), Event.force_stopped);
+			            if (Event.force_stopped)
+			            {
+				            StopScreenshare();
+			            }
+		            });
+	        })
+	    .then(
+	        [this](event_handler_id)
+	        {
 		        Devices = MakeShared<FDevices>(*this, Sdk->device_management());
 		        return Devices->RegisterDeviceEventHandlers();
 	        })
@@ -341,6 +357,9 @@ void UDolbyIOObserver::InitializeComponent()
 				DLB_BIND(OnStopScreenshareError)
 
 				DLB_BIND(OnChangeScreenshareParametersError);
+
+				DLB_BIND(OnCurrentScreenshareSourceReceived);
+				DLB_BIND(OnGetCurrentScreenshareSourceError);
 
 				DLB_BIND(OnActiveSpeakersChanged);
 
