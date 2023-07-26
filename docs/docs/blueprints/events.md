@@ -105,6 +105,18 @@ Triggered by [**Dolby.io Get Current Audio Output Device**](functions.md#dolbyio
 
 ---
 
+## On Current Screenshare Source Received
+
+Triggered by [**Dolby.io Get Current Screenshare Source**](functions.md#dolbyio-get-current-screenshare-source) when the source is received.
+
+#### Data provided
+| Provides | Type | Description |
+|---|:---|:---|
+| **Is None** | bool | If this value is "true", then there is no source set and the information in the Optional Source parameter is meaningless. |
+| **Optional Source** | [Dolby.io Screenshare Source](types.mdx#dolbyio-screenshare-source) | The current source. |
+
+---
+
 ## On Current Video Device Received
 
 Triggered by [**Dolby.io Get Current Video Device**](functions.md#dolbyio-get-current-video-device) when the device is received.
@@ -137,6 +149,18 @@ Triggered by functions if errors occur.
 ## On Initialized
 
 Triggered by [**Dolby.io Set Token**](functions.md#dolbyio-set-token) when the plugin is successfully initialized. After receiving this event, the plugin is ready for use. You can now, for example, call the [Dolby.io Connect](functions.md#dolbyio-connect) function.
+
+---
+
+## On Message Received
+
+Triggered automatically when a message is received.
+
+#### Data provided
+| Provides | Type | Description |
+|---|:---|:---|
+| **Message** | string | The received message. |
+| **Participant Info** | [Dolby.io Participant Info](types.mdx#dolbyio-participant-info) | Information about the sender. |
 
 ---
 
