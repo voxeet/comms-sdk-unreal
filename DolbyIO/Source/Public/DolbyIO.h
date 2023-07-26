@@ -53,6 +53,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentAudioInputDeviceCh
                                              const FDolbyIOAudioDevice&, OptionalDevice);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentAudioOutputDeviceChangedDelegate, bool, IsNone,
                                              const FDolbyIOAudioDevice&, OptionalDevice);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnMessageReceivedDelegate, const FString&, Message,
+                                             const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnErrorDelegate, const FString&, ErrorMsg);
 
 namespace dolbyio::comms
@@ -302,6 +304,11 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnErrorDelegate OnSetAudioCaptureModeError;
 
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void SendMessage(const FString& Message, const TArray<FString>& ParticipantIDs);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSendMessageError;
+
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnTokenNeededDelegate OnTokenNeeded;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
@@ -320,6 +327,8 @@ public:
 	FDolbyIOOnActiveSpeakersChangedDelegate OnActiveSpeakersChanged;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnAudioLevelsChangedDelegate OnAudioLevelsChanged;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnMessageReceivedDelegate OnMessageReceived;
 
 private:
 	void Initialize(FSubsystemCollectionBase&) override;
@@ -625,6 +634,14 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnErrorDelegate OnSetAudioCaptureModeError;
 
+	/** Triggered when errors occur after calling the Send Message function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSendMessageError;
+
+	/** Triggered when a message is received. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnMessageReceivedDelegate OnMessageReceived;
+
 private:
 	void InitializeComponent() override;
 
@@ -820,6 +837,13 @@ private:
 	UFUNCTION()
 	void FwdOnSetAudioCaptureModeError(const FString& ErrorMsg)
 	    DLB_DEFINE_FORWARDER(OnSetAudioCaptureModeError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnSendMessageError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnSendMessageError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnMessageReceived(const FString& Message, const FDolbyIOParticipantInfo& ParticipantInfo)
+	    DLB_DEFINE_FORWARDER(OnMessageReceived, Message, ParticipantInfo);
 
 #undef DLB_DEFINE_FORWARDER
 };
