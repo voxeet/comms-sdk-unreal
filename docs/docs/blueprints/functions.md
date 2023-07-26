@@ -14,6 +14,21 @@ Binds a dynamic material instance to hold the frames of the given video track. T
 
 ---
 
+## Dolby.io Broadcast Message
+
+Sends a message to all participants in the current conference. The message size is limited to 16KB.
+
+This function calls [Dolby.io Send Message](#dolbyio-send-message) with an empty array of selected participants.
+
+![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_BroadcastMessage.png)
+
+#### Inputs and outputs
+| Name | Direction | Type | Default value | Description |
+|---|:---|:---|:---|:---|
+| **Message** | Input | string | - | The message to send. |
+
+---
+
 ## Dolby.io Change Screenshare Parameters
 
 Changes the screen sharing parameters if already sharing screen.
@@ -46,6 +61,7 @@ Connects to a conference.
 | **Spatial Audio Style** | Input | [Dolby.io Spatial Audio Style](types.mdx#dolbyio-spatial-audio-style) | Shared | The spatial audio style of the conference. |
 | **Max Video Streams** | Input | integer | 25 | Sets the maximum number of video streams that may be transmitted to the user. |
 | **Video Forwarding Strategy** | Input | [Dolby.io Video Forwarding Strategy](types.mdx#dolbyio-video-forwarding-strategy) | LastSpeaker | Defines how the plugin should select conference participants whose videos will be transmitted to the local participant. |
+| **Video Codec** | Input | [Dolby.io Video Codec](types.mdx#dolbyio-video-codec) | H264 | The preferred video codec. |
 
 #### Triggered events
 | Event | When |
@@ -171,6 +187,20 @@ Gets the current audio output device.
 | Event | When |
 |---|:---|
 | [**On Current Audio Output Device Received**](events.md#on-current-audio-output-device-received) | Successful |
+| [**On Error**](events.md#on-error) | Errors occur |
+
+---
+
+## Dolby.io Get Current Screenshare Source
+
+Gets the current screenshare source.
+
+![](../../static/img/generated/DolbyIOGetCurrentScreenshareSource/img/nd_img_UK2Node_AsyncAction.png)
+
+#### Triggered events
+| Event | When |
+|---|:---|
+| [**On Current Screenshare Source Received**](events.md#on-current-screenshare-source-received) | Successful |
 | [**On Error**](events.md#on-error) | Errors occur |
 
 ---
@@ -317,6 +347,20 @@ Mutes a given participant for the local user.
 | Name | Direction | Type | Default value | Description |
 |---|:---|:---|:---|:---|
 | **Participant ID** | Input | string | - | The ID of the remote participant to mute. |
+
+---
+
+## Dolby.io Send Message
+
+Sends a message to selected participants in the current conference. The message size is limited to 16KB.
+
+![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_SendMessage.png)
+
+#### Inputs and outputs
+| Name | Direction | Type | Default value | Description |
+|---|:---|:---|:---|:---|
+| **Message** | Input | string | - | The message to send. |
+| **ParticipantIDs** | Input | array of strings | - | The participants to whom the message should be sent. If an empty array is provided, the message will be broadcast to all participants. |
 
 ---
 

@@ -60,7 +60,7 @@ enum class EDolbyIOVideoCodec : uint8
 	H264,
 	/** The VP8 codec. */
 	VP8,
-	/** No codec used (meaning no video). */
+	/** No codec used (meaning an audio-only conference). */
 	None
 };
 

@@ -134,6 +134,7 @@ public:
 	 * @param MaxVideoStreams - Sets the maximum number of video streams that may be transmitted to the user.
 	 * @param VideoForwardingStrategy - Defines how the plugin should select conference participants whose videos
 	 * will be transmitted to the local participant.
+	 * @param VideoCodec - The preferred video codec.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
@@ -1085,7 +1086,7 @@ public:
 		DLB_EXECUTE_SUBSYSTEM_METHOD(SetAudioCaptureMode, NoiseReduction, VoiceFont);
 	}
 
-	/** Sends a message to the current conference. The message size is limited to 16KB.
+	/** Sends a message to selected participants in the current conference. The message size is limited to 16KB.
 	 *
 	 * @param Message - The message to send.
 	 * @param ParticipantIDs - The participants to whom the message should be sent. If an empty array is provided, the
