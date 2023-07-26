@@ -360,7 +360,7 @@ Sends a message to selected participants in the current conference. The message 
 | Name | Direction | Type | Default value | Description |
 |---|:---|:---|:---|:---|
 | **Message** | Input | string | - | The message to send. |
-| **ParticipantIDs** | Input | array of strings | - | The participants to whom the message should be sent. If an empty array is provided, the message will be broadcast to all participants. |
+| **Participant IDs** | Input | array of strings | - | The participants to whom the message should be sent. If an empty array is provided, the message will be broadcast to all participants. |
 
 ---
 
