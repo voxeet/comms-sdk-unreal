@@ -115,3 +115,13 @@ void UDolbyIOSubsystem::GetCurrentScreenshareSource()
 	        })
 	    .on_error(DLB_ERROR_HANDLER(OnGetScreenshareSourcesError));
 }
+
+void UDolbyIOSubsystem::Handle(const screen_share_error& Event)
+{
+	DLB_UE_LOG_BASE(Warning, "Received screen_share_error event source=%s type=%s description=%s force_stopped=%d",
+	                *ToString(Event.source), Event.type, *ToFString(Event.description), Event.force_stopped);
+	if (Event.force_stopped)
+	{
+		StopScreenshare();
+	}
+}

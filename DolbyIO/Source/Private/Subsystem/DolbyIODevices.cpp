@@ -61,45 +61,6 @@ namespace DolbyIO
 	{
 	}
 
-	async_result<event_handler_id> FDevices::RegisterDeviceEventHandlers()
-	{
-		return DeviceManagement.add_event_handler(
-		    [this](const audio_device_changed& Event)
-		    {
-			    if (!Event.device)
-			    {
-				    DLB_UE_LOG("Audio device changed for direction: %s to no device",
-				               *ToString(Event.utilized_direction));
-				    if (Event.utilized_direction == audio_device::direction::input)
-					    BroadcastEvent(Subsystem.OnCurrentAudioInputDeviceChanged, bIsDeviceNone,
-					                   FDolbyIOAudioDevice{});
-				    else
-					    BroadcastEvent(Subsystem.OnCurrentAudioOutputDeviceChanged, bIsDeviceNone,
-					                   FDolbyIOAudioDevice{});
-				    return;
-			    }
-			    DeviceManagement.get_audio_devices()
-			        .then(
-			            [this, Event](const std::vector<audio_device>& DvcDevices)
-			            {
-				            for (const audio_device& Device : DvcDevices)
-					            if (*Event.device == Device.get_identity())
-					            {
-						            DLB_UE_LOG("Audio device changed for direction: %s to device - %s",
-						                       *ToString(Event.utilized_direction), *ToString(Device));
-						            if (Event.utilized_direction == audio_device::direction::input)
-							            BroadcastEvent(Subsystem.OnCurrentAudioInputDeviceChanged, !bIsDeviceNone,
-							                           ToFDolbyIOAudioDevice(Device));
-						            else
-							            BroadcastEvent(Subsystem.OnCurrentAudioOutputDeviceChanged, !bIsDeviceNone,
-							                           ToFDolbyIOAudioDevice(Device));
-						            return;
-					            }
-			            })
-			        .on_error(DLB_ERROR_HANDLER_NO_DELEGATE);
-		    });
-	}
-
 	void FDevices::GetAudioInputDevices()
 	{
 		DLB_UE_LOG("Getting audio input devices");
@@ -261,4 +222,39 @@ namespace DolbyIO
 		        })
 		    .on_error(DLB_ERROR_HANDLER(Subsystem.OnGetCurrentVideoDeviceError));
 	}
+}
+
+void UDolbyIOSubsystem::Handle(const audio_device_changed& Event)
+{
+	using namespace DolbyIO;
+
+	if (!Event.device)
+	{
+		DLB_UE_LOG("Audio device changed for direction: %s to no device", *ToString(Event.utilized_direction));
+		if (Event.utilized_direction == audio_device::direction::input)
+			BroadcastEvent(OnCurrentAudioInputDeviceChanged, bIsDeviceNone, FDolbyIOAudioDevice{});
+		else
+			BroadcastEvent(OnCurrentAudioOutputDeviceChanged, bIsDeviceNone, FDolbyIOAudioDevice{});
+		return;
+	}
+	Sdk->device_management()
+	    .get_audio_devices()
+	    .then(
+	        [this, Event](const std::vector<audio_device>& DvcDevices)
+	        {
+		        for (const audio_device& Device : DvcDevices)
+			        if (*Event.device == Device.get_identity())
+			        {
+				        DLB_UE_LOG("Audio device changed for direction: %s to device - %s",
+				                   *ToString(Event.utilized_direction), *ToString(Device));
+				        if (Event.utilized_direction == audio_device::direction::input)
+					        BroadcastEvent(OnCurrentAudioInputDeviceChanged, !bIsDeviceNone,
+					                       ToFDolbyIOAudioDevice(Device));
+				        else
+					        BroadcastEvent(OnCurrentAudioOutputDeviceChanged, !bIsDeviceNone,
+					                       ToFDolbyIOAudioDevice(Device));
+				        return;
+			        }
+	        })
+	    .on_error(DLB_ERROR_HANDLER_NO_DELEGATE);
 }

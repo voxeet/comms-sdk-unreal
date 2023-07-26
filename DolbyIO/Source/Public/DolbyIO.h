@@ -5,6 +5,7 @@
 #include "Components/ActorComponent.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 
+#include "DolbyIOCppSdkFwd.h"
 #include "DolbyIOTypes.h"
 
 #include <memory>
@@ -56,18 +57,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentAudioOutputDeviceC
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnMessageReceivedDelegate, const FString&, Message,
                                              const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnErrorDelegate, const FString&, ErrorMsg);
-
-namespace dolbyio::comms
-{
-	enum class conference_status;
-	class refresh_token;
-	class sdk;
-
-	namespace plugin
-	{
-		class video_processor;
-	}
-}
 
 namespace DolbyIO
 {
@@ -354,6 +343,17 @@ private:
 	void SetLocalPlayerLocationImpl(const FVector& Location);
 	void SetRotationUsingFirstPlayer();
 	void SetLocalPlayerRotationImpl(const FRotator& Rotation);
+
+	void Handle(const dolbyio::comms::active_speaker_changed&);
+	void Handle(const dolbyio::comms::audio_device_changed&);
+	void Handle(const dolbyio::comms::audio_levels&);
+	void Handle(const dolbyio::comms::conference_message_received&);
+	void Handle(const dolbyio::comms::remote_participant_added&);
+	void Handle(const dolbyio::comms::remote_participant_updated&);
+	void Handle(const dolbyio::comms::remote_video_track_added&);
+	void Handle(const dolbyio::comms::remote_video_track_removed&);
+	void Handle(const dolbyio::comms::screen_share_error&);
+	void Handle(const dolbyio::comms::utils::vfs_event&);
 
 	UDolbyIOSubsystem& GetSubsystem()
 	{

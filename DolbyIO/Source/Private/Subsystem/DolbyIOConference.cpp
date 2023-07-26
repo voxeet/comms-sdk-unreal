@@ -228,3 +228,54 @@ void UDolbyIOSubsystem::SendMessage(const FString& Message, const TArray<FString
 	    .send(ToStdString(Message), MoveTemp(SdkParticipantIDs))
 	    .on_error(DLB_ERROR_HANDLER(OnSendMessageError));
 }
+
+void UDolbyIOSubsystem::Handle(const remote_participant_added& Event)
+{
+	if (!Event.participant.status)
+	{
+		return;
+	}
+	const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
+	DLB_UE_LOG("Participant status added: UserID=%s Name=%s ExternalID=%s Status=%s", *Info.UserID, *Info.Name,
+	           *Info.ExternalID, *ToString(*Event.participant.status));
+	{
+		FScopeLock Lock{&RemoteParticipantsLock};
+		RemoteParticipants.Emplace(Info.UserID, Info);
+	}
+
+	BroadcastEvent(OnParticipantAdded, Info.Status, Info);
+	ProcessBufferedVideoTracks(Info.UserID);
+}
+
+void UDolbyIOSubsystem::Handle(const remote_participant_updated& Event)
+{
+	if (!Event.participant.status)
+	{
+		return;
+	}
+	const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
+	DLB_UE_LOG("Participant status updated: UserID=%s Name=%s ExternalID=%s Status=%s", *Info.UserID, *Info.Name,
+	           *Info.ExternalID, *ToString(*Event.participant.status));
+	{
+		FScopeLock Lock{&RemoteParticipantsLock};
+		RemoteParticipants.FindOrAdd(Info.UserID) = Info;
+	}
+
+	BroadcastEvent(OnParticipantUpdated, Info.Status, Info);
+}
+
+void UDolbyIOSubsystem::Handle(const conference_message_received& Event)
+{
+	const FString Message = ToFString(Event.message);
+	FScopeLock Lock{&RemoteParticipantsLock};
+	if (const FDolbyIOParticipantInfo* Sender = RemoteParticipants.Find(ToFString(Event.user_id)))
+	{
+		DLB_UE_LOG("Message received: \"%s\" from %s (%s)", *Message, *Sender->Name, *Sender->UserID);
+		BroadcastEvent(OnMessageReceived, Message, *Sender);
+	}
+	else
+	{
+		DLB_UE_LOG("Message received: %s from unknown participant", *Message);
+		BroadcastEvent(OnMessageReceived, Message, FDolbyIOParticipantInfo{});
+	}
+}
