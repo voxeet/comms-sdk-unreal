@@ -2,6 +2,7 @@
 
 #include "DolbyIO.h"
 
+#include "Utils/DolbyIOBroadcastEvent.h"
 #include "Utils/DolbyIOConversions.h"
 #include "Utils/DolbyIOErrorHandler.h"
 #include "Utils/DolbyIOLogging.h"
@@ -124,4 +125,26 @@ void UDolbyIOSubsystem::SetAudioCaptureMode(EDolbyIONoiseReduction NoiseReductio
 	    .local()
 	    .set_capture_mode(ToSdkAudioCaptureMode(NoiseReduction, VoiceFont))
 	    .on_error(DLB_ERROR_HANDLER(OnSetAudioCaptureModeError));
+}
+
+void UDolbyIOSubsystem::Handle(const active_speaker_changed& Event)
+{
+	TArray<FString> ActiveSpeakers;
+	for (const std::string& Speaker : Event.active_speakers)
+	{
+		ActiveSpeakers.Add(ToFString(Speaker));
+	}
+	BroadcastEvent(OnActiveSpeakersChanged, ActiveSpeakers);
+}
+
+void UDolbyIOSubsystem::Handle(const audio_levels& Event)
+{
+	TArray<FString> ActiveSpeakers;
+	TArray<float> AudioLevels;
+	for (const audio_level& Level : Event.levels)
+	{
+		ActiveSpeakers.Add(ToFString(Level.participant_id));
+		AudioLevels.Add(Level.level);
+	}
+	BroadcastEvent(OnAudioLevelsChanged, ActiveSpeakers, AudioLevels);
 }

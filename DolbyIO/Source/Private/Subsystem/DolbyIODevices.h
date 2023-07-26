@@ -19,8 +19,6 @@ namespace DolbyIO
 	public:
 		FDevices(UDolbyIOSubsystem& Subsystem, FDeviceManagement& DeviceManagement);
 
-		dolbyio::comms::async_result<dolbyio::comms::event_handler_id> RegisterDeviceEventHandlers();
-
 		void GetAudioInputDevices();
 		void GetAudioOutputDevices();
 		void GetCurrentAudioInputDevice();

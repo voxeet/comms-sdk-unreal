@@ -100,6 +100,11 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		return;
 	}
 
+	Devices = MakeShared<FDevices>(*this, Sdk->device_management());
+
+#define DLB_REGISTER_HANDLER(Service, Event) \
+	[this](event_handler_id) { return Sdk->Service().add_event_handler([this](const Event& Event) { Handle(Event); }); }
+
 	Sdk->register_component_version("unreal-sdk", "1.2.0-beta.4")
 	    .then(
 	        [this](sdk::component_data)
@@ -107,165 +112,15 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		        return Sdk->conference().add_event_handler([this](const conference_status_updated& Event)
 		                                                   { UpdateStatus(Event.status); });
 	        })
-	    .then(
-	        [this](event_handler_id)
-	        {
-		        return Sdk->conference().add_event_handler(
-		            [this](const remote_participant_added& Event)
-		            {
-			            if (!Event.participant.status)
-			            {
-				            return;
-			            }
-			            const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
-			            DLB_UE_LOG("Participant status added: UserID=%s Name=%s ExternalID=%s Status=%s", *Info.UserID,
-			                       *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
-			            {
-				            FScopeLock Lock{&RemoteParticipantsLock};
-				            RemoteParticipants.Emplace(Info.UserID, Info);
-			            }
-
-			            BroadcastEvent(OnParticipantAdded, Info.Status, Info);
-			            ProcessBufferedVideoTracks(Info.UserID);
-		            });
-	        })
-	    .then(
-	        [this](event_handler_id)
-	        {
-		        return Sdk->conference().add_event_handler(
-		            [this](const remote_participant_updated& Event)
-		            {
-			            if (!Event.participant.status)
-			            {
-				            return;
-			            }
-			            const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
-			            DLB_UE_LOG("Participant status updated: UserID=%s Name=%s ExternalID=%s Status=%s",
-			                       *Info.UserID, *Info.Name, *Info.ExternalID, *ToString(*Event.participant.status));
-			            {
-				            FScopeLock Lock{&RemoteParticipantsLock};
-				            RemoteParticipants.FindOrAdd(Info.UserID) = Info;
-			            }
-
-			            BroadcastEvent(OnParticipantUpdated, Info.Status, Info);
-		            });
-	        })
-	    .then(
-	        [this](event_handler_id)
-	        {
-		        return Sdk->conference().add_event_handler(
-		            [this](const active_speaker_changed& Event)
-		            {
-			            TArray<FString> ActiveSpeakers;
-			            for (const std::string& Speaker : Event.active_speakers)
-			            {
-				            ActiveSpeakers.Add(ToFString(Speaker));
-			            }
-			            BroadcastEvent(OnActiveSpeakersChanged, ActiveSpeakers);
-		            });
-	        })
-	    .then(
-	        [this](event_handler_id)
-	        {
-		        return Sdk->conference().add_event_handler(
-		            [this](const audio_levels& Event)
-		            {
-			            TArray<FString> ActiveSpeakers;
-			            TArray<float> AudioLevels;
-			            for (const audio_level& Level : Event.levels)
-			            {
-				            ActiveSpeakers.Add(ToFString(Level.participant_id));
-				            AudioLevels.Add(Level.level);
-			            }
-			            BroadcastEvent(OnAudioLevelsChanged, ActiveSpeakers, AudioLevels);
-		            });
-	        })
-	    .then(
-	        [this](event_handler_id)
-	        {
-		        return Sdk->conference().add_event_handler(
-		            [this](const remote_video_track_added& Event)
-		            {
-			            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
-
-			            VideoSinks.Emplace(VideoTrack.TrackID, std::make_shared<FVideoSink>(VideoTrack.TrackID));
-			            Sdk->video()
-			                .remote()
-			                .set_video_sink(Event.track, VideoSinks[VideoTrack.TrackID])
-			                .on_error(DLB_ERROR_HANDLER_NO_DELEGATE);
-
-			            FScopeLock Lock{&RemoteParticipantsLock};
-			            if (RemoteParticipants.Contains(VideoTrack.ParticipantID))
-			            {
-				            VideoSinks[VideoTrack.TrackID]->OnTextureCreated([this, VideoTrack]
-				                                                             { BroadcastVideoTrackAdded(VideoTrack); });
-			            }
-			            else
-			            {
-				            DLB_UE_LOG("Buffering video track added: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID,
-				                       *VideoTrack.ParticipantID);
-				            BufferedAddedVideoTracks.FindOrAdd(VideoTrack.ParticipantID).Add(VideoTrack);
-			            }
-		            });
-	        })
-	    .then(
-	        [this](event_handler_id)
-	        {
-		        return Sdk->conference().add_event_handler(
-		            [this](const remote_video_track_removed& Event)
-		            {
-			            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
-			            DLB_UE_LOG("Video track removed: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID,
-			                       *VideoTrack.ParticipantID);
-
-			            VideoSinks[VideoTrack.TrackID]->UnbindAllMaterials();
-			            VideoSinks.Remove(VideoTrack.TrackID);
-			            BroadcastEvent(OnVideoTrackRemoved, VideoTrack);
-		            });
-	        })
-	    .then(
-	        [this](event_handler_id)
-	        {
-		        return Sdk->device_management().add_event_handler(
-		            [this](const screen_share_error& Event)
-		            {
-			            DLB_UE_LOG_BASE(
-			                Warning,
-			                "Received screen_share_error event source=%s type=%s description=%s force_stopped=%d",
-			                *ToString(Event.source), Event.type, *ToFString(Event.description), Event.force_stopped);
-			            if (Event.force_stopped)
-			            {
-				            StopScreenshare();
-			            }
-		            });
-	        })
-	    .then(
-	        [this](event_handler_id)
-	        {
-		        return Sdk->conference().add_event_handler(
-		            [this](const conference_message_received& Event)
-		            {
-			            const FString Message = ToFString(Event.message);
-			            FScopeLock Lock{&RemoteParticipantsLock};
-			            if (const FDolbyIOParticipantInfo* Sender = RemoteParticipants.Find(ToFString(Event.user_id)))
-			            {
-				            DLB_UE_LOG("Message received: \"%s\" from %s (%s)", *Message, *Sender->Name,
-				                       *Sender->UserID);
-				            BroadcastEvent(OnMessageReceived, Message, *Sender);
-			            }
-			            else
-			            {
-				            DLB_UE_LOG("Message received: %s from unknown participant", *Message);
-				            BroadcastEvent(OnMessageReceived, Message, FDolbyIOParticipantInfo{});
-			            }
-		            });
-	        })
-	    .then(
-	        [this](event_handler_id)
-	        {
-		        Devices = MakeShared<FDevices>(*this, Sdk->device_management());
-		        return Devices->RegisterDeviceEventHandlers();
-	        })
+	    .then(DLB_REGISTER_HANDLER(conference, active_speaker_changed))
+	    .then(DLB_REGISTER_HANDLER(device_management, audio_device_changed))
+	    .then(DLB_REGISTER_HANDLER(conference, audio_levels))
+	    .then(DLB_REGISTER_HANDLER(conference, conference_message_received))
+	    .then(DLB_REGISTER_HANDLER(conference, remote_participant_added))
+	    .then(DLB_REGISTER_HANDLER(conference, remote_participant_updated))
+	    .then(DLB_REGISTER_HANDLER(conference, remote_video_track_added))
+	    .then(DLB_REGISTER_HANDLER(conference, remote_video_track_removed))
+	    .then(DLB_REGISTER_HANDLER(device_management, screen_share_error))
 	    .then([this](event_handler_id)
 #if PLATFORM_WINDOWS
 	          { return Sdk->device_management().set_default_audio_device_policy(default_audio_device_policy::output); })
@@ -280,34 +135,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	        [this]
 #endif
 	        {
-		        using namespace dolbyio::comms::utils;
-		        vfs_event::add_event_handler(
-		            *Sdk,
-		            [this](const vfs_event& Event)
-		            {
-			            for (const auto& TrackMapItem : Event.new_enabled)
-			            {
-				            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(TrackMapItem);
-
-				            if (GetTexture(VideoTrack.TrackID))
-				            {
-					            BroadcastVideoTrackEnabled(VideoTrack);
-				            }
-				            else
-				            {
-					            DLB_UE_LOG("Buffering video track enabled: TrackID=%s ParticipantID=%s",
-					                       *VideoTrack.TrackID, *VideoTrack.ParticipantID);
-					            BufferedEnabledVideoTracks.FindOrAdd(VideoTrack.ParticipantID).Add(VideoTrack);
-				            }
-			            }
-			            for (const auto& TrackMapItem : Event.new_disabled)
-			            {
-				            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(TrackMapItem);
-				            DLB_UE_LOG("Video track ID %s for participant ID %s disabled", *VideoTrack.TrackID,
-				                       *VideoTrack.ParticipantID);
-				            BroadcastEvent(OnVideoTrackDisabled, VideoTrack);
-			            }
-		            });
+		        utils::vfs_event::add_event_handler(*Sdk, [this](const utils::vfs_event& Event) { Handle(Event); });
 
 		        DLB_UE_LOG("Initialized");
 		        BroadcastEvent(OnInitialized);
