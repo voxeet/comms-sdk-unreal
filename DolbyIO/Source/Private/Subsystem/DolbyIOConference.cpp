@@ -13,7 +13,7 @@ using namespace DolbyIO;
 void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& UserName, const FString& ExternalID,
                                 const FString& AvatarURL, EDolbyIOConnectionMode ConnMode,
                                 EDolbyIOSpatialAudioStyle SpatialStyle, int MaxVideoStreams,
-                                EDolbyIOVideoForwardingStrategy VideoForwardingStrategy)
+                                EDolbyIOVideoForwardingStrategy VideoForwardingStrategy, EDolbyIOVideoCodec VideoCodec)
 {
 	using namespace dolbyio::comms::services;
 
@@ -29,8 +29,10 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 
 	ConnectionMode = ConnMode;
 	SpatialAudioStyle = SpatialStyle;
-	DLB_UE_LOG("Connecting to conference %s with user name \"%s\" (%s, %s)", *ConferenceName, *UserName,
-	           *UEnum::GetValueAsString(ConnectionMode), *UEnum::GetValueAsString(SpatialAudioStyle));
+	DLB_UE_LOG("Connecting to conference %s with user name \"%s\" (%s, %s, %s/%d, %s)", *ConferenceName, *UserName,
+	           *UEnum::GetValueAsString(ConnectionMode), *UEnum::GetValueAsString(SpatialAudioStyle),
+	           *UEnum::GetValueAsString(VideoForwardingStrategy), MaxVideoStreams,
+	           *UEnum::GetValueAsString(VideoCodec));
 
 	services::session::user_info UserInfo{};
 	UserInfo.name = ToStdString(UserName);
@@ -41,13 +43,15 @@ void UDolbyIOSubsystem::Connect(const FString& ConferenceName, const FString& Us
 	Sdk->session()
 	    .open(MoveTemp(UserInfo))
 	    .then(
-	        [this, ConferenceName = ToStdString(ConferenceName)](services::session::user_info&& User)
+	        [this, ConferenceName = ToStdString(ConferenceName),
+	         VideoCodec = ToSdkVideoCodec(VideoCodec)](services::session::user_info&& User)
 	        {
 		        LocalParticipantID = ToFString(User.participant_id.value_or(""));
 
 		        conference::conference_options Options{};
 		        Options.alias = ConferenceName;
 		        Options.params.spatial_audio_style = ToSdkSpatialAudioStyle(SpatialAudioStyle);
+		        Options.params.video_codec = VideoCodec;
 		        return Sdk->conference().create(Options);
 	        })
 	    .then(
@@ -203,4 +207,24 @@ void UDolbyIOSubsystem::UpdateUserMetadata(const FString& UserName, const FStrin
 	UserInfo.name = ToStdString(UserName);
 	UserInfo.avatarUrl = ToStdString(AvatarURL);
 	Sdk->session().update(MoveTemp(UserInfo)).on_error(DLB_ERROR_HANDLER(OnUpdateUserMetadataError));
+}
+
+void UDolbyIOSubsystem::SendMessage(const FString& Message, const TArray<FString>& ParticipantIDs)
+{
+	if (!IsConnected())
+	{
+		DLB_WARNING(OnSendMessageError, "Cannot send message - not connected");
+		return;
+	}
+
+	DLB_UE_LOG("Sending message %s", *Message);
+	std::vector<std::string> SdkParticipantIDs;
+	SdkParticipantIDs.reserve(ParticipantIDs.Num());
+	for (const FString& ID : ParticipantIDs)
+	{
+		SdkParticipantIDs.emplace_back(ToStdString(ID));
+	}
+	Sdk->conference()
+	    .send(ToStdString(Message), MoveTemp(SdkParticipantIDs))
+	    .on_error(DLB_ERROR_HANDLER(OnSendMessageError));
 }

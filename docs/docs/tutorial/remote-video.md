@@ -12,7 +12,7 @@ Before you start, follow the [common setup](common-setup) tutorial.
 
 ## Set up remote video rendering
 
-1. Find `BP_DolbyIOSingleVideoPlane` in the plugin's content in `Content Browser` and drag it onto the scene.
+1. Find `BP_DolbyIOSingleVideoPlane` in the `VideoSamples` folder of the plugin's content in `Content Browser` and drag it onto the scene.
 
 > **_NOTE:_** If you do not see this item, go to the `Content Browser` settings and tick `Show Plugin Content`.
 
@@ -36,7 +36,7 @@ It also contains a generic `Construction Script` to set up the plane's material:
 
 ## Multiple videos
 
-1. Find `BP_DolbyIOVideoPlaneSpawner` in the plugin's content in `Content Browser` and drag it onto the scene.
+1. Find `BP_DolbyIOVideoPlaneSpawner` in the `VideoSamples` folder of the plugin's content in `Content Browser` and drag it onto the scene.
 
 > **_NOTE:_** This sample actor spawns a `BP_DolbyIOGenericVideoPlane` whenever a new video track is added and destroys the plane when its video track is removed. `BP_DolbyIOGenericVideoPlane` is just a plane that contains the same `Construction Script` as above. Its `Event Graph` does nothing by default but contains some nodes in order to be used as a copy-pastable template.
 

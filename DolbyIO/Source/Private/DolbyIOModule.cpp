@@ -71,7 +71,7 @@ private:
 		}
 		else
 		{
-			DLB_UE_FATAL("Failed to load %s", *DllPath);
+			DLB_UE_LOG_BASE(Fatal, "Failed to load %s", *DllPath);
 		}
 	}
 

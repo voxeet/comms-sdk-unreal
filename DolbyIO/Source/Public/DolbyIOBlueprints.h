@@ -134,6 +134,7 @@ public:
 	 * @param MaxVideoStreams - Sets the maximum number of video streams that may be transmitted to the user.
 	 * @param VideoForwardingStrategy - Defines how the plugin should select conference participants whose videos
 	 * will be transmitted to the local participant.
+	 * @param VideoCodec - The preferred video codec.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
@@ -143,7 +144,8 @@ public:
 	    const FString& ExternalID = "", const FString& AvatarURL = "",
 	    EDolbyIOConnectionMode ConnectionMode = EDolbyIOConnectionMode::Active,
 	    EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared, int MaxVideoStreams = 25,
-	    EDolbyIOVideoForwardingStrategy VideoForwardingStrategy = EDolbyIOVideoForwardingStrategy::LastSpeaker)
+	    EDolbyIOVideoForwardingStrategy VideoForwardingStrategy = EDolbyIOVideoForwardingStrategy::LastSpeaker,
+	    EDolbyIOVideoCodec VideoCodec = EDolbyIOVideoCodec::H264)
 	{
 		UDolbyIOConnect* Self = NewObject<UDolbyIOConnect>();
 		Self->WorldContextObject = WorldContextObject;
@@ -155,6 +157,7 @@ public:
 		Self->SpatialAudioStyle = SpatialAudioStyle;
 		Self->MaxVideoStreams = MaxVideoStreams;
 		Self->VideoForwardingStrategy = VideoForwardingStrategy;
+		Self->VideoCodec = VideoCodec;
 		return Self;
 	}
 
@@ -162,11 +165,11 @@ public:
 	FDolbyIOConnectOutputPin OnConnected;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOConnectOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(Connect, OnConnected, ConferenceName, UserName, ExternalID, AvatarURL, ConnectionMode,
-	                           SpatialAudioStyle, MaxVideoStreams, VideoForwardingStrategy);
+	                           SpatialAudioStyle, MaxVideoStreams, VideoForwardingStrategy, VideoCodec);
 
 	UFUNCTION()
 	void OnConnectedImpl(const FString& LocalParticipantID, const FString& ConferenceID)
@@ -177,7 +180,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(Connect, OnConnected, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(Connect, OnConnected, {}, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -189,6 +192,7 @@ private:
 	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
 	int MaxVideoStreams;
 	EDolbyIOVideoForwardingStrategy VideoForwardingStrategy;
+	EDolbyIOVideoCodec VideoCodec;
 };
 
 UCLASS()
@@ -214,7 +218,7 @@ public:
 	FDolbyIOConnectOutputPin OnConnected;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOConnectOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(DemoConference, OnConnected);
@@ -226,7 +230,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(DemoConference, OnConnected, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(DemoConference, OnConnected, {}, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -305,7 +309,7 @@ public:
 	FDolbyIOEnableVideoOutputPin OnVideoEnabled;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIODisconnectOutputPin OnError;
+	FDolbyIOEnableVideoOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(EnableVideo, OnVideoEnabled, VideoDevice, bBlurBackground);
@@ -317,7 +321,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(EnableVideo, OnVideoEnabled, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(EnableVideo, OnVideoEnabled, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -348,7 +352,7 @@ public:
 	FDolbyIODisableVideoOutputPin OnVideoDisabled;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIODisableVideoOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(DisableVideo, OnVideoDisabled)
@@ -360,7 +364,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(DisableVideo, OnVideoDisabled, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(DisableVideo, OnVideoDisabled, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -391,7 +395,7 @@ public:
 	FDolbyIOGetScreenshareSourcesOutputPin OnScreenshareSourcesReceived;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOGetScreenshareSourcesOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetScreenshareSources, OnScreenshareSourcesReceived);
@@ -403,7 +407,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(GetScreenshareSources, OnScreenshareSourcesReceived, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(GetScreenshareSources, OnScreenshareSourcesReceived, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -454,7 +458,7 @@ public:
 	FDolbyIOStartScreenshareOutputPin OnScreenshareStarted;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOStartScreenshareOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(StartScreenshare, OnScreenshareStarted, Source, EncoderHint, MaxResolution,
@@ -467,7 +471,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(StartScreenshare, OnScreenshareStarted, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(StartScreenshare, OnScreenshareStarted, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -500,7 +504,7 @@ public:
 	FDolbyIOStopScreenshareOutputPin OnScreenshareStopped;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOStopScreenshareOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(StopScreenshare, OnScreenshareStopped);
@@ -512,7 +516,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(StopScreenshare, OnScreenshareStopped, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(StopScreenshare, OnScreenshareStopped, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -541,7 +545,7 @@ public:
 	FDolbyIOGetAudioInputDevicesOutputPin OnAudioInputDevicesReceived;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOGetAudioInputDevicesOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetAudioInputDevices, OnAudioInputDevicesReceived);
@@ -553,7 +557,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(GetAudioInputDevices, OnAudioInputDevicesReceived, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(GetAudioInputDevices, OnAudioInputDevicesReceived, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -582,7 +586,7 @@ public:
 	FDolbyIOGetAudioOutputDevicesOutputPin OnAudioOutputDevicesReceived;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOGetAudioOutputDevicesOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetAudioOutputDevices, OnAudioOutputDevicesReceived);
@@ -594,7 +598,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(GetAudioOutputDevices, OnAudioOutputDevicesReceived, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(GetAudioOutputDevices, OnAudioOutputDevicesReceived, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -623,7 +627,7 @@ public:
 	FDolbyIOGetCurrentAudioInputDeviceOutputPin OnCurrentAudioInputDeviceReceived;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOGetCurrentAudioInputDeviceOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetCurrentAudioInputDevice, OnCurrentAudioInputDeviceReceived);
@@ -636,7 +640,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(GetCurrentAudioInputDevice, OnCurrentAudioInputDeviceReceived, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(GetCurrentAudioInputDevice, OnCurrentAudioInputDeviceReceived, {}, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -665,7 +669,7 @@ public:
 	FDolbyIOGetCurrentAudioOutputDeviceOutputPin OnCurrentAudioOutputDeviceReceived;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOGetCurrentAudioOutputDeviceOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetCurrentAudioOutputDevice, OnCurrentAudioOutputDeviceReceived);
@@ -678,7 +682,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(GetCurrentAudioOutputDevice, OnCurrentAudioOutputDeviceReceived, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(GetCurrentAudioOutputDevice, OnCurrentAudioOutputDeviceReceived, {}, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -707,7 +711,7 @@ public:
 	FDolbyIOGetVideoDevicesOutputPin OnVideoDevicesReceived;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOGetVideoDevicesOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetVideoDevices, OnVideoDevicesReceived);
@@ -719,7 +723,7 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(GetVideoDevices, OnVideoDevicesReceived, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(GetVideoDevices, OnVideoDevicesReceived, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -748,7 +752,7 @@ public:
 	FDolbyIOGetCurrentVideoDeviceOutputPin OnCurrentVideoDeviceReceived;
 
 	UPROPERTY(BlueprintAssignable)
-	FDolbyIOSetTokenOutputPin OnError;
+	FDolbyIOGetCurrentVideoDeviceOutputPin OnError;
 
 private:
 	DLB_DEFINE_ACTIVATE_METHOD(GetCurrentVideoDevice, OnCurrentVideoDeviceReceived);
@@ -760,7 +764,50 @@ private:
 	UFUNCTION()
 	void OnErrorImpl(const FString& ErrorMsg)
 	{
-		DLB_DEFINE_ERROR_METHOD(GetCurrentVideoDevice, OnCurrentVideoDeviceReceived, ErrorMsg);
+		DLB_DEFINE_ERROR_METHOD(GetCurrentVideoDevice, OnCurrentVideoDeviceReceived, {}, {}, ErrorMsg);
+	}
+
+	const UObject* WorldContextObject;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FDolbyIOGetCurrentScreenshareSourceOutputPin, bool, IsNone,
+                                               const FDolbyIOScreenshareSource&, OptionalSource, const FString&,
+                                               ErrorMsg);
+
+UCLASS()
+class DOLBYIO_API UDolbyIOGetCurrentScreenshareSource : public UBlueprintAsyncActionBase
+{
+	GENERATED_BODY()
+
+public:
+	/** Gets the current screenshare source.
+	 *
+	 * Triggers On Current Screenshare Source Received if successful.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (BlueprintInternalUseOnly = "true", WorldContext = "WorldContextObject",
+	                  DisplayName = "Dolby.io Get Current Screenshare Source"))
+	static UDolbyIOGetCurrentScreenshareSource* DolbyIOGetScreenshareSource(const UObject* WorldContextObject)
+	    DLB_DEFINE_CONSTRUCTOR(UDolbyIOGetCurrentScreenshareSource);
+
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOGetCurrentScreenshareSourceOutputPin OnCurrentScreenshareSourceReceived;
+
+	UPROPERTY(BlueprintAssignable)
+	FDolbyIOGetCurrentScreenshareSourceOutputPin OnError;
+
+private:
+	DLB_DEFINE_ACTIVATE_METHOD(GetCurrentScreenshareSource, OnCurrentScreenshareSourceReceived);
+
+	UFUNCTION()
+	void OnCurrentScreenshareSourceReceivedImpl(bool IsNone, const FDolbyIOScreenshareSource& OptionalSource)
+	    DLB_DEFINE_IMPL_METHOD(GetCurrentScreenshareSource, OnCurrentScreenshareSourceReceived, IsNone, OptionalSource,
+	                           "");
+
+	UFUNCTION()
+	void OnErrorImpl(const FString& ErrorMsg)
+	{
+		DLB_DEFINE_ERROR_METHOD(GetCurrentScreenshareSource, OnCurrentScreenshareSourceReceived, {}, {}, ErrorMsg);
 	}
 
 	const UObject* WorldContextObject;
@@ -1037,6 +1084,33 @@ public:
 	                                EDolbyIOVoiceFont VoiceFont)
 	{
 		DLB_EXECUTE_SUBSYSTEM_METHOD(SetAudioCaptureMode, NoiseReduction, VoiceFont);
+	}
+
+	/** Sends a message to selected participants in the current conference. The message size is limited to 16KB.
+	 *
+	 * @param Message - The message to send.
+	 * @param ParticipantIDs - The participants to whom the message should be sent. If an empty array is provided, the
+	 * message will be broadcast to all participants.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Send Message"))
+	static void SendMessage(const UObject* WorldContextObject, const FString& Message,
+	                        const TArray<FString>& ParticipantIDs)
+	{
+		DLB_EXECUTE_SUBSYSTEM_METHOD(SendMessage, Message, ParticipantIDs);
+	}
+
+	/** Sends a message to all participants in the current conference. The message size is limited to 16KB.
+	 *
+	 * This function calls Send Message with an empty array of selected participants.
+	 *
+	 * @param Message - The message to send.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
+	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Broadcast Message"))
+	static void BroadcastMessage(const UObject* WorldContextObject, const FString& Message)
+	{
+		DLB_EXECUTE_SUBSYSTEM_METHOD(SendMessage, Message, {});
 	}
 };
 

@@ -52,6 +52,18 @@ enum class EDolbyIOVideoForwardingStrategy : uint8
 	ClosestUser
 };
 
+/** The preferred video codec. */
+UENUM(BlueprintType, DisplayName = "Dolby.io Video Codec")
+enum class EDolbyIOVideoCodec : uint8
+{
+	/** The H.264 codec. */
+	H264,
+	/** The VP8 codec. */
+	VP8,
+	/** No codec used (meaning an audio-only conference). */
+	None
+};
+
 UENUM(BlueprintType, DisplayName = "Dolby.io Participant Status")
 enum class EDolbyIOParticipantStatus : uint8
 {

@@ -35,11 +35,8 @@ namespace DolbyIO
 			return Subsystem;
 		}
 
-		void SetCurrentVideoDevice(TOptional<FDolbyIOVideoDevice> Device);
-
 	private:
 		UDolbyIOSubsystem& Subsystem;
 		FDeviceManagement& DeviceManagement;
-		TOptional<FDolbyIOVideoDevice> CurrentVideoDevice;
 	};
 }

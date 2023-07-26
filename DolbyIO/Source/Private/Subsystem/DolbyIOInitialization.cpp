@@ -100,7 +100,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 		return;
 	}
 
-	Sdk->register_component_version("unreal-sdk", "1.2.0-beta.3")
+	Sdk->register_component_version("unreal-sdk", "1.2.0-beta.4")
 	    .then(
 	        [this](sdk::component_data)
 	        {
@@ -226,6 +226,43 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	    .then(
 	        [this](event_handler_id)
 	        {
+		        return Sdk->device_management().add_event_handler(
+		            [this](const screen_share_error& Event)
+		            {
+			            DLB_UE_LOG_BASE(
+			                Warning,
+			                "Received screen_share_error event source=%s type=%s description=%s force_stopped=%d",
+			                *ToString(Event.source), Event.type, *ToFString(Event.description), Event.force_stopped);
+			            if (Event.force_stopped)
+			            {
+				            StopScreenshare();
+			            }
+		            });
+	        })
+	    .then(
+	        [this](event_handler_id)
+	        {
+		        return Sdk->conference().add_event_handler(
+		            [this](const conference_message_received& Event)
+		            {
+			            const FString Message = ToFString(Event.message);
+			            FScopeLock Lock{&RemoteParticipantsLock};
+			            if (const FDolbyIOParticipantInfo* Sender = RemoteParticipants.Find(ToFString(Event.user_id)))
+			            {
+				            DLB_UE_LOG("Message received: \"%s\" from %s (%s)", *Message, *Sender->Name,
+				                       *Sender->UserID);
+				            BroadcastEvent(OnMessageReceived, Message, *Sender);
+			            }
+			            else
+			            {
+				            DLB_UE_LOG("Message received: %s from unknown participant", *Message);
+				            BroadcastEvent(OnMessageReceived, Message, FDolbyIOParticipantInfo{});
+			            }
+		            });
+	        })
+	    .then(
+	        [this](event_handler_id)
+	        {
 		        Devices = MakeShared<FDevices>(*this, Sdk->device_management());
 		        return Devices->RegisterDeviceEventHandlers();
 	        })
@@ -342,6 +379,9 @@ void UDolbyIOObserver::InitializeComponent()
 
 				DLB_BIND(OnChangeScreenshareParametersError);
 
+				DLB_BIND(OnCurrentScreenshareSourceReceived);
+				DLB_BIND(OnGetCurrentScreenshareSourceError);
+
 				DLB_BIND(OnActiveSpeakersChanged);
 
 				DLB_BIND(OnAudioLevelsChanged);
@@ -381,6 +421,10 @@ void UDolbyIOObserver::InitializeComponent()
 				DLB_BIND(OnUpdateUserMetadataError);
 
 				DLB_BIND(OnSetAudioCaptureModeError);
+
+				DLB_BIND(OnSendMessageError);
+
+				DLB_BIND(OnMessageReceived);
 
 				FwdOnTokenNeeded();
 			}

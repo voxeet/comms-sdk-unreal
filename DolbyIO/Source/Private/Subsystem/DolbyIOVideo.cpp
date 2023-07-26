@@ -42,7 +42,6 @@ void UDolbyIOSubsystem::EnableVideo(const FDolbyIOVideoDevice& VideoDevice, bool
 	        [this, VideoDevice]
 	        {
 		        bIsVideoEnabled = true;
-		        Devices->SetCurrentVideoDevice(VideoDevice);
 		        BroadcastEvent(OnVideoEnabled, LocalCameraTrackID);
 	        })
 	    .on_error(DLB_ERROR_HANDLER(OnEnableVideoError));
@@ -63,7 +62,6 @@ void UDolbyIOSubsystem::DisableVideo()
 	        [this]
 	        {
 		        bIsVideoEnabled = false;
-		        Devices->SetCurrentVideoDevice({});
 		        BroadcastEvent(OnVideoDisabled, LocalCameraTrackID);
 	        })
 	    .on_error(DLB_ERROR_HANDLER(OnDisableVideoError));

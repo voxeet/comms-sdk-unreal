@@ -71,6 +71,12 @@ namespace DolbyIO
 		};
 	}
 
+	FString ToString(const audio_device& Device)
+	{
+		return FString::Printf(TEXT("%s, direction: %s, native_id: %s"), *ToFText(Device.name()).ToString(),
+		                       *ToString(Device.direction()), *ToUnrealDeviceID(Device.native_id()));
+	}
+
 	FString ToString(enum audio_device::direction Direction)
 	{
 		switch (Direction)
@@ -87,10 +93,16 @@ namespace DolbyIO
 		}
 	}
 
-	FString ToString(const audio_device& Device)
+	FString ToString(const camera_device& Device)
 	{
-		return FString::Printf(TEXT("%s, direction: %s, native_id: %s"), *ToFText(Device.name()).ToString(),
-		                       *ToString(Device.direction()), *ToUnrealDeviceID(Device.native_id()));
+		return FString::Printf(TEXT("%s, unique_id: %s"), *ToFText(Device.display_name).ToString(),
+		                       *ToFText(Device.unique_id).ToString());
+	}
+
+	FString ToString(const screen_share_source& Source)
+	{
+		return FString::Printf(TEXT("id=%d, type=%d, title=%s"), static_cast<int64>(Source.id), Source.type,
+		                       *(ToFText(Source.title).ToString()));
 	}
 
 	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<participant_status> Status)
@@ -287,6 +299,19 @@ namespace DolbyIO
 		return {ToSdkNoiseReduction(NoiseReduction), ToSdkVoiceFont(VoiceFont)};
 	}
 
+	video_codec ToSdkVideoCodec(EDolbyIOVideoCodec Codec)
+	{
+		switch (Codec)
+		{
+			case EDolbyIOVideoCodec::H264:
+				return video_codec::h264;
+			case EDolbyIOVideoCodec::VP8:
+				return video_codec::vp8;
+			default:
+				return video_codec::none;
+		}
+	}
+
 	FSdkNativeDeviceID ToSdkNativeDeviceID(const FString& ID)
 	{
 #if PLATFORM_WINDOWS
@@ -320,5 +345,18 @@ namespace DolbyIO
 	camera_device ToSdkVideoDevice(const FDolbyIOVideoDevice& VideoDevice)
 	{
 		return camera_device{ToStdString(VideoDevice.Name.ToString()), ToStdString(VideoDevice.UniqueID)};
+	}
+
+	FDolbyIOScreenshareSource ToFDolbyIOScreenshareSource(const screen_share_source& Source)
+	{
+		return {Source.id, Source.type == screen_share_source::type::screen,
+		        Source.title.empty() ? FText::FromString(FString{"Screen "} + FString::FromInt(Source.id + 1))
+		                             : ToFText(Source.title)};
+	}
+
+	screen_share_source ToSdkScreenshareSource(const FDolbyIOScreenshareSource& Source)
+	{
+		return {ToStdString(Source.Title.ToString()), static_cast<intptr_t>(Source.ID),
+		        Source.bIsScreen ? screen_share_source::type::screen : screen_share_source::type::window};
 	}
 }

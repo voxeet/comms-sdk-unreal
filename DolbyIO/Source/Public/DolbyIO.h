@@ -35,6 +35,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnAudioLevelsChangedDelegat
                                              ActiveSpeakers, const TArray<float>&, AudioLevels);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnScreenshareSourcesReceivedDelegate,
                                             const TArray<FDolbyIOScreenshareSource>&, Sources);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentScreenshareSourceReceivedDelegate, bool, IsNone,
+                                             const FDolbyIOScreenshareSource&, OptionalSource);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnAudioInputDevicesReceivedDelegate,
                                             const TArray<FDolbyIOAudioDevice>&, Devices);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnAudioOutputDevicesReceivedDelegate,
@@ -51,6 +53,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentAudioInputDeviceCh
                                              const FDolbyIOAudioDevice&, OptionalDevice);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentAudioOutputDeviceChangedDelegate, bool, IsNone,
                                              const FDolbyIOAudioDevice&, OptionalDevice);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnMessageReceivedDelegate, const FString&, Message,
+                                             const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnErrorDelegate, const FString&, ErrorMsg);
 
 namespace dolbyio::comms
@@ -89,11 +93,12 @@ public:
 	FDolbyIOOnErrorDelegate OnSetTokenError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
-	void Connect(
-	    const FString& ConferenceName = "unreal", const FString& UserName = "", const FString& ExternalID = "",
-	    const FString& AvatarURL = "", EDolbyIOConnectionMode ConnectionMode = EDolbyIOConnectionMode::Active,
-	    EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared, int MaxVideoStreams = 25,
-	    EDolbyIOVideoForwardingStrategy VideoForwardingStrategy = EDolbyIOVideoForwardingStrategy::LastSpeaker);
+	void Connect(const FString& ConferenceName = "unreal", const FString& UserName = "", const FString& ExternalID = "",
+	             const FString& AvatarURL = "", EDolbyIOConnectionMode ConnectionMode = EDolbyIOConnectionMode::Active,
+	             EDolbyIOSpatialAudioStyle SpatialAudioStyle = EDolbyIOSpatialAudioStyle::Shared,
+	             int MaxVideoStreams = 25,
+	             EDolbyIOVideoForwardingStrategy VideoForwardingStrategy = EDolbyIOVideoForwardingStrategy::LastSpeaker,
+	             EDolbyIOVideoCodec VideoCodec = EDolbyIOVideoCodec::H264);
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnConnectedDelegate OnConnected;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
@@ -206,6 +211,13 @@ public:
 	FDolbyIOOnErrorDelegate OnChangeScreenshareParametersError;
 
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void GetCurrentScreenshareSource();
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnCurrentScreenshareSourceReceivedDelegate OnCurrentScreenshareSourceReceived;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetCurrentScreenshareSourceError;
+
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetLocalPlayerLocation(const FVector& Location);
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnErrorDelegate OnSetLocalPlayerLocationError;
@@ -293,6 +305,11 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnErrorDelegate OnSetAudioCaptureModeError;
 
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
+	void SendMessage(const FString& Message, const TArray<FString>& ParticipantIDs);
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSendMessageError;
+
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnTokenNeededDelegate OnTokenNeeded;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
@@ -311,6 +328,8 @@ public:
 	FDolbyIOOnActiveSpeakersChangedDelegate OnActiveSpeakersChanged;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnAudioLevelsChangedDelegate OnAudioLevelsChanged;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnMessageReceivedDelegate OnMessageReceived;
 
 private:
 	void Initialize(FSubsystemCollectionBase&) override;
@@ -512,6 +531,14 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnErrorDelegate OnChangeScreenshareParametersError;
 
+	/** Triggered when the current screenshare source is received as a result of calling Get Current Screenshare Source.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnCurrentScreenshareSourceReceivedDelegate OnCurrentScreenshareSourceReceived;
+	/** Triggered when errors occur after calling the Get Current Screenshare Source function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnGetCurrentScreenshareSourceError;
+
 	/** Triggered when participants start or stop speaking. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnActiveSpeakersChangedDelegate OnActiveSpeakersChanged;
@@ -607,6 +634,14 @@ public:
 	/** Triggered when errors occur after calling the Set Audio Capture Mode function. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnErrorDelegate OnSetAudioCaptureModeError;
+
+	/** Triggered when errors occur after calling the Send Message function. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnErrorDelegate OnSendMessageError;
+
+	/** Triggered when a message is received. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnMessageReceivedDelegate OnMessageReceived;
 
 private:
 	void InitializeComponent() override;
@@ -712,6 +747,13 @@ private:
 	    DLB_DEFINE_FORWARDER(OnChangeScreenshareParametersError, ErrorMsg);
 
 	UFUNCTION()
+	void FwdOnCurrentScreenshareSourceReceived(bool IsNone, const FDolbyIOScreenshareSource& OptionalSource)
+	    DLB_DEFINE_FORWARDER(OnCurrentScreenshareSourceReceived, IsNone, OptionalSource);
+	UFUNCTION()
+	void FwdOnGetCurrentScreenshareSourceError(const FString& ErrorMsg)
+	    DLB_DEFINE_FORWARDER(OnGetCurrentScreenshareSourceError, ErrorMsg);
+
+	UFUNCTION()
 	void FwdOnActiveSpeakersChanged(const TArray<FString>& ActiveSpeakers)
 	    DLB_DEFINE_FORWARDER(OnActiveSpeakersChanged, ActiveSpeakers);
 
@@ -796,6 +838,13 @@ private:
 	UFUNCTION()
 	void FwdOnSetAudioCaptureModeError(const FString& ErrorMsg)
 	    DLB_DEFINE_FORWARDER(OnSetAudioCaptureModeError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnSendMessageError(const FString& ErrorMsg) DLB_DEFINE_FORWARDER(OnSendMessageError, ErrorMsg);
+
+	UFUNCTION()
+	void FwdOnMessageReceived(const FString& Message, const FDolbyIOParticipantInfo& ParticipantInfo)
+	    DLB_DEFINE_FORWARDER(OnMessageReceived, Message, ParticipantInfo);
 
 #undef DLB_DEFINE_FORWARDER
 };
