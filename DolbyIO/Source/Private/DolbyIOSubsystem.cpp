@@ -48,6 +48,13 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	OnTokenNeeded.Broadcast();
 }
 
+void UDolbyIOSubsystem::Deinitialize()
+{
+	Sdk.Reset(); // make sure Sdk is dead so it doesn't call handle_frame on VideoSink during game destruction
+
+	Super::Deinitialize();
+}
+
 #define MAKE_DLB_ERROR_HANDLER FErrorHandler(*this, __LINE__)
 
 void UDolbyIOSubsystem::SetToken(const FString& Token)
