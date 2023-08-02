@@ -37,6 +37,13 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	BroadcastEvent(OnTokenNeeded);
 }
 
+void UDolbyIOSubsystem::Deinitialize()
+{
+	Sdk.Reset(); // make sure Sdk is dead so it doesn't call handle_frame on VideoSink during game destruction
+
+	Super::Deinitialize();
+}
+
 void UDolbyIOSubsystem::SetLogSettings(EDolbyIOLogLevel SdkLogLevel, EDolbyIOLogLevel MediaLogLevel,
                                        EDolbyIOLogLevel DvcLogLevel)
 {
