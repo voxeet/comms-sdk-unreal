@@ -12,6 +12,8 @@
 
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
+#include "Interfaces/IPluginManager.h"
+#include "Misc/EngineVersion.h"
 #include "Misc/Paths.h"
 #include "TimerManager.h"
 
@@ -81,6 +83,24 @@ void UDolbyIOSubsystem::SetToken(const FString& Token)
 	}
 }
 
+namespace
+{
+	FString GetComponentVersion()
+	{
+		return *IPluginManager::Get().FindPlugin("DolbyIO")->GetDescriptor().VersionName + FString{"_ue"} +
+		       FEngineVersion::Current().ToString(EVersionComponent::Minor) + "_" +
+#if PLATFORM_WINDOWS
+		       "windows";
+#elif PLATFORM_MAC
+		       "macos";
+#elif PLATFORM_LINUX
+		       "linux";
+#elif PLATFORM_ANDROID
+		       "android";
+#endif
+	}
+}
+
 void UDolbyIOSubsystem::Initialize(const FString& Token)
 {
 	try
@@ -105,7 +125,10 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 #define DLB_REGISTER_HANDLER(Service, Event) \
 	[this](event_handler_id) { return Sdk->Service().add_event_handler([this](const Event& Event) { Handle(Event); }); }
 
-	Sdk->register_component_version("unreal-sdk", "1.2.0-beta.4")
+	const FString ComponentName = "unreal-sdk";
+	const FString ComponentVersion = GetComponentVersion();
+	DLB_UE_LOG("Registering component %s %s", *ComponentName, *ComponentVersion);
+	Sdk->register_component_version(ToStdString(ComponentName), ToStdString(ComponentVersion))
 	    .then(
 	        [this](sdk::component_data)
 	        {
