@@ -12,6 +12,7 @@
 
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
+#include "GenericPlatform/GenericPlatformProperties.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/EngineVersion.h"
 #include "Misc/Paths.h"
@@ -83,24 +84,6 @@ void UDolbyIOSubsystem::SetToken(const FString& Token)
 	}
 }
 
-namespace
-{
-	FString GetComponentVersion()
-	{
-		return *IPluginManager::Get().FindPlugin("DolbyIO")->GetDescriptor().VersionName + FString{"_ue"} +
-		       FEngineVersion::Current().ToString(EVersionComponent::Minor) + "_" +
-#if PLATFORM_WINDOWS
-		       "windows";
-#elif PLATFORM_MAC
-		       "macos";
-#elif PLATFORM_LINUX
-		       "linux";
-#elif PLATFORM_ANDROID
-		       "android";
-#endif
-	}
-}
-
 void UDolbyIOSubsystem::Initialize(const FString& Token)
 {
 	try
@@ -126,7 +109,9 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	[this](event_handler_id) { return Sdk->Service().add_event_handler([this](const Event& Event) { Handle(Event); }); }
 
 	const FString ComponentName = "unreal-sdk";
-	const FString ComponentVersion = GetComponentVersion();
+	const FString ComponentVersion = *IPluginManager::Get().FindPlugin("DolbyIO")->GetDescriptor().VersionName +
+	                                 FString{"_UE"} + FEngineVersion::Current().ToString(EVersionComponent::Minor) +
+	                                 "_" + FPlatformProperties::IniPlatformName();
 	DLB_UE_LOG("Registering component %s %s", *ComponentName, *ComponentVersion);
 	Sdk->register_component_version(ToStdString(ComponentName), ToStdString(ComponentVersion))
 	    .then(
