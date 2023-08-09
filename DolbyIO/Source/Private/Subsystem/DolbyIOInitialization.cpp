@@ -12,7 +12,6 @@
 
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
-#include "GenericPlatform/GenericPlatformProperties.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/EngineVersion.h"
 #include "Misc/Paths.h"
@@ -117,8 +116,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 
 	const FString ComponentName = "unreal-sdk";
 	const FString ComponentVersion = *IPluginManager::Get().FindPlugin("DolbyIO")->GetDescriptor().VersionName +
-	                                 FString{"_UE"} + FEngineVersion::Current().ToString(EVersionComponent::Minor) +
-	                                 "_" + FPlatformProperties::IniPlatformName();
+	                                 FString{"_UE"} + FEngineVersion::Current().ToString(EVersionComponent::Minor);
 	DLB_UE_LOG("Registering component %s %s", *ComponentName, *ComponentVersion);
 	Sdk->register_component_version(ToStdString(ComponentName), ToStdString(ComponentVersion))
 	    .then(
