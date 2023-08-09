@@ -11,7 +11,7 @@ permissions:
   packages: write
 
 env:
-  CPP_SDK_TAG: "2.5.4"
+  CPP_SDK_TAG: "2.5.5"
   CPP_SDK_DESTINATION: "DolbyIO"
   CPP_SDK_URL: "https://github.com/DolbyIO/comms-sdk-cpp/releases/download"
   UNREAL_PLUGIN_OUTPUT: "Build/DolbyIO"
