@@ -17,6 +17,7 @@ namespace dolbyio::comms
 	struct audio_device_changed;
 	struct audio_levels;
 	struct conference_message_received;
+	struct local_participant_updated;
 	struct remote_participant_added;
 	struct remote_participant_updated;
 	struct remote_video_track_added;
