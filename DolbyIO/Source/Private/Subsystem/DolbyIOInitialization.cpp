@@ -129,6 +129,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 	    .then(DLB_REGISTER_HANDLER(device_management, audio_device_changed))
 	    .then(DLB_REGISTER_HANDLER(conference, audio_levels))
 	    .then(DLB_REGISTER_HANDLER(conference, conference_message_received))
+	    .then(DLB_REGISTER_HANDLER(conference, local_participant_updated))
 	    .then(DLB_REGISTER_HANDLER(conference, remote_participant_added))
 	    .then(DLB_REGISTER_HANDLER(conference, remote_participant_updated))
 	    .then(DLB_REGISTER_HANDLER(conference, remote_video_track_added))
@@ -174,10 +175,10 @@ void UDolbyIOObserver::InitializeComponent()
 				DLB_BIND(OnConnectError);
 				DLB_BIND(OnDemoConferenceError);
 
-				DLB_BIND(OnDisconnected)
+				DLB_BIND(OnDisconnected);
 				DLB_BIND(OnDisconnectError);
 
-				DLB_BIND(OnSetSpatialEnvironmentScaleError)
+				DLB_BIND(OnSetSpatialEnvironmentScaleError);
 
 				DLB_BIND(OnMuteInputError);
 
@@ -195,6 +196,8 @@ void UDolbyIOObserver::InitializeComponent()
 
 				DLB_BIND(OnParticipantUpdated);
 
+				DLB_BIND(OnLocalParticipantUpdated);
+
 				DLB_BIND(OnVideoTrackAdded);
 
 				DLB_BIND(OnVideoTrackRemoved);
@@ -203,7 +206,7 @@ void UDolbyIOObserver::InitializeComponent()
 
 				DLB_BIND(OnVideoTrackDisabled);
 
-				DLB_BIND(OnVideoEnabled)
+				DLB_BIND(OnVideoEnabled);
 				DLB_BIND(OnEnableVideoError);
 
 				DLB_BIND(OnVideoDisabled);
@@ -216,7 +219,7 @@ void UDolbyIOObserver::InitializeComponent()
 				DLB_BIND(OnStartScreenshareError);
 
 				DLB_BIND(OnScreenshareStopped);
-				DLB_BIND(OnStopScreenshareError)
+				DLB_BIND(OnStopScreenshareError);
 
 				DLB_BIND(OnChangeScreenshareParametersError);
 

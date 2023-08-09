@@ -235,6 +235,7 @@ void UDolbyIOSubsystem::Handle(const remote_participant_added& Event)
 	{
 		return;
 	}
+
 	const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
 	DLB_UE_LOG("Participant status added: UserID=%s Name=%s ExternalID=%s Status=%s", *Info.UserID, *Info.Name,
 	           *Info.ExternalID, *ToString(*Event.participant.status));
@@ -253,6 +254,7 @@ void UDolbyIOSubsystem::Handle(const remote_participant_updated& Event)
 	{
 		return;
 	}
+
 	const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
 	DLB_UE_LOG("Participant status updated: UserID=%s Name=%s ExternalID=%s Status=%s", *Info.UserID, *Info.Name,
 	           *Info.ExternalID, *ToString(*Event.participant.status));
@@ -262,6 +264,20 @@ void UDolbyIOSubsystem::Handle(const remote_participant_updated& Event)
 	}
 
 	BroadcastEvent(OnParticipantUpdated, Info.Status, Info);
+}
+
+void UDolbyIOSubsystem::Handle(const local_participant_updated& Event)
+{
+	if (!Event.participant.status)
+	{
+		return;
+	}
+
+	const FDolbyIOParticipantInfo Info = ToFDolbyIOParticipantInfo(Event.participant);
+	DLB_UE_LOG("Local participant status updated: UserID=%s Name=%s ExternalID=%s Status=%s", *Info.UserID, *Info.Name,
+	           *Info.ExternalID, *ToString(*Event.participant.status));
+
+	BroadcastEvent(OnLocalParticipantUpdated, Info.Status, Info);
 }
 
 void UDolbyIOSubsystem::Handle(const conference_message_received& Event)

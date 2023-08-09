@@ -21,6 +21,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnParticipantAddedDelegate,
                                              Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnParticipantUpdatedDelegate, const EDolbyIOParticipantStatus,
                                              Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnLocalParticipantUpdatedDelegate, const EDolbyIOParticipantStatus,
+                                             Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnVideoTrackAddedDelegate, const FDolbyIOVideoTrack&, VideoTrack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnVideoTrackRemovedDelegate, const FDolbyIOVideoTrack&, VideoTrack);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnVideoTrackEnabledDelegate, const FDolbyIOVideoTrack&, VideoTrack);
@@ -306,6 +308,8 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnParticipantUpdatedDelegate OnParticipantUpdated;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnLocalParticipantUpdatedDelegate OnLocalParticipantUpdated;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnVideoTrackAddedDelegate OnVideoTrackAdded;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnVideoTrackRemovedDelegate OnVideoTrackRemoved;
@@ -349,6 +353,7 @@ private:
 	void Handle(const dolbyio::comms::audio_device_changed&);
 	void Handle(const dolbyio::comms::audio_levels&);
 	void Handle(const dolbyio::comms::conference_message_received&);
+	void Handle(const dolbyio::comms::local_participant_updated&);
 	void Handle(const dolbyio::comms::remote_participant_added&);
 	void Handle(const dolbyio::comms::remote_participant_updated&);
 	void Handle(const dolbyio::comms::remote_video_track_added&);
@@ -476,6 +481,10 @@ public:
 	/** Triggered when a remote participant's status is updated. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnParticipantUpdatedDelegate OnParticipantUpdated;
+
+	/** Triggered when the local participant's status is updated. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnLocalParticipantUpdatedDelegate OnLocalParticipantUpdated;
 
 	/** Triggered when a video track is added. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
@@ -700,6 +709,11 @@ private:
 	UFUNCTION()
 	void FwdOnParticipantUpdated(const EDolbyIOParticipantStatus Status, const FDolbyIOParticipantInfo& ParticipantInfo)
 	    DLB_DEFINE_FORWARDER(OnParticipantUpdated, Status, ParticipantInfo);
+
+	UFUNCTION()
+	void FwdOnLocalParticipantUpdated(const EDolbyIOParticipantStatus Status,
+	                                  const FDolbyIOParticipantInfo& ParticipantInfo)
+	    DLB_DEFINE_FORWARDER(OnLocalParticipantUpdated, Status, ParticipantInfo);
 
 	UFUNCTION()
 	void FwdOnVideoTrackAdded(const FDolbyIOVideoTrack& VideoTrack) DLB_DEFINE_FORWARDER(OnVideoTrackAdded, VideoTrack);
