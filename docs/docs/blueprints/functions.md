@@ -482,6 +482,10 @@ Calling this function even once disables the default behavior, which is to autom
 
 ## Dolby.io Set Log Settings
 
+:::info 🚀 Beta
+The **Log to Console** parameter is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
+:::
+
 Sets what to log in the Dolby.io C++ SDK. The logs will be saved to the default project log directory (likely Saved/Logs).
 
 This function should be called before the first call to [Set Token](#dolbyio-set-token) if the user needs logs about the plugin's operation. Calling this function more than once has no effect.
