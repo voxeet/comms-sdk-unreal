@@ -19,7 +19,7 @@ namespace DolbyIO
 	}
 
 	FErrorHandler::FErrorHandler(const FString& File, int Line, UDolbyIOSubsystem& DolbyIOSubsystem,
-	                             const FDolbyIOOnErrorDelegate& OnError)
+	                             const FDolbyIOErrorDelegate& OnError)
 	    : File(FPaths::GetCleanFilename(File)), Line(Line), DolbyIOSubsystem(DolbyIOSubsystem), OnError(&OnError)
 	{
 	}
@@ -90,7 +90,7 @@ namespace DolbyIO
 		}
 	}
 
-	void FErrorHandler::Warn(const FDolbyIOOnErrorDelegate& OnError, const FString& Msg)
+	void FErrorHandler::Warn(const FDolbyIOErrorDelegate& OnError, const FString& Msg)
 	{
 		DLB_UE_LOG_BASE(Warning, "%s", *Msg);
 		BroadcastEvent(OnError, Msg);

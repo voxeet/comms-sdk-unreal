@@ -46,14 +46,17 @@ UTexture2D* UDolbyIOSubsystem::GetTexture(const FString& VideoTrackID)
 
 void UDolbyIOSubsystem::BroadcastVideoTrackAdded(const FDolbyIOVideoTrack& VideoTrack)
 {
-	DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID, *VideoTrack.ParticipantID);
-	BroadcastEvent(OnVideoTrackAdded, VideoTrack);
+	DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s IsScreenshare=%d", *VideoTrack.TrackID,
+	           *VideoTrack.ParticipantID, VideoTrack.bIsScreenshare);
+	BroadcastEvent(VideoTrack.bIsScreenshare ? OnRemoteScreenshareTrackAdded : OnRemoteCameraTrackAdded,
+	               VideoTrack.TrackID, VideoTrack.ParticipantID);
 }
 
-void UDolbyIOSubsystem::BroadcastVideoTrackEnabled(const FDolbyIOVideoTrack& VideoTrack)
+void UDolbyIOSubsystem::BroadcastRemoteCameraTrackEnabled(const FDolbyIOVideoTrack& VideoTrack)
 {
-	DLB_UE_LOG("Video track enabled: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID, *VideoTrack.ParticipantID);
-	BroadcastEvent(OnVideoTrackEnabled, VideoTrack);
+	DLB_UE_LOG("Remote camera track enabled: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID,
+	           *VideoTrack.ParticipantID, VideoTrack.bIsScreenshare);
+	BroadcastEvent(OnRemoteCameraTrackEnabled, VideoTrack.TrackID, VideoTrack.ParticipantID);
 }
 
 void UDolbyIOSubsystem::ProcessBufferedVideoTracks(const FString& ParticipantID)
@@ -74,7 +77,7 @@ void UDolbyIOSubsystem::ProcessBufferedVideoTracks(const FString& ParticipantID)
 					    {
 						    if (EnabledTracksRef[i].TrackID == AddedTrack.TrackID)
 						    {
-							    BroadcastVideoTrackEnabled(EnabledTracksRef[i]);
+							    BroadcastRemoteCameraTrackEnabled(EnabledTracksRef[i]);
 							    EnabledTracksRef.RemoveAt(i);
 							    if (!EnabledTracksRef.Num())
 							    {
@@ -107,8 +110,8 @@ void UDolbyIOSubsystem::Handle(const remote_video_track_added& Event)
 	}
 	else
 	{
-		DLB_UE_LOG("Buffering video track added: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID,
-		           *VideoTrack.ParticipantID);
+		DLB_UE_LOG("Buffering video track added: TrackID=%s ParticipantID=%s IsScreenshare=%d", *VideoTrack.TrackID,
+		           *VideoTrack.ParticipantID, VideoTrack.bIsScreenshare);
 		BufferedAddedVideoTracks.FindOrAdd(VideoTrack.ParticipantID).Add(VideoTrack);
 	}
 }
@@ -116,11 +119,13 @@ void UDolbyIOSubsystem::Handle(const remote_video_track_added& Event)
 void UDolbyIOSubsystem::Handle(const remote_video_track_removed& Event)
 {
 	const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
-	DLB_UE_LOG("Video track removed: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID, *VideoTrack.ParticipantID);
+	DLB_UE_LOG("Video track removed: TrackID=%s ParticipantID=%s IsScreenshare=%d", *VideoTrack.TrackID,
+	           *VideoTrack.ParticipantID, Event.track.is_screenshare);
 
 	VideoSinks[VideoTrack.TrackID]->UnbindAllMaterials();
 	VideoSinks.Remove(VideoTrack.TrackID);
-	BroadcastEvent(OnVideoTrackRemoved, VideoTrack);
+	BroadcastEvent(Event.track.is_screenshare ? OnRemoteScreenshareTrackRemoved : OnRemoteCameraTrackRemoved,
+	               VideoTrack.TrackID, VideoTrack.ParticipantID);
 }
 
 void UDolbyIOSubsystem::Handle(const utils::vfs_event& Event)
@@ -131,12 +136,12 @@ void UDolbyIOSubsystem::Handle(const utils::vfs_event& Event)
 
 		if (GetTexture(VideoTrack.TrackID))
 		{
-			BroadcastVideoTrackEnabled(VideoTrack);
+			BroadcastRemoteCameraTrackEnabled(VideoTrack);
 		}
 		else
 		{
-			DLB_UE_LOG("Buffering video track enabled: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID,
-			           *VideoTrack.ParticipantID);
+			DLB_UE_LOG("Buffering video track enabled: TrackID=%s ParticipantID=%s IsScreenshare=%d",
+			           *VideoTrack.TrackID, *VideoTrack.ParticipantID, VideoTrack.bIsScreenshare);
 			BufferedEnabledVideoTracks.FindOrAdd(VideoTrack.ParticipantID).Add(VideoTrack);
 		}
 	}
@@ -144,6 +149,6 @@ void UDolbyIOSubsystem::Handle(const utils::vfs_event& Event)
 	{
 		const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(TrackMapItem);
 		DLB_UE_LOG("Video track ID %s for participant ID %s disabled", *VideoTrack.TrackID, *VideoTrack.ParticipantID);
-		BroadcastEvent(OnVideoTrackDisabled, VideoTrack);
+		BroadcastEvent(OnRemoteCameraTrackDisabled, VideoTrack.TrackID, VideoTrack.ParticipantID);
 	}
 }

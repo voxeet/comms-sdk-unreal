@@ -234,32 +234,32 @@ void UDolbyIOObserver::InitializeComponent()
 
 				DLB_BIND(OnLocalParticipantUpdated);
 
-				DLB_BIND(OnVideoTrackAdded);
+				DLB_BIND(OnRemoteCameraTrackAdded);
+				DLB_BIND(OnRemoteCameraTrackRemoved);
+				DLB_BIND(OnRemoteCameraTrackEnabled);
+				DLB_BIND(OnRemoteCameraTrackDisabled);
+				DLB_BIND(OnRemoteScreenshareTrackAdded);
+				DLB_BIND(OnRemoteScreenshareTrackRemoved);
 
-				DLB_BIND(OnVideoTrackRemoved);
-
-				DLB_BIND(OnVideoTrackEnabled);
-
-				DLB_BIND(OnVideoTrackDisabled);
-
-				DLB_BIND(OnVideoEnabled);
+				DLB_BIND(OnLocalCameraTrackAdded);
 				DLB_BIND(OnEnableVideoError);
 
-				DLB_BIND(OnVideoDisabled);
+				DLB_BIND(OnLocalCameraTrackRemoved);
 				DLB_BIND(OnDisableVideoError);
 
 				DLB_BIND(OnScreenshareSourcesReceived);
 				DLB_BIND(OnGetScreenshareSourcesError);
 
-				DLB_BIND(OnScreenshareStarted);
+				DLB_BIND(OnLocalScreenshareTrackAdded);
 				DLB_BIND(OnStartScreenshareError);
 
-				DLB_BIND(OnScreenshareStopped);
+				DLB_BIND(OnLocalScreenshareTrackRemoved);
 				DLB_BIND(OnStopScreenshareError);
 
 				DLB_BIND(OnChangeScreenshareParametersError);
 
 				DLB_BIND(OnCurrentScreenshareSourceReceived);
+				DLB_BIND(OnCurrentScreenshareSourceReceivedNone);
 				DLB_BIND(OnGetCurrentScreenshareSourceError);
 
 				DLB_BIND(OnActiveSpeakersChanged);
@@ -281,21 +281,26 @@ void UDolbyIOObserver::InitializeComponent()
 				DLB_BIND(OnGetAudioOutputDevicesError);
 
 				DLB_BIND(OnCurrentAudioInputDeviceReceived);
+				DLB_BIND(OnCurrentAudioInputDeviceReceivedNone);
 				DLB_BIND(OnGetCurrentAudioInputDeviceError);
 
 				DLB_BIND(OnCurrentAudioOutputDeviceReceived);
+				DLB_BIND(OnCurrentAudioOutputDeviceReceivedNone);
 				DLB_BIND(OnGetCurrentAudioOutputDeviceError);
 
 				DLB_BIND(OnVideoDevicesReceived);
 				DLB_BIND(OnGetVideoDevicesError);
 
 				DLB_BIND(OnCurrentVideoDeviceReceived);
+				DLB_BIND(OnCurrentVideoDeviceReceivedNone);
 				DLB_BIND(OnGetCurrentVideoDeviceError);
 
 				DLB_BIND(OnCurrentAudioInputDeviceChanged);
+				DLB_BIND(OnCurrentAudioInputDeviceChangedToNone);
 				DLB_BIND(OnSetAudioInputDeviceError);
 
 				DLB_BIND(OnCurrentAudioOutputDeviceChanged);
+				DLB_BIND(OnCurrentAudioOutputDeviceChangedToNone);
 				DLB_BIND(OnSetAudioOutputDeviceError);
 
 				DLB_BIND(OnUpdateUserMetadataError);
