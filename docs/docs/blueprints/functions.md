@@ -7,14 +7,18 @@ Binds a dynamic material instance to hold the frames of the given video track. T
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_BindMaterial.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Material** | Input | [Dynamic Material Instance](https://docs.unrealengine.com/5.2/en-US/BlueprintAPI/Rendering/Material/CreateDynamicMaterialInstance/) | - | The dynamic material instance to bind. |
-| **Video Track ID** | Input | string | - | The ID of the video track. |
+| Name               | Direction | Type                                                                                                                                | Default value | Description                            |
+|--------------------|:----------|:------------------------------------------------------------------------------------------------------------------------------------|:--------------|:---------------------------------------|
+| **Material**       | Input     | [Dynamic Material Instance](https://docs.unrealengine.com/5.2/en-US/BlueprintAPI/Rendering/Material/CreateDynamicMaterialInstance/) | -             | The dynamic material instance to bind. |
+| **Video Track ID** | Input     | string                                                                                                                              | -             | The ID of the video track.             |
 
 ---
 
 ## Dolby.io Broadcast Message
+
+:::info 🚀 Beta
+This function is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
+:::
 
 Sends a message to all participants in the current conference. The message size is limited to 16KB.
 
@@ -23,9 +27,9 @@ This function calls [Dolby.io Send Message](#dolbyio-send-message) with an empty
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_BroadcastMessage.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Message** | Input | string | - | The message to send. |
+| Name        | Direction | Type   | Default value | Description          |
+|-------------|:----------|:-------|:--------------|:---------------------|
+| **Message** | Input     | string | -             | The message to send. |
 
 ---
 
@@ -36,38 +40,42 @@ Changes the screen sharing parameters if already sharing screen.
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_ChangeScreenshareParameters.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Encoder Hint** | Input | [Dolby.io Screenshare Encoder Hint](types.mdx#dolbyio-screenshare-encoder-hint) | Detailed | Provides a hint to the plugin as to what type of content is being captured by the screen share. |
-| **Max Resolution** | Input | [Dolby.io Screenshare Max Resolution](types.mdx#dolbyio-screenshare-max-resolution) | Actual Captured | The maximum resolution for the capture screen content to be shared as. |
-| **Downscale Quality** | Input | [Dolby.io Screenshare Downscale Quality](types.mdx#dolbyio-screenshare-downscale-quality) | Low | The quality for the downscaling algorithm to be used. |
+| Name                  | Direction | Type                                                                                      | Default value   | Description                                                                                     |
+|-----------------------|:----------|:------------------------------------------------------------------------------------------|:----------------|:------------------------------------------------------------------------------------------------|
+| **Encoder Hint**      | Input     | [Dolby.io Screenshare Encoder Hint](types.mdx#dolbyio-screenshare-encoder-hint)           | Detailed        | Provides a hint to the plugin as to what type of content is being captured by the screen share. |
+| **Max Resolution**    | Input     | [Dolby.io Screenshare Max Resolution](types.mdx#dolbyio-screenshare-max-resolution)       | Actual Captured | The maximum resolution for the capture screen content to be shared as.                          |
+| **Downscale Quality** | Input     | [Dolby.io Screenshare Downscale Quality](types.mdx#dolbyio-screenshare-downscale-quality) | Low             | The quality for the downscaling algorithm to be used.                                           |
 
 ---
 
 ## Dolby.io Connect
+
+:::info 🚀 Beta
+The **Video Codec** parameter is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
+:::
 
 Connects to a conference.
 
 ![](../../static/img/generated/DolbyIOConnect/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Conference Name** | Input | string | "unreal" | The conference name. Must not be empty. |
-| **User Name** | Input | string | "" | The name of the participant. |
-| **External ID** | Input | string | "" | The external unique identifier that the customer's application can add to the participant while opening a session. If a participant uses the same external ID in conferences, the participant's ID also remains the same across all sessions. |
-| **Avatar URL** | Input | string | "" | The URL of the participant's avatar. |
-| **Connection Mode** | Input | [Dolby.io Connection Mode](types.mdx#dolbyio-connection-mode) | Active | Defines whether to connect as an active user or a listener. |
-| **Spatial Audio Style** | Input | [Dolby.io Spatial Audio Style](types.mdx#dolbyio-spatial-audio-style) | Shared | The spatial audio style of the conference. |
-| **Max Video Streams** | Input | integer | 25 | Sets the maximum number of video streams that may be transmitted to the user. |
-| **Video Forwarding Strategy** | Input | [Dolby.io Video Forwarding Strategy](types.mdx#dolbyio-video-forwarding-strategy) | LastSpeaker | Defines how the plugin should select conference participants whose videos will be transmitted to the local participant. |
-| **Video Codec** | Input | [Dolby.io Video Codec](types.mdx#dolbyio-video-codec) | H264 | The preferred video codec. |
+| Name                          | Direction | Type                                                                              | Default value | Description                                                                                                                                                                                                                                   |
+|-------------------------------|:----------|:----------------------------------------------------------------------------------|:--------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Conference Name**           | Input     | string                                                                            | "unreal"      | The conference name. Must not be empty.                                                                                                                                                                                                       |
+| **User Name**                 | Input     | string                                                                            | ""            | The name of the participant.                                                                                                                                                                                                                  |
+| **External ID**               | Input     | string                                                                            | ""            | The external unique identifier that the customer's application can add to the participant while opening a session. If a participant uses the same external ID in conferences, the participant's ID also remains the same across all sessions. |
+| **Avatar URL**                | Input     | string                                                                            | ""            | The URL of the participant's avatar.                                                                                                                                                                                                          |
+| **Connection Mode**           | Input     | [Dolby.io Connection Mode](types.mdx#dolbyio-connection-mode)                     | Active        | Defines whether to connect as an active user or a listener.                                                                                                                                                                                   |
+| **Spatial Audio Style**       | Input     | [Dolby.io Spatial Audio Style](types.mdx#dolbyio-spatial-audio-style)             | Shared        | The spatial audio style of the conference.                                                                                                                                                                                                    |
+| **Max Video Streams**         | Input     | integer                                                                           | 25            | Sets the maximum number of video streams that may be transmitted to the user.                                                                                                                                                                 |
+| **Video Forwarding Strategy** | Input     | [Dolby.io Video Forwarding Strategy](types.mdx#dolbyio-video-forwarding-strategy) | LastSpeaker   | Defines how the plugin should select conference participants whose videos will be transmitted to the local participant.                                                                                                                       |
+| **Video Codec**               | Input     | [Dolby.io Video Codec](types.mdx#dolbyio-video-codec)                             | H264          | The preferred video codec.                                                                                                                                                                                                                    |
 
 #### Triggered events
-| Event | When |
-|---|:---|
-| [**On Connected**](events.md#on-connected) | Successful |
-| [**On Error**](events.md#on-error) | Errors occur |
+| Event                                      | When         |
+|--------------------------------------------|:-------------|
+| [**On Connected**](events.md#on-connected) | Successful   |
+| [**On Error**](events.md#on-error)         | Errors occur |
 
 ---
 
@@ -80,10 +88,10 @@ The demo automatically brings in 3 invisible bots into the conference as a quick
 ![](../../static/img/generated/DolbyIODemoConference/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Triggered events
-| Event | When |
-|---|:---|
-| [**On Connected**](events.md#on-connected) | Successful |
-| [**On Error**](events.md#on-error) | Errors occur |
+| Event                                      | When         |
+|--------------------------------------------|:-------------|
+| [**On Connected**](events.md#on-connected) | Successful   |
+| [**On Error**](events.md#on-error)         | Errors occur |
 
 ---
 
@@ -94,10 +102,10 @@ Disables video streaming.
 ![](../../static/img/generated/DolbyIODisableVideo/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Triggered events
-| Event | When |
-|---|:---|
-| [**On Video Disabled**](events.md#on-video-disabled) | Successful |
-| [**On Error**](events.md#on-error) | Errors occur |
+| Event                                                | When         |
+|------------------------------------------------------|:-------------|
+| [**On Video Disabled**](events.md#on-video-disabled) | Successful   |
+| [**On Error**](events.md#on-error)                   | Errors occur |
 
 ---
 
@@ -108,30 +116,34 @@ Disconnects from the current conference.
 ![](../../static/img/generated/DolbyIODisconnect/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Triggered events
-| Event | When |
-|---|:---|
-| [**On Disconnected**](events.md#on-connected) | Successful |
-| [**On Error**](events.md#on-error) | Errors occur |
+| Event                                         | When         |
+|-----------------------------------------------|:-------------|
+| [**On Disconnected**](events.md#on-connected) | Successful   |
+| [**On Error**](events.md#on-error)            | Errors occur |
 
 ---
 
 ## Dolby.io Enable Video
+
+:::info 🚀 Beta
+The **Blur Background** parameter is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
+:::
 
 Enables video streaming from the given video device or the default device if no device is given.
 
 ![](../../static/img/generated/DolbyIOEnableVideo/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **VideoDevice** | Input | [Dolby.io Video Device](types.mdx#dolbyio-video-device) | default device | The video device to use. |
-| **Blur Background** | Input | bool | false | Indicates whether the background should be blurred. This parameter is ignored on platforms other than Windows and macOS. |
+| Name                | Direction | Type                                                    | Default value  | Description                                                                                                              |
+|---------------------|:----------|:--------------------------------------------------------|:---------------|:-------------------------------------------------------------------------------------------------------------------------|
+| **VideoDevice**     | Input     | [Dolby.io Video Device](types.mdx#dolbyio-video-device) | default device | The video device to use.                                                                                                 |
+| **Blur Background** | Input     | bool                                                    | false          | Indicates whether the background should be blurred. This parameter is ignored on platforms other than Windows and macOS. |
 
 #### Triggered events
-| Event | When |
-|---|:---|
-| [**On Video Enabled**](events.md#on-video-enabled) | Successful |
-| [**On Error**](events.md#on-error) | Errors occur |
+| Event                                              | When         |
+|----------------------------------------------------|:-------------|
+| [**On Video Enabled**](events.md#on-video-enabled) | Successful   |
+| [**On Error**](events.md#on-error)                 | Errors occur |
 
 ---
 
@@ -142,10 +154,10 @@ Gets a list of all available audio input devices.
 ![](../../static/img/generated/DolbyIOGetAudioInputDevices/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Triggered events
-| Event | When |
-|---|:---|
-| [**On Audio Input Devices Received**](events.md#on-audio-input-devices-received) | Successful |
-| [**On Error**](events.md#on-error) | Errors occur |
+| Event                                                                            | When         |
+|----------------------------------------------------------------------------------|:-------------|
+| [**On Audio Input Devices Received**](events.md#on-audio-input-devices-received) | Successful   |
+| [**On Error**](events.md#on-error)                                               | Errors occur |
 
 ---
 
@@ -156,10 +168,10 @@ Gets a list of all available audio output devices.
 ![](../../static/img/generated/DolbyIOGetAudioOutputDevices/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Triggered events
-| Event | When |
-|---|:---|
-| [**On Audio Output Devices Received**](events.md#on-audio-output-devices-received) | Successful |
-| [**On Error**](events.md#on-error) | Errors occur |
+| Event                                                                              | When         |
+|------------------------------------------------------------------------------------|:-------------|
+| [**On Audio Output Devices Received**](events.md#on-audio-output-devices-received) | Successful   |
+| [**On Error**](events.md#on-error)                                                 | Errors occur |
 
 ---
 
@@ -170,10 +182,10 @@ Gets the current audio input device.
 ![](../../static/img/generated/DolbyIOGetCurrentAudioInputDevice/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Triggered events
-| Event | When |
-|---|:---|
-| [**On Current Audio Input Device Received**](events.md#on-current-audio-input-device-received) | Successful |
-| [**On Error**](events.md#on-error) | Errors occur |
+| Event                                                                                          | When         |
+|------------------------------------------------------------------------------------------------|:-------------|
+| [**On Current Audio Input Device Received**](events.md#on-current-audio-input-device-received) | Successful   |
+| [**On Error**](events.md#on-error)                                                             | Errors occur |
 
 ---
 
@@ -184,38 +196,46 @@ Gets the current audio output device.
 ![](../../static/img/generated/DolbyIOGetCurrentAudioOutputDevice/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Triggered events
-| Event | When |
-|---|:---|
-| [**On Current Audio Output Device Received**](events.md#on-current-audio-output-device-received) | Successful |
-| [**On Error**](events.md#on-error) | Errors occur |
+| Event                                                                                            | When         |
+|--------------------------------------------------------------------------------------------------|:-------------|
+| [**On Current Audio Output Device Received**](events.md#on-current-audio-output-device-received) | Successful   |
+| [**On Error**](events.md#on-error)                                                               | Errors occur |
 
 ---
 
 ## Dolby.io Get Current Screenshare Source
+
+:::info 🚀 Beta
+This function is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
+:::
 
 Gets the current screenshare source.
 
 ![](../../static/img/generated/DolbyIOGetCurrentScreenshareSource/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Triggered events
-| Event | When |
-|---|:---|
-| [**On Current Screenshare Source Received**](events.md#on-current-screenshare-source-received) | Successful |
-| [**On Error**](events.md#on-error) | Errors occur |
+| Event                                                                                          | When         |
+|------------------------------------------------------------------------------------------------|:-------------|
+| [**On Current Screenshare Source Received**](events.md#on-current-screenshare-source-received) | Successful   |
+| [**On Error**](events.md#on-error)                                                             | Errors occur |
 
 ---
 
 ## Dolby.io Get Current Video Device
+
+:::info 🚀 Beta
+This function is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
+:::
 
 Gets the current video device.
 
 ![](../../static/img/generated/DolbyIOGetCurrentVideoDevice/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Triggered events
-| Event | When |
-|---|:---|
-| [**On Current Video Device Received**](events.md#on-current-video-device-received) | Successful |
-| [**On Error**](events.md#on-error) | Errors occur |
+| Event                                                                              | When         |
+|------------------------------------------------------------------------------------|:-------------|
+| [**On Current Video Device Received**](events.md#on-current-video-device-received) | Successful   |
+| [**On Error**](events.md#on-error)                                                 | Errors occur |
 
 ---
 
@@ -226,9 +246,9 @@ Gets a list of all remote participants.
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_GetParticipants.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Return Value** | Output | array of [Dolby.io Participant Info](types.mdx#dolbyio-participant-info) | - | An array of current Dolby.io Participant Info's. |
+| Name             | Direction | Type                                                                     | Default value | Description                                      |
+|------------------|:----------|:-------------------------------------------------------------------------|:--------------|:-------------------------------------------------|
+| **Return Value** | Output    | array of [Dolby.io Participant Info](types.mdx#dolbyio-participant-info) | -             | An array of current Dolby.io Participant Info's. |
 
 ---
 
@@ -239,10 +259,10 @@ Gets a list of all possible screen sharing sources. These can be entire screens 
 ![](../../static/img/generated/DolbyIOGetScreenshareSources/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Triggered events
-| Event | When |
-|---|:---|
-| [**On Screenshare Sources Received**](events.md#on-screenshare-sources-received) | Successful |
-| [**On Error**](events.md#on-error) | Errors occur |
+| Event                                                                            | When         |
+|----------------------------------------------------------------------------------|:-------------|
+| [**On Screenshare Sources Received**](events.md#on-screenshare-sources-received) | Successful   |
+| [**On Error**](events.md#on-error)                                               | Errors occur |
 
 ---
 
@@ -253,14 +273,18 @@ Gets the texture to which video from a given track is being rendered.
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_GetTexture.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Video Track ID** | Input | string | - | The ID of the video track. |
-| **Return Value** | Output | [Texture](https://docs.unrealengine.com/5.2/en-US/BlueprintAPI/Rendering/Texture/) | - | The texture holding the video track's frame or NULL if no such texture exists. |
+| Name               | Direction | Type                                                                               | Default value | Description                                                                    |
+|--------------------|:----------|:-----------------------------------------------------------------------------------|:--------------|:-------------------------------------------------------------------------------|
+| **Video Track ID** | Input     | string                                                                             | -             | The ID of the video track.                                                     |
+| **Return Value**   | Output    | [Texture](https://docs.unrealengine.com/5.2/en-US/BlueprintAPI/Rendering/Texture/) | -             | The texture holding the video track's frame or NULL if no such texture exists. |
 
 ---
 
 ## Dolby.io Get Token From URL
+
+:::info 🚀 Beta
+This function is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
+:::
 
 Gets a Dolby.io client access token from a URL.
 
@@ -271,18 +295,22 @@ For convenience during early development and prototyping, this function is provi
 ![](../../static/img/generated/DolbyIOGetTokenFromURL/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **URL** | Input | string | - | The URL to use to obtain the token. |
+| Name    | Direction | Type   | Default value | Description                         |
+|---------|:----------|:-------|:--------------|:------------------------------------|
+| **URL** | Input     | string | -             | The URL to use to obtain the token. |
 
 #### Triggered events
-| Event | When |
-|---|:---|
+| Event                                                | When       |
+|------------------------------------------------------|:-----------|
 | [**On Token Obtained**](events.md#on-token-obtained) | Successful |
 
 ---
 
 ## Dolby.io Get Token Using App Key And Secret
+
+:::info 🚀 Beta
+The function is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs) and replaces **Get Dolby.io Token**. The behavior of **Get Dolby.io Token** remains unchanged; we only renamed the function.
+:::
 
 Gets a Dolby.io client access token using an app key and secret combination.
 
@@ -293,17 +321,17 @@ For convenience during early development and prototyping, this function is provi
 ![](../../static/img/generated/GetDolbyIOToken/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **App Key** | Input | string | - | The app key. |
-| **App Secret** | Input | string | - | The app secret. |
-| **Token Expiration Time In Seconds** | Input | integer | 3600 (1 hour) | The token's expiration time (in seconds). |
+| Name                                 | Direction | Type    | Default value | Description                               |
+|--------------------------------------|:----------|:--------|:--------------|:------------------------------------------|
+| **App Key**                          | Input     | string  | -             | The app key.                              |
+| **App Secret**                       | Input     | string  | -             | The app secret.                           |
+| **Token Expiration Time In Seconds** | Input     | integer | 3600 (1 hour) | The token's expiration time (in seconds). |
 
 #### Triggered events
-| Event | When |
-|---|:---|
-| [**Token Obtained**](events.md#on-token-obtained) | Successful |
-| [**On Error**](events.md#on-error) | Errors occur |
+| Event                                             | When         |
+|---------------------------------------------------|:-------------|
+| [**Token Obtained**](events.md#on-token-obtained) | Successful   |
+| [**On Error**](events.md#on-error)                | Errors occur |
 
 ---
 
@@ -314,10 +342,10 @@ Gets a list of all available video devices.
 ![](../../static/img/generated/DolbyIOGetVideoDevices/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Triggered events
-| Event | When |
-|---|:---|
-| [**On Video Devices Received**](events.md#on-video-devices-received) | Successful |
-| [**On Error**](events.md#on-error) | Errors occur |
+| Event                                                                | When         |
+|----------------------------------------------------------------------|:-------------|
+| [**On Video Devices Received**](events.md#on-video-devices-received) | Successful   |
+| [**On Error**](events.md#on-error)                                   | Errors occur |
 
 ---
 
@@ -344,37 +372,45 @@ Mutes a given participant for the local user.
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_MuteParticipant.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Participant ID** | Input | string | - | The ID of the remote participant to mute. |
+| Name               | Direction | Type   | Default value | Description                               |
+|--------------------|:----------|:-------|:--------------|:------------------------------------------|
+| **Participant ID** | Input     | string | -             | The ID of the remote participant to mute. |
 
 ---
 
 ## Dolby.io Send Message
+
+:::info 🚀 Beta
+This function is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
+:::
 
 Sends a message to selected participants in the current conference. The message size is limited to 16KB.
 
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_SendMessage.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Message** | Input | string | - | The message to send. |
-| **Participant IDs** | Input | array of strings | - | The participants to whom the message should be sent. If an empty array is provided, the message will be broadcast to all participants. |
+| Name                | Direction | Type             | Default value | Description                                                                                                                            |
+|---------------------|:----------|:-----------------|:--------------|:---------------------------------------------------------------------------------------------------------------------------------------|
+| **Message**         | Input     | string           | -             | The message to send.                                                                                                                   |
+| **Participant IDs** | Input     | array of strings | -             | The participants to whom the message should be sent. If an empty array is provided, the message will be broadcast to all participants. |
 
 ---
 
 ## Dolby.io Set Audio Capture Mode
+
+:::info 🚀 Beta
+This function is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
+:::
 
 Sets the preferred noise reduction mode and voice font.
 
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_SetAudioCaptureMode.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Noise Reduction** | Input | [Dolby.io Noise Reduction](types.mdx#dolbyio-noise-reduction) | - | The noise reduction mode. |
-| **Voice Font** | Input | [Dolby.io Voice Font](types.mdx#dolbyio-voice-font) | - | The voice font. |
+| Name                | Direction | Type                                                          | Default value | Description               |
+|---------------------|:----------|:--------------------------------------------------------------|:--------------|:--------------------------|
+| **Noise Reduction** | Input     | [Dolby.io Noise Reduction](types.mdx#dolbyio-noise-reduction) | -             | The noise reduction mode. |
+| **Voice Font**      | Input     | [Dolby.io Voice Font](types.mdx#dolbyio-voice-font)           | -             | The voice font.           |
 
 ---
 
@@ -385,13 +421,13 @@ Sets the audio input device.
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_SetAudioInputDevice.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Native ID** | Input | string | - | The ID of the device to use. |
+| Name          | Direction | Type   | Default value | Description                  |
+|---------------|:----------|:-------|:--------------|:-----------------------------|
+| **Native ID** | Input     | string | -             | The ID of the device to use. |
 
 #### Triggered events
-| Event | When |
-|---|:---|
+| Event                                                                                        | When       |
+|----------------------------------------------------------------------------------------------|:-----------|
 | [**On Current Audio Input Device Changed**](events.md#on-current-audio-input-device-changed) | Successful |
 
 ---
@@ -403,13 +439,13 @@ Sets the audio output device.
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_SetAudioOutputDevice.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Native ID** | Input | string | - | The ID of the device to use. |
+| Name          | Direction | Type   | Default value | Description                  |
+|---------------|:----------|:-------|:--------------|:-----------------------------|
+| **Native ID** | Input     | string | -             | The ID of the device to use. |
 
 #### Triggered events
-| Event | When |
-|---|:---|
+| Event                                                                                          | When       |
+|------------------------------------------------------------------------------------------------|:-----------|
 | [**On Current Audio Output Device Changed**](events.md#on-current-audio-output-device-changed) | Successful |
 
 ---
@@ -423,9 +459,9 @@ Calling this function even once disables the default behavior, which is to autom
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_SetLocalPlayerLocation.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Location** | Input | [Vector](https://docs.unrealengine.com/5.2/en-US/BlueprintAPI/Math/Vector/) | - | The location of the listener. |
+| Name         | Direction | Type                                                                        | Default value | Description                   |
+|--------------|:----------|:----------------------------------------------------------------------------|:--------------|:------------------------------|
+| **Location** | Input     | [Vector](https://docs.unrealengine.com/5.2/en-US/BlueprintAPI/Math/Vector/) | -             | The location of the listener. |
 
 ---
 
@@ -438,9 +474,9 @@ Calling this function even once disables the default behavior, which is to autom
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_SetLocalPlayerRotation.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Rotation** | Input | [Rotator](https://docs.unrealengine.com/5.2/en-US/BlueprintAPI/Math/Rotator/) | - | The rotation of the listener. |
+| Name         | Direction | Type                                                                          | Default value | Description                   |
+|--------------|:----------|:------------------------------------------------------------------------------|:--------------|:------------------------------|
+| **Rotation** | Input     | [Rotator](https://docs.unrealengine.com/5.2/en-US/BlueprintAPI/Math/Rotator/) | -             | The rotation of the listener. |
 
 ---
 
@@ -453,11 +489,11 @@ This function should be called before the first call to [Set Token](#dolbyio-set
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_SetLogSettings.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Sdk Log Level** | Input | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info | Log level for SDK logs. |
-| **Media Log Level** | Input | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info | Log level for Media Engine logs. |
-| **Dvc Log Level** | Input | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info | Log level for DVC logs. |
+| Name                | Direction | Type                                              | Default value | Description                      |
+|---------------------|:----------|:--------------------------------------------------|:--------------|:---------------------------------|
+| **Sdk Log Level**   | Input     | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info          | Log level for SDK logs.          |
+| **Media Log Level** | Input     | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info          | Log level for Media Engine logs. |
+| **Dvc Log Level**   | Input     | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info          | Log level for DVC logs.          |
 
 ---
 
@@ -472,10 +508,10 @@ Calling this function with the local participant ID has no effect. Use [Set Loca
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_SetRemotePlayerLocation.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Participant ID** | Input | string | - | The ID of the remote participant. |
-| **Location** | Input | [Vector](https://docs.unrealengine.com/5.2/en-US/BlueprintAPI/Math/Vector/) | - | The location of the remote participant. |
+| Name               | Direction | Type                                                                        | Default value | Description                             |
+|--------------------|:----------|:----------------------------------------------------------------------------|:--------------|:----------------------------------------|
+| **Participant ID** | Input     | string                                                                      | -             | The ID of the remote participant.       |
+| **Location**       | Input     | [Vector](https://docs.unrealengine.com/5.2/en-US/BlueprintAPI/Math/Vector/) | -             | The location of the remote participant. |
 
 ---
 
@@ -488,9 +524,9 @@ The larger the scale, the longer the distance at which the spatial audio attenua
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_SetSpatialEnvironmentScale.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Scale** | Input | float | 1.0 | The scale as a floating point number. |
+| Name      | Direction | Type  | Default value | Description                           |
+|-----------|:----------|:------|:--------------|:--------------------------------------|
+| **Scale** | Input     | float | 1.0           | The scale as a floating point number. |
 
 ---
 
@@ -503,15 +539,15 @@ For quick testing, you can manually obtain a token from the [Dolby.io dashboard]
 ![](../../static/img/generated/DolbyIOSetToken/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Token** | Input | string | - | The client access token. |
+| Name      | Direction | Type   | Default value | Description              |
+|-----------|:----------|:-------|:--------------|:-------------------------|
+| **Token** | Input     | string | -             | The client access token. |
 
 #### Triggered events
-| Event | When |
-|---|:---|
+| Event                                          | When                         |
+|------------------------------------------------|:-----------------------------|
 | [**On Initialized**](events.md#on-initialized) | Initialization is successful |
-| [**On Error**](events.md#on-error) | Errors occur |
+| [**On Error**](events.md#on-error)             | Errors occur                 |
 
 ---
 
@@ -524,18 +560,18 @@ Users should make use of the parameters to optimize for the content they are sha
 ![](../../static/img/generated/DolbyIOStartScreenshare/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Source** | Input | [Dolby.io Screenshare Source](types.mdx#dolbyio-screenshare-source) | - | The source to use. |
-| **Encoder Hint** | Input | [Dolby.io Screenshare Encoder Hint](types.mdx#dolbyio-screenshare-encoder-hint) | Detailed | Provides a hint to the plugin as to what type of content is being captured by the screen share. |
-| **Max Resolution** | Input | [Dolby.io Screenshare Max Resolution](types.mdx#dolbyio-screenshare-max-resolution) | Actual Captured | The maximum resolution for the capture screen content to be shared as. |
-| **Downscale Quality** | Input | [Dolby.io Screenshare Downscale Quality](types.mdx#dolbyio-screenshare-downscale-quality) | Low | The quality for the downscaling algorithm to be used. |
+| Name                  | Direction | Type                                                                                      | Default value   | Description                                                                                     |
+|-----------------------|:----------|:------------------------------------------------------------------------------------------|:----------------|:------------------------------------------------------------------------------------------------|
+| **Source**            | Input     | [Dolby.io Screenshare Source](types.mdx#dolbyio-screenshare-source)                       | -               | The source to use.                                                                              |
+| **Encoder Hint**      | Input     | [Dolby.io Screenshare Encoder Hint](types.mdx#dolbyio-screenshare-encoder-hint)           | Detailed        | Provides a hint to the plugin as to what type of content is being captured by the screen share. |
+| **Max Resolution**    | Input     | [Dolby.io Screenshare Max Resolution](types.mdx#dolbyio-screenshare-max-resolution)       | Actual Captured | The maximum resolution for the capture screen content to be shared as.                          |
+| **Downscale Quality** | Input     | [Dolby.io Screenshare Downscale Quality](types.mdx#dolbyio-screenshare-downscale-quality) | Low             | The quality for the downscaling algorithm to be used.                                           |
 
 #### Triggered events
-| Event | When |
-|---|:---|
-| [**On Screenshare Started**](events.md#on-screenshare-started) | Successful |
-| [**On Error**](events.md#on-error) | Errors occur |
+| Event                                                          | When         |
+|----------------------------------------------------------------|:-------------|
+| [**On Screenshare Started**](events.md#on-screenshare-started) | Successful   |
+| [**On Error**](events.md#on-error)                             | Errors occur |
 
 ---
 
@@ -546,10 +582,10 @@ Stops screen sharing.
 ![](../../static/img/generated/DolbyIOStopScreenshare/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Triggered events
-| Event | When |
-|---|:---|
-| [**On Screenshare Stopped**](events.md#on-screenshare-stopped) | Successful |
-| [**On Error**](events.md#on-error) | Errors occur |
+| Event                                                          | When         |
+|----------------------------------------------------------------|:-------------|
+| [**On Screenshare Stopped**](events.md#on-screenshare-stopped) | Successful   |
+| [**On Error**](events.md#on-error)                             | Errors occur |
 
 ---
 
@@ -560,10 +596,10 @@ Unbinds a dynamic material instance to no longer hold the video frames of the gi
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_UnbindMaterial.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Material** | Input | [Dynamic Material Instance](https://docs.unrealengine.com/5.2/en-US/BlueprintAPI/Rendering/Material/CreateDynamicMaterialInstance/) | - | The dynamic material instance to unbind. |
-| **Video Track ID** | Input | string | - | The ID of the video track. |
+| Name               | Direction | Type                                                                                                                                | Default value | Description                              |
+|--------------------|:----------|:------------------------------------------------------------------------------------------------------------------------------------|:--------------|:-----------------------------------------|
+| **Material**       | Input     | [Dynamic Material Instance](https://docs.unrealengine.com/5.2/en-US/BlueprintAPI/Rendering/Material/CreateDynamicMaterialInstance/) | -             | The dynamic material instance to unbind. |
+| **Video Track ID** | Input     | string                                                                                                                              | -             | The ID of the video track.               |
 
 ---
 
@@ -590,20 +626,24 @@ Unmutes a given participant for the local user.
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_UnmuteParticipant.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **Participant ID** | Input | string | - | The ID of the remote participant to unmute. |
+| Name               | Direction | Type   | Default value | Description                                 |
+|--------------------|:----------|:-------|:--------------|:--------------------------------------------|
+| **Participant ID** | Input     | string | -             | The ID of the remote participant to unmute. |
 
 ---
 
 ## Dolby.io Update User Metadata
+
+:::info 🚀 Beta
+This function is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
+:::
 
 Updates information about the local participant.
 
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_UpdateUserMetadata.png)
 
 #### Inputs and outputs
-| Name | Direction | Type | Default value | Description |
-|---|:---|:---|:---|:---|
-| **User Name** | Input | String | - | The name of the participant. |
-| **Avatar URL** | Input | String | - | The URL of the participant's avatar. |
+| Name           | Direction | Type   | Default value | Description                          |
+|----------------|:----------|:-------|:--------------|:-------------------------------------|
+| **User Name**  | Input     | String | -             | The name of the participant.         |
+| **Avatar URL** | Input     | String | -             | The URL of the participant's avatar. |
