@@ -137,6 +137,10 @@ Triggered by [**Dolby.io Disconnect**](functions.md#dolbyio-disconnect) when the
 
 ## On Error
 
+:::info 🚀 Beta
+This event is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
+:::
+
 Triggered by functions if errors occur.
 
 #### Data provided
