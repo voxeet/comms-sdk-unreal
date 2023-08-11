@@ -489,11 +489,12 @@ This function should be called before the first call to [Set Token](#dolbyio-set
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_SetLogSettings.png)
 
 #### Inputs and outputs
-| Name                | Direction | Type                                              | Default value | Description                      |
-|---------------------|:----------|:--------------------------------------------------|:--------------|:---------------------------------|
-| **Sdk Log Level**   | Input     | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info          | Log level for SDK logs.          |
-| **Media Log Level** | Input     | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info          | Log level for Media Engine logs. |
-| **Dvc Log Level**   | Input     | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info          | Log level for DVC logs.          |
+| Name                | Direction | Type                                              | Default value | Description                                                               |
+|---------------------|:----------|:--------------------------------------------------|:--------------|:--------------------------------------------------------------------------|
+| **Sdk Log Level**   | Input     | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info          | Log level for SDK logs.                                                   |
+| **Media Log Level** | Input     | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info          | Log level for Media Engine logs.                                          |
+| **Dvc Log Level**   | Input     | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info          | Log level for DVC logs.                                                   |
+| **Log to Console**  | Input     | bool                                              | false         | Sets whether the C++ SDK logs should also be displayed in the Output Log. |
 
 ---
 
