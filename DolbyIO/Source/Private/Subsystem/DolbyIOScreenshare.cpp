@@ -53,7 +53,7 @@ void UDolbyIOSubsystem::StartScreenshare(const FDolbyIOScreenshareSource& Source
 	Sdk->conference()
 	    .start_screen_share(SdkSource, LocalScreenshareFrameHandler,
 	                        ToSdkContentInfo(EncoderHint, MaxResolution, DownscaleQuality))
-	    .then([this] { BroadcastEvent(OnScreenshareStarted, LocalScreenshareTrackID); })
+	    .then([this] { BroadcastEvent(OnLocalScreenshareTrackAdded, LocalScreenshareTrackID); })
 	    .on_error(DLB_ERROR_HANDLER(OnStartScreenshareError));
 }
 
@@ -67,7 +67,7 @@ void UDolbyIOSubsystem::StopScreenshare()
 	DLB_UE_LOG("Stopping screenshare");
 	Sdk->conference()
 	    .stop_screen_share()
-	    .then([this] { BroadcastEvent(OnScreenshareStopped, LocalScreenshareTrackID); })
+	    .then([this] { BroadcastEvent(OnLocalScreenshareTrackRemoved, LocalScreenshareTrackID); })
 	    .on_error(DLB_ERROR_HANDLER(OnStopScreenshareError));
 }
 
@@ -106,12 +106,11 @@ void UDolbyIOSubsystem::GetCurrentScreenshareSource()
 		        if (!Source)
 		        {
 			        DLB_UE_LOG("Got current screenshare source - none");
-			        BroadcastEvent(OnCurrentScreenshareSourceReceived, bIsSourceNone, FDolbyIOScreenshareSource{});
+			        BroadcastEvent(OnCurrentScreenshareSourceReceivedNone);
 			        return;
 		        }
 		        DLB_UE_LOG("Got current screenshare source - %s", *ToString(*Source));
-		        BroadcastEvent(OnCurrentScreenshareSourceReceived, !bIsSourceNone,
-		                       ToFDolbyIOScreenshareSource(*Source));
+		        BroadcastEvent(OnCurrentScreenshareSourceReceived, ToFDolbyIOScreenshareSource(*Source));
 	        })
 	    .on_error(DLB_ERROR_HANDLER(OnGetScreenshareSourcesError));
 }

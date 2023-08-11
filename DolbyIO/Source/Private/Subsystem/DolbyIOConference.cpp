@@ -153,7 +153,7 @@ void UDolbyIOSubsystem::UpdateStatus(conference_status Status)
 	}
 }
 
-bool UDolbyIOSubsystem::CanConnect(const FDolbyIOOnErrorDelegate& OnError) const
+bool UDolbyIOSubsystem::CanConnect(const FDolbyIOErrorDelegate& OnError) const
 {
 	if (!Sdk)
 	{
