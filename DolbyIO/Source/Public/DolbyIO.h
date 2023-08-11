@@ -226,7 +226,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms")
 	void SetLogSettings(EDolbyIOLogLevel SdkLogLevel = EDolbyIOLogLevel::Info,
 	                    EDolbyIOLogLevel MediaLogLevel = EDolbyIOLogLevel::Info,
-	                    EDolbyIOLogLevel DvcLogLevel = EDolbyIOLogLevel::Info);
+	                    EDolbyIOLogLevel DvcLogLevel = EDolbyIOLogLevel::Info, bool bLogToConsole = false);
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnErrorDelegate OnSetLogSettingsError;
 

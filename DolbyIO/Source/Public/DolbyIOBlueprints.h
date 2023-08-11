@@ -1046,9 +1046,9 @@ public:
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Log Settings"))
 	static void SetLogSettings(const UObject* WorldContextObject, EDolbyIOLogLevel SdkLogLevel = EDolbyIOLogLevel::Info,
 	                           EDolbyIOLogLevel MediaLogLevel = EDolbyIOLogLevel::Info,
-	                           EDolbyIOLogLevel DvcLogLevel = EDolbyIOLogLevel::Info)
+	                           EDolbyIOLogLevel DvcLogLevel = EDolbyIOLogLevel::Info, bool bLogToConsole = false)
 	{
-		DLB_EXECUTE_SUBSYSTEM_METHOD(SetLogSettings, SdkLogLevel, MediaLogLevel, DvcLogLevel);
+		DLB_EXECUTE_SUBSYSTEM_METHOD(SetLogSettings, SdkLogLevel, MediaLogLevel, DvcLogLevel, bLogToConsole);
 	}
 
 	/** Sets the audio input device.
