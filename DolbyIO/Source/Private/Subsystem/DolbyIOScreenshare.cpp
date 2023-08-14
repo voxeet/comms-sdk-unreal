@@ -23,14 +23,14 @@ void UDolbyIOSubsystem::GetScreenshareSources()
 	Sdk->device_management()
 	    .get_screen_share_sources()
 	    .then(
-	        [this](const std::vector<screen_share_source>& ScreenShareSource)
+	        [this](const std::vector<screen_share_source>& Sources)
 	        {
-		        TArray<FDolbyIOScreenshareSource> Sources;
-		        for (const screen_share_source& Source : ScreenShareSource)
+		        TArray<FDolbyIOScreenshareSource> Ret;
+		        for (const screen_share_source& Source : Sources)
 		        {
-			        Sources.Add(ToFDolbyIOScreenshareSource(Source));
+			        Ret.Add(ToFDolbyIOScreenshareSource(Source));
 		        }
-		        BroadcastEvent(OnScreenshareSourcesReceived, Sources);
+		        BroadcastEvent(OnScreenshareSourcesReceived, Ret);
 	        })
 	    .on_error(DLB_ERROR_HANDLER(OnGetScreenshareSourcesError));
 }

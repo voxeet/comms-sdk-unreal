@@ -48,7 +48,7 @@ void UDolbyIOSubsystem::Deinitialize()
 
 namespace
 {
-	class SdkLogCallback : public logger_sink_callback
+	class FSdkLogCallback : public logger_sink_callback
 	{
 	public:
 		void log(log_level Level, std::string_view Message) const override
@@ -62,13 +62,8 @@ namespace
 					DLB_UE_LOG_SDK_BASE(Error);
 				case log_level::WARNING:
 					DLB_UE_LOG_SDK_BASE(Warning);
-				case log_level::INFO:
+				default:
 					DLB_UE_LOG_SDK_BASE(Log);
-				case log_level::DEBUG:
-					DLB_UE_LOG_SDK_BASE(Verbose);
-				case log_level::VERBOSE:
-					DLB_UE_LOG_SDK_BASE(VeryVerbose);
-				default:;
 			}
 		}
 	};
@@ -86,7 +81,7 @@ void UDolbyIOSubsystem::SetLogSettings(EDolbyIOLogLevel SdkLogLevel, EDolbyIOLog
 	LogSettings.dvc_log_level = ToSdkLogLevel(DvcLogLevel);
 	LogSettings.log_directory = ToStdString(LogDir);
 	LogSettings.suppress_stdout_logs = true;
-	LogSettings.log_callback = bLogToConsole ? std::make_shared<SdkLogCallback>() : nullptr;
+	LogSettings.log_callback = bLogToConsole ? std::make_shared<FSdkLogCallback>() : nullptr;
 	try
 	{
 		sdk::set_log_settings(LogSettings);
