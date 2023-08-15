@@ -46,8 +46,31 @@ void UDolbyIOSubsystem::Deinitialize()
 	Super::Deinitialize();
 }
 
+namespace
+{
+	class FSdkLogCallback : public logger_sink_callback
+	{
+	public:
+		void log(log_level Level, std::string_view Message) const override
+		{
+#define DLB_UE_LOG_SDK_BASE(Verbosity)                                           \
+	DLB_UE_LOG_BASE(Verbosity, "%s", *ToFText(std::string{Message}).ToString()); \
+	return;
+			switch (Level)
+			{
+				case log_level::ERROR:
+					DLB_UE_LOG_SDK_BASE(Error);
+				case log_level::WARNING:
+					DLB_UE_LOG_SDK_BASE(Warning);
+				default:
+					DLB_UE_LOG_SDK_BASE(Log);
+			}
+		}
+	};
+}
+
 void UDolbyIOSubsystem::SetLogSettings(EDolbyIOLogLevel SdkLogLevel, EDolbyIOLogLevel MediaLogLevel,
-                                       EDolbyIOLogLevel DvcLogLevel)
+                                       EDolbyIOLogLevel DvcLogLevel, bool bLogToConsole)
 {
 	const FString& LogDir = FPaths::ProjectLogDir();
 	DLB_UE_LOG("Logs will be saved in directory %s", *LogDir);
@@ -58,6 +81,7 @@ void UDolbyIOSubsystem::SetLogSettings(EDolbyIOLogLevel SdkLogLevel, EDolbyIOLog
 	LogSettings.dvc_log_level = ToSdkLogLevel(DvcLogLevel);
 	LogSettings.log_directory = ToStdString(LogDir);
 	LogSettings.suppress_stdout_logs = true;
+	LogSettings.log_callback = bLogToConsole ? std::make_shared<FSdkLogCallback>() : nullptr;
 	try
 	{
 		sdk::set_log_settings(LogSettings);

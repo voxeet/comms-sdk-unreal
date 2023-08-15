@@ -29,7 +29,7 @@ public:
 	 *
 	 * @param URL - The URL to use to obtain the token.
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Dolby.io Demo",
+	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (BlueprintInternalUseOnly = "true", DisplayName = "Dolby.io Get Token From URL"))
 	static UDolbyIOGetTokenFromURL* DolbyIOGetTokenFromURL(const FString& URL);
 
