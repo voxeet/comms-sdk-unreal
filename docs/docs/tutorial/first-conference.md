@@ -25,6 +25,11 @@ Select the added component and check its details in the `Details` panel. Scroll 
 2. Paste your client access token copied from the Dolby.io dashboard to the [`Dolby.io Set Token`](../blueprints/functions#dolbyio-set-token) node.
 
 ### Option B - Use authentication URL
+
+:::info 🚀 Beta
+This option requires using the [`Dolby.io Get Token From URL`](../blueprints/functions#dolbyio-get-token-from-url) function, which is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
+:::
+
 1. Place a [`Dolby.io Get Token From URL`](../blueprints/functions#dolbyio-get-token-from-url) node and connect it to the `On Token Needed (DolbyIOObserver)` node.
 
 2. Place a [`Dolby.io Set Token`](../blueprints/functions#dolbyio-set-token) node and connect it to the [`Dolby.io Get Token From URL`](../blueprints/functions#dolbyio-get-token-from-url) node as shown below:
