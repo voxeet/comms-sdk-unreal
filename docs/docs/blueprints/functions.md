@@ -484,21 +484,24 @@ Calling this function even once disables the default behavior, which is to autom
 
 :::info 🚀 Beta
 The **Log to Console** parameter is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
+
+The **Log to File** parameter is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs). In previous versions, logs were always written to a file.
 :::
 
-Sets what to log in the Dolby.io C++ SDK. The logs will be saved to the default project log directory (likely Saved/Logs).
+Sets what to log in the Dolby.io C++ SDK.
 
 This function should be called before the first call to [Set Token](#dolbyio-set-token) if the user needs logs about the plugin's operation. Calling this function more than once has no effect.
 
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_SetLogSettings.png)
 
 #### Inputs and outputs
-| Name                | Direction | Type                                              | Default value | Description                                                               |
-|---------------------|:----------|:--------------------------------------------------|:--------------|:--------------------------------------------------------------------------|
-| **Sdk Log Level**   | Input     | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info          | Log level for SDK logs.                                                   |
-| **Media Log Level** | Input     | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info          | Log level for Media Engine logs.                                          |
-| **Dvc Log Level**   | Input     | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info          | Log level for DVC logs.                                                   |
-| **Log to Console**  | Input     | bool                                              | false         | Sets whether the C++ SDK logs should also be displayed in the Output Log. |
+| Name                | Direction | Type                                              | Default value | Description                                                                                                            |
+|---------------------|:----------|:--------------------------------------------------|:--------------|:-----------------------------------------------------------------------------------------------------------------------|
+| **Sdk Log Level**   | Input     | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info          | Log level for SDK logs.                                                                                                |
+| **Media Log Level** | Input     | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info          | Log level for Media Engine logs.                                                                                       |
+| **Dvc Log Level**   | Input     | [Dolby.io Log Level](types.mdx#dolbyio-log-level) | Info          | Log level for DVC logs.                                                                                                |
+| **Log to Console**  | Input     | bool                                              | false         | Sets whether the logs should be displayed in the Output Log.                                                           |
+| **Log to File**     | Input     | bool                                              | true          | If this is true, the logs will be written to a file in the default project log directory (e.g. Saved/Logs on Windows). |
 
 ---
 

@@ -1032,8 +1032,7 @@ public:
 		DLB_EXECUTE_SUBSYSTEM_METHOD(SetRemotePlayerLocation, ParticipantID, Location);
 	}
 
-	/** Sets what to log in the Dolby.io C++ SDK. The logs will be saved to the default project log directory
-	 * (likely Saved/Logs).
+	/** Sets what to log in the Dolby.io C++ SDK.
 	 *
 	 * This function should be called before the first call to Set Token if the user needs logs about the plugin's
 	 * operation. Calling this function more than once has no effect.
@@ -1041,14 +1040,19 @@ public:
 	 * @param SdkLogLevel - Log level for SDK logs.
 	 * @param MediaLogLevel - Log level for Media Engine logs.
 	 * @param DvcLogLevel - Log level for DVC logs.
+	 * @param bLogToConsole - Sets whether the logs should be displayed in the Output Log.
+	 * @param bLogToFile - If this is true, the logs will be written to a file in the default project log directory
+	 * (e.g. Saved/Logs on Windows).
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dolby.io Comms",
 	          Meta = (WorldContext = "WorldContextObject", DisplayName = "Dolby.io Set Log Settings"))
 	static void SetLogSettings(const UObject* WorldContextObject, EDolbyIOLogLevel SdkLogLevel = EDolbyIOLogLevel::Info,
 	                           EDolbyIOLogLevel MediaLogLevel = EDolbyIOLogLevel::Info,
-	                           EDolbyIOLogLevel DvcLogLevel = EDolbyIOLogLevel::Info, bool bLogToConsole = false)
+	                           EDolbyIOLogLevel DvcLogLevel = EDolbyIOLogLevel::Info, bool bLogToConsole = false,
+	                           bool bLogToFile = true)
 	{
-		DLB_EXECUTE_SUBSYSTEM_METHOD(SetLogSettings, SdkLogLevel, MediaLogLevel, DvcLogLevel, bLogToConsole);
+		DLB_EXECUTE_SUBSYSTEM_METHOD(SetLogSettings, SdkLogLevel, MediaLogLevel, DvcLogLevel, bLogToConsole,
+		                             bLogToFile);
 	}
 
 	/** Sets the audio input device.
