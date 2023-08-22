@@ -544,8 +544,6 @@ Initializes or refreshes the client access token. Initializes the plugin unless 
 
 For quick testing, you can manually obtain a token from the [Dolby.io dashboard](https://dashboard.dolby.io) and paste it directly into the node. Alternatively, you can obtain a token using the [Dolby.io Get Token From URL](#dolbyio-get-token-from-url) function or the [Dolby.io Get Token Using App Key And Secret](#dolbyio-get-token-using-app-key-and-secret) function.
 
-> ⚠️ Calling this function from multiple game instances at the same time (usually by setting "Number of Players" to more than 1 in the Editor) will likely cause one of the calls to trigger an error. It is recommended to handle the error by retrying this function after a short delay.
-
 ![](../../static/img/generated/DolbyIOSetToken/img/nd_img_UK2Node_AsyncAction.png)
 
 #### Inputs and outputs
