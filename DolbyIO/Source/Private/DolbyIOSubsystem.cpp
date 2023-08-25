@@ -53,7 +53,11 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void UDolbyIOSubsystem::Deinitialize()
 {
-	Sdk.Reset(); // make sure Sdk is dead so it doesn't call handle_frame on VideoSink during game destruction
+	DLB_UE_LOG("Deinitializing");
+	for (auto& Sink : VideoSinks)
+	{
+		Sink.Value->Disable(); // ignore new frames now on
+	}
 
 	Super::Deinitialize();
 }
