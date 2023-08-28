@@ -78,8 +78,18 @@ namespace DolbyIO
 		          });
 	}
 
+	void FVideoSink::Disable()
+	{
+		bIsEnabled = false;
+	}
+
 	void FVideoSink::handle_frame(const video_frame& VideoFrame)
 	{
+		if (!bIsEnabled)
+		{
+			return;
+		}
+
 		!Texture ? CreateTexture(VideoFrame.width(), VideoFrame.height())
 		         : ResizeTexture(VideoFrame.width(), VideoFrame.height());
 		Convert(VideoFrame);

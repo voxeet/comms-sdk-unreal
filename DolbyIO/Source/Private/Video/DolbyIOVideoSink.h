@@ -24,6 +24,7 @@ namespace DolbyIO
 		void BindMaterial(UMaterialInstanceDynamic* Material);
 		void UnbindMaterial(UMaterialInstanceDynamic* Material);
 		void UnbindAllMaterials();
+		void Disable();
 
 	private:
 		void handle_frame(const dolbyio::comms::video_frame&) override;
@@ -36,5 +37,6 @@ namespace DolbyIO
 		TSet<UMaterialInstanceDynamic*> Materials;
 		const FString VideoTrackID;
 		FOnTextureCreated OnTexCreated = [] {};
+		bool bIsEnabled = true;
 	};
 }
