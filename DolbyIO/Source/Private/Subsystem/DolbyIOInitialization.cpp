@@ -41,7 +41,11 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void UDolbyIOSubsystem::Deinitialize()
 {
-	Sdk.Reset(); // make sure Sdk is dead so it doesn't call handle_frame on VideoSink during game destruction
+	DLB_UE_LOG("Deinitializing");
+	for (auto& Sink : VideoSinks)
+	{
+		Sink.Value->Disable(); // ignore new frames now on
+	}
 
 	Super::Deinitialize();
 }
@@ -70,18 +74,25 @@ namespace
 }
 
 void UDolbyIOSubsystem::SetLogSettings(EDolbyIOLogLevel SdkLogLevel, EDolbyIOLogLevel MediaLogLevel,
-                                       EDolbyIOLogLevel DvcLogLevel, bool bLogToConsole)
+                                       EDolbyIOLogLevel DvcLogLevel, bool bLogToConsole, bool bLogToFile)
 {
-	const FString& LogDir = FPaths::ProjectLogDir();
-	DLB_UE_LOG("Logs will be saved in directory %s", *LogDir);
-
 	sdk::log_settings LogSettings;
 	LogSettings.sdk_log_level = ToSdkLogLevel(SdkLogLevel);
 	LogSettings.media_log_level = ToSdkLogLevel(MediaLogLevel);
 	LogSettings.dvc_log_level = ToSdkLogLevel(DvcLogLevel);
-	LogSettings.log_directory = ToStdString(LogDir);
 	LogSettings.suppress_stdout_logs = true;
-	LogSettings.log_callback = bLogToConsole ? std::make_shared<FSdkLogCallback>() : nullptr;
+
+	if (bLogToConsole)
+	{
+		LogSettings.log_callback = std::make_shared<FSdkLogCallback>();
+	}
+	if (bLogToFile)
+	{
+		const FString& LogDir = FPaths::ProjectLogDir();
+		DLB_UE_LOG("Logs will be saved in directory %s", *LogDir);
+		LogSettings.log_directory = ToStdString(LogDir);
+	}
+
 	try
 	{
 		sdk::set_log_settings(LogSettings);
