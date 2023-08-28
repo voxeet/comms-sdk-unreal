@@ -9,8 +9,8 @@ permissions:
   packages: write
 
 env:
-  PLUGIN_VERSION: "1.2.0-beta.8"
-  CPP_SDK_VERSION: "2.6.0-beta.2"
+  PLUGIN_VERSION: "1.2.0-beta.9"
+  CPP_SDK_VERSION: "2.6.0"
   PLUGIN_SOURCE_DIR: "DolbyIO"
   PLUGIN_BUILD_DIR: "Build/DolbyIO"
   GH_TOKEN: ${{ github.token }}
