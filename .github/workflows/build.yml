@@ -11,6 +11,7 @@ permissions:
 env:
   PLUGIN_VERSION: "1.1.5"
   CPP_SDK_VERSION: "2.5.6"
+  CPP_SDK_URL: "https://github.com/DolbyIO/comms-sdk-cpp/releases/download"
   PLUGIN_SOURCE_DIR: "DolbyIO"
   PLUGIN_BUILD_DIR: "Build/DolbyIO"
   GH_TOKEN: ${{ github.token }}
@@ -34,6 +35,7 @@ jobs:
       - name: Download C++ SDK
         uses: ./.github/actions/download_cppsdk/powershell
         with:
+          url: ${{ env.CPP_SDK_URL }}
           tag: ${{ env.CPP_SDK_VERSION }}
           asset_suffix: "${{ env.BUILD_PLATFORM }}64.zip"
 
@@ -88,6 +90,7 @@ jobs:
       - name: Download C++ SDK
         uses: ./.github/actions/download_cppsdk/bash
         with:
+          url: ${{ env.CPP_SDK_URL }}
           tag: ${{ env.CPP_SDK_VERSION }}
           asset_suffix: "${{ env.BUILD_PLATFORM }}64-universal.zip"
 
@@ -153,6 +156,7 @@ jobs:
       - name: Download C++ SDK
         uses: ./.github/actions/download_cppsdk/powershell
         with:
+          url: ${{ env.CPP_SDK_URL }}
           tag: ${{ env.CPP_SDK_VERSION }}
           asset_suffix: "ubuntu-20.04-clang10-libc++10.zip"
 

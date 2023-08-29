@@ -1,6 +1,9 @@
 name: 'CppSDKReleaseAssetDownloader'
 description: 'Download specific C++ SDK release asset.'
 inputs:
+  url:
+    description: 'C++ SDK release URL.'
+    required: true
   tag:
     description: 'Release tag of C++ SDK release.'
     required: true
@@ -12,7 +15,7 @@ runs:
   steps:
     - name: Download C++ MacOS
       run: |
-        export INPUT_URL="https://github.com/DolbyIO/comms-sdk-cpp/releases/download"
+        export INPUT_URL=${{ inputs.url }}
         export INPUT_TAG=${{ inputs.tag }}
         export INPUT_ASSET_NAME=cppsdk-${{ inputs.tag }}-${{ inputs.asset_suffix }}
         ./.github/actions/download_cppsdk/bash/download_cppsdk.sh
