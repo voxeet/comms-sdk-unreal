@@ -1,100 +1,142 @@
-name: Build Unreal Plugin
+name: Build plugin
 
 on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: write
+  packages: write
+
 env:
-  CPP_SDK_TAG: "2.5.6"
-  CPP_SDK_DESTINATION: "DolbyIO"
+  PLUGIN_VERSION: "1.1.5"
+  CPP_SDK_VERSION: "2.5.6"
   CPP_SDK_URL: "https://github.com/DolbyIO/comms-sdk-cpp/releases/download"
-  UNREAL_PLUGIN_OUTPUT: "Build/DolbyIO"
+  PLUGIN_SOURCE_DIR: "DolbyIO"
+  PLUGIN_BUILD_DIR: "Build/DolbyIO"
+  GH_TOKEN: ${{ github.token }}
   RETENTION: 7
 
 jobs:
-  build-macos:
-    strategy:
-      fail-fast: false
-      matrix:
-        version: ["4.27", "5.2"]
-    runs-on: ["self-hosted", "X64", "macOS"]
-    env:
-      BUILD_PLATFORM: 'macos64'
-    steps:
-      - name: Code checkout
-        uses: actions/checkout@v3
-      - name: Download C++ SDK release asset
-        uses: ./.github/actions/download_cpp/bash
-        with:
-          url: ${{ env.CPP_SDK_URL }}
-          tag: ${{ env.CPP_SDK_TAG }}
-          asset_name: "cppsdk-${{ env.CPP_SDK_TAG }}-${{ env.BUILD_PLATFORM }}-universal.zip"
-      - name: Remove symlinks from cpp sdk libs
-        env:
-          LIB_PATH_UNIVERSAL: "${{ github.workspace }}/${{ env.CPP_SDK_DESTINATION }}/sdk-release/lib"
-        run: |
-          echo "Removing symlinks from ${LIB_PATH_UNIVERSAL}"
-          find ${LIB_PATH_UNIVERSAL} -type l -delete
-      - name: Run Build
-        run: |
-          /Users/Shared/Epic\ Games/UE_${{ matrix.version }}/Engine/Build/BatchFiles/RunUAT.sh BuildPlugin \
-          -Rocket \
-          -Plugin=$(pwd)/DolbyIO/DolbyIO.uplugin \
-          -TargetPlatforms=Mac \
-          -Package=$(pwd)/${{ env.UNREAL_PLUGIN_OUTPUT }} \
-          -StrictIncludes \
-          -Architecture_Mac=x64+arm64
-      - name: Sign DolbyIO Unreal Plugin
-        env:
-          DOLBYIO_KEYCHAIN_PASSWORD: ${{ secrets.VOXEET_KEYCHAIN_PASSWORD }}
-        uses: ./.github/actions/sign/mac
-        with:
-          path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
-          platform: 'macos'
-      - name: Archive DolbyIO Unreal Plugin
-        uses: actions/upload-artifact@v3
-        with:
-          name: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}
-          path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
-          retention-days: ${{ env.RETENTION }}
-
-
   build-windows:
     strategy:
       fail-fast: false
       matrix:
         version: ["4.27", "5.2"]
     runs-on: ["self-hosted", "X64", "Windows"]
+
     env:
-      BUILD_PLATFORM: 'windows64'
+      BUILD_PLATFORM: 'windows'
+
     steps:
-      - name: Code checkout
+      - name: Check out code
         uses: actions/checkout@v3
-      - name: Download C++ SDK release asset
-        id: download_cpp
-        uses: ./.github/actions/download_cpp/powershell
+
+      - name: Download C++ SDK
+        uses: ./.github/actions/download_cppsdk/powershell
         with:
           url: ${{ env.CPP_SDK_URL }}
-          tag: ${{ env.CPP_SDK_TAG }}
-          asset_name: "cppsdk-${{ env.CPP_SDK_TAG }}-${{ env.BUILD_PLATFORM }}.zip"
-      - name: Run Build
+          tag: ${{ env.CPP_SDK_VERSION }}
+          asset_suffix: "${{ env.BUILD_PLATFORM }}64.zip"
+
+      - name: Build plugin
+        env:
+          BUILD_ARGS: "BuildPlugin -Rocket -StrictIncludes -Plugin=\"$(pwd)\\DolbyIO\\DolbyIO.uplugin\" -Package=\"$(pwd)\\Build\\DolbyIO\" -TargetPlatforms=Win64 -VS2019"
         run: |
-          Write-Output "UE_${{ matrix.version }}"
-          $UERunUAT = "C:\\Program Files\\Epic Games\\UE_${{ matrix.version }}\\Engine\\Build\\BatchFiles\\RunUAT.bat"
-          & $UERunUAT BuildPlugin -Rocket -Plugin="$(pwd)\\DolbyIO\\DolbyIO.uplugin" -TargetPlatforms=Win64 -Package="$(pwd)\\Build\\DolbyIO" -StrictIncludes -VS2019 -NoTurnKeyVariables
-      - name: Sign DolbyIO Unreal Plugin
+          $UAT = "C:\\Program Files\\Epic Games\\UE_${{ matrix.version }}\\Engine\\Build\\BatchFiles\\RunUAT.bat"
+          & $UAT ${{ env.BUILD_ARGS }}
+
+      - name: Sign plugin
         env:
           WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
         uses: ./.github/actions/sign/win
         with:
-          path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
-          platform: 'windows'
-      - name: Archive DolbyIO Plugin
+          path: ${{ env.PLUGIN_BUILD_DIR }}
+          platform: ${{ env.BUILD_PLATFORM }}
+
+      - name: Zip plugin
+        working-directory: ${{ env.PLUGIN_BUILD_DIR }}
+        run: |
+          Compress-Archive -Path . -DestinationPath DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}
-          path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
+          name: DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}
+          path: "${{ env.PLUGIN_BUILD_DIR }}\\DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip"
           retention-days: ${{ env.RETENTION }}
+
+      - name: Release plugin 🎉
+        if: startsWith(github.ref, 'refs/tags/')
+        working-directory: ${{ env.PLUGIN_BUILD_DIR }}
+        run: |
+          ${{ github.workspace }}\\.github\\actions\\upload_assets\\upload_release_asset.ps1 -File DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
+
+
+  build-macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["4.27", "5.2"]
+    runs-on: ["self-hosted", "X64", "macOS"]
+
+    env:
+      BUILD_PLATFORM: 'macos'
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Download C++ SDK
+        uses: ./.github/actions/download_cppsdk/bash
+        with:
+          url: ${{ env.CPP_SDK_URL }}
+          tag: ${{ env.CPP_SDK_VERSION }}
+          asset_suffix: "${{ env.BUILD_PLATFORM }}64-universal.zip"
+
+      - name: Remove symlinks from C++ SDK libs
+        run: |
+          find "${{ github.workspace }}/${{ env.PLUGIN_SOURCE_DIR }}/sdk-release/lib" -type l -delete
+
+      - name: Build plugin
+        env:
+          BUILD_ARGS: "BuildPlugin -Rocket -StrictIncludes -Plugin=\"$(pwd)/DolbyIO/DolbyIO.uplugin\" -Package=$(pwd)/Build/DolbyIO -TargetPlatforms=Mac -Architecture_Mac=x64+arm64"
+        run: |
+          /Users/Shared/Epic\ Games/UE_${{ matrix.version }}/Engine/Build/BatchFiles/RunUAT.sh ${{ env.BUILD_ARGS }}
+
+      - name: Sign plugin
+        env:
+          DOLBYIO_KEYCHAIN_PASSWORD: ${{ secrets.VOXEET_KEYCHAIN_PASSWORD }}
+        uses: ./.github/actions/sign/mac
+        with:
+          path: ${{ env.PLUGIN_BUILD_DIR }}
+          platform: ${{ env.BUILD_PLATFORM }}
+
+      - name: Zip plugin
+        working-directory: Build
+        run: |
+          zip -rq DolbyIO/DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip DolbyIO/
+
+      - name: Notarize plugin
+        env:
+          DOLBYIO_KEYCHAIN_PASSWORD: ${{ secrets.VOXEET_KEYCHAIN_PASSWORD }}
+        uses: ./.github/actions/notarise/mac
+        with:
+          catalog_path: ${{ env.PLUGIN_BUILD_DIR }}
+          file: DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}
+          path: "${{ env.PLUGIN_BUILD_DIR }}/DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip"
+          retention-days: ${{ env.RETENTION }}
+
+      - name: Release plugin 🎉
+        if: startsWith(github.ref, 'refs/tags/')
+        working-directory: ${{ env.PLUGIN_BUILD_DIR }}
+        run: |
+          ${GITHUB_WORKSPACE}/.github/actions/upload_assets/upload_release_asset.sh DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
 
 
   build-linux:
@@ -103,38 +145,55 @@ jobs:
       matrix:
         version: ["4.27", "5.2"]
     runs-on: ["self-hosted", "X64", "Windows"]
+
     env:
-      BUILD_PLATFORM: 'linux64'
+      BUILD_PLATFORM: 'linux'
+
     steps:
-      - name: Code checkout
+      - name: Check out code
         uses: actions/checkout@v3
-      - name: Download C++ SDK release asset
-        id: download_cpp
-        uses: ./.github/actions/download_cpp/powershell
+
+      - name: Download C++ SDK
+        uses: ./.github/actions/download_cppsdk/powershell
         with:
           url: ${{ env.CPP_SDK_URL }}
-          tag: ${{ env.CPP_SDK_TAG }}
-          asset_name: "cppsdk-${{ env.CPP_SDK_TAG }}-ubuntu-20.04-clang10-libc++10.zip"
-      - name: Unlink cpp sdk libs
+          tag: ${{ env.CPP_SDK_VERSION }}
+          asset_suffix: "ubuntu-20.04-clang10-libc++10.zip"
+
+      - name: Resolve C++ SDK lib symlinks
         env:
-          LIB_PATH_UBUNTU: "${{ github.workspace }}\\${{ env.CPP_SDK_DESTINATION }}\\sdk-release-ubuntu-20.04-clang10-libc++10\\lib"
+          LIB_PATH: "${{ github.workspace }}\\${{ env.PLUGIN_SOURCE_DIR }}\\sdk-release-ubuntu-20.04-clang10-libc++10\\lib"
         run: |
-          Move-Item -Force "${{ env.LIB_PATH_UBUNTU }}\\libavcodec.so.59.33.100" "${{ env.LIB_PATH_UBUNTU }}\\libavcodec.so.59"
-          Move-Item -Force "${{ env.LIB_PATH_UBUNTU }}\\libavformat.so.59.25.100" "${{ env.LIB_PATH_UBUNTU }}\\libavformat.so.59"
-          Move-Item -Force "${{ env.LIB_PATH_UBUNTU }}\\libavutil.so.57.27.100" "${{ env.LIB_PATH_UBUNTU }}\\libavutil.so.57"
-      - name: Run Build
+          Move-Item -Force "${{ env.LIB_PATH }}\\libavcodec.so.59.33.100" "${{ env.LIB_PATH }}\\libavcodec.so.59"
+          Move-Item -Force "${{ env.LIB_PATH }}\\libavformat.so.59.25.100" "${{ env.LIB_PATH }}\\libavformat.so.59"
+          Move-Item -Force "${{ env.LIB_PATH }}\\libavutil.so.57.27.100" "${{ env.LIB_PATH }}\\libavutil.so.57"
+
+      - name: Build plugin
+        env:
+          BUILD_ARGS: "BuildPlugin -Rocket -StrictIncludes -Plugin=\"$(pwd)\\DolbyIO\\DolbyIO.uplugin\" -Package=\"$(pwd)\\Build\\DolbyIO\" -TargetPlatforms=Linux -NoHostPlatform"
         run: |
           if(${{ matrix.version }} -eq "4.27"){
             $env:LINUX_MULTIARCH_ROOT="C:\\UnrealToolchains\\v19_clang-11.0.1-centos7"
           } else {
             $env:LINUX_MULTIARCH_ROOT="C:\\UnrealToolchains\\v21_clang-15.0.1-centos7"
           }
-          Write-Output "UE_${{ matrix.version }}"
-          $UERunUAT = "C:\\Program Files\\Epic Games\\UE_${{ matrix.version }}\\Engine\\Build\\BatchFiles\\RunUAT.bat"
-          & $UERunUAT BuildPlugin -Rocket -Plugin="$(pwd)\\DolbyIO\\DolbyIO.uplugin" -TargetPlatforms=Linux -Package="$(pwd)\\Build\\DolbyIO" -StrictIncludes -NoHostPlatform -NoTurnKeyVariables
-      - name: Archive DolbyIO Plugin
+          $UAT = "C:\\Program Files\\Epic Games\\UE_${{ matrix.version }}\\Engine\\Build\\BatchFiles\\RunUAT.bat"
+          & $UAT ${{ env.BUILD_ARGS }}
+
+      - name: Zip plugin
+        working-directory: ${{ env.PLUGIN_BUILD_DIR }}
+        run: |
+          Compress-Archive -Path . -DestinationPath DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: DolbyIO_UnrealPlugin_${{ matrix.version }}_${{ env.BUILD_PLATFORM }}
-          path: ${{ env.UNREAL_PLUGIN_OUTPUT }}
+          name: DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}
+          path: "${{ env.PLUGIN_BUILD_DIR }}\\DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip"
           retention-days: ${{ env.RETENTION }}
+
+      - name: Release plugin 🎉
+        if: startsWith(github.ref, 'refs/tags/')
+        working-directory: ${{ env.PLUGIN_BUILD_DIR }}
+        run: |
+          ${{ github.workspace }}\\.github\\actions\\upload_assets\\upload_release_asset.ps1 -File DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
