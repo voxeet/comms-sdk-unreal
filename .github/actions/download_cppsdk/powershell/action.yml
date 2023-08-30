@@ -7,8 +7,8 @@ inputs:
   tag:
     description: 'Release tag of C++ SDK release.'
     required: true
-  asset_name:
-    description: 'Define name of asset'
+  asset_suffix:
+    description: 'The suffix of the C++ SDK asset defining the platform.'
     required: true
 runs:
   using: 'composite'
@@ -17,6 +17,6 @@ runs:
       run: |
         $Env:INPUT_URL = "${{ inputs.url }}"
         $Env:INPUT_TAG = "${{ inputs.tag }}"
-        $Env:INPUT_ASSET_NAME = "${{ inputs.asset_name }}"
-        ./.github/actions/download_cpp/powershell/download_cpp.ps1
+        $Env:INPUT_ASSET_NAME = "cppsdk-${{ inputs.tag }}-${{ inputs.asset_suffix }}"
+        ./.github/actions/download_cppsdk/powershell/download_cppsdk.ps1
       shell: powershell

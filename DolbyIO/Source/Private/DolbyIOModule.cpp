@@ -24,39 +24,44 @@ public:
 		    [](std::size_t Count, std::size_t Al) { return ::operator new(Count, static_cast<std::align_val_t>(Al)); },
 		    ::operator delete,
 		    [](void* Ptr, std::size_t Al) { ::operator delete(Ptr, static_cast<std::align_val_t>(Al)); }};
-		LoadDll(BaseDir, "bin/avutil-57.dll");
-		LoadDll(BaseDir, "bin/avcodec-59.dll");
-		LoadDll(BaseDir, "bin/dvclient.dll");
-		LoadDll(BaseDir, "bin/dolbyio_comms_media.dll");
-		LoadDll(BaseDir, "bin/dolbyio_comms_sdk.dll");
+		BaseDir = FPaths::Combine(BaseDir, "bin");
+		LoadDll(BaseDir, "avutil-57.dll");
+		LoadDll(BaseDir, "avcodec-59.dll");
+		LoadDll(BaseDir, "dvclient.dll");
+		LoadDll(BaseDir, "dolbyio_comms_media.dll");
+		LoadDll(BaseDir, "dolbyio_comms_sdk.dll");
 		sdk::set_app_allocator(Allocator);
-		LoadDll(BaseDir, "bin/opencv_core451.dll");
-		LoadDll(BaseDir, "bin/opencv_imgproc451.dll");
-		LoadDll(BaseDir, "bin/opencv_imgcodecs451.dll");
-		LoadDll(BaseDir, "bin/dvdnr.dll");
-		LoadDll(BaseDir, "bin/dlb_vidseg_c_api.dll");
-		LoadDll(BaseDir, "bin/video_processor.dll");
+		LoadDll(BaseDir, "opencv_core451.dll");
+		LoadDll(BaseDir, "opencv_imgproc451.dll");
+		LoadDll(BaseDir, "opencv_imgcodecs451.dll");
+		LoadDll(BaseDir, "dvdnr.dll");
+		LoadDll(BaseDir, "dlb_vidseg_c_api.dll");
+		LoadDll(BaseDir, "video_processor.dll");
 		dolbyio::comms::plugin::video_processor::set_app_allocator(Allocator);
 #elif PLATFORM_MAC
-		LoadDll(BaseDir, "lib/libdolbyio_comms_media.dylib");
-		LoadDll(BaseDir, "lib/libdolbyio_comms_sdk.dylib");
-		LoadDll(BaseDir, "lib/libvideo_processor.dylib");
+		BaseDir = FPaths::Combine(BaseDir, "lib");
+		LoadDll(BaseDir, "libdolbyio_comms_media.dylib");
+		LoadDll(BaseDir, "libdolbyio_comms_sdk.dylib");
+		LoadDll(BaseDir, "libvideo_processor.dylib");
 #elif PLATFORM_LINUX
 		BaseDir += "-ubuntu-20.04-clang10-libc++10";
-		LoadDll(BaseDir, "lib/libavutil.so.57");
-		LoadDll(BaseDir, "lib/libavcodec.so.59");
-		LoadDll(BaseDir, "lib/libavformat.so.59");
-		LoadDll(BaseDir, "lib/libdvclient.so");
-		LoadDll(BaseDir, "lib/libdolbyio_comms_media.so");
-		LoadDll(BaseDir, "lib/libdolbyio_comms_sdk.so");
+		BaseDir = FPaths::Combine(BaseDir, "lib");
+		LoadDll(BaseDir, "libavutil.so.57");
+		LoadDll(BaseDir, "libavcodec.so.59");
+		LoadDll(BaseDir, "libavformat.so.59");
+		LoadDll(BaseDir, "libdvclient.so");
+		LoadDll(BaseDir, "libdolbyio_comms_media.so");
+		LoadDll(BaseDir, "libdolbyio_comms_sdk.so");
 #endif
 	}
 
 	void ShutdownModule() override
 	{
-		while (DllHandles.Num())
+		while (Dlls.Num())
 		{
-			FPlatformProcess::FreeDllHandle(DllHandles.Pop());
+			const FDll Dll = Dlls.Pop();
+			FPlatformProcess::FreeDllHandle(Dll.Handle);
+			DLB_UE_LOG("Unloaded %s", *Dll.Name);
 		}
 	}
 
@@ -66,8 +71,8 @@ private:
 		const FString DllPath = FPaths::Combine(*BaseDir, *Dll);
 		if (FDllHandle Handle = FPlatformProcess::GetDllHandle(*DllPath))
 		{
-			DLB_UE_LOG("Loaded %s", *DllPath);
-			DllHandles.Add(Handle);
+			DLB_UE_LOG("Loaded %s", *Dll);
+			Dlls.Emplace(FDll{Handle, Dll});
 		}
 		else
 		{
@@ -75,7 +80,13 @@ private:
 		}
 	}
 
-	TArray<FDllHandle> DllHandles;
+	struct FDll
+	{
+		FDllHandle Handle;
+		FString Name;
+	};
+
+	TArray<FDll> Dlls;
 };
 
 IMPLEMENT_MODULE(FDolbyIOModule, DolbyIO)
