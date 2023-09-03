@@ -21,6 +21,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnParticipantAddedDelegate,
                                              Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnParticipantUpdatedDelegate, const EDolbyIOParticipantStatus,
                                              Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnRemoteParticipantConnectedDelegate,
+                                            const FDolbyIOParticipantInfo&, ParticipantInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnRemoteParticipantDisconnectedDelegate,
+                                            const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnLocalParticipantUpdatedDelegate, const EDolbyIOParticipantStatus,
                                              Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnVideoTrackAddedDelegate, const FDolbyIOVideoTrack&, VideoTrack);
@@ -309,6 +313,10 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnParticipantUpdatedDelegate OnParticipantUpdated;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnRemoteParticipantConnectedDelegate OnRemoteParticipantConnected;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnRemoteParticipantDisconnectedDelegate OnRemoteParticipantDisconnected;
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnLocalParticipantUpdatedDelegate OnLocalParticipantUpdated;
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnVideoTrackAddedDelegate OnVideoTrackAdded;
@@ -340,6 +348,9 @@ private:
 	void SetSpatialEnvironment();
 	void ToggleInputMute();
 	void ToggleOutputMute();
+
+	void BroadcastRemoteParticipantConnectedIfNecessary(const FDolbyIOParticipantInfo& ParticipantInfo);
+	void BroadcastRemoteParticipantDisconnectedIfNecessary(const FDolbyIOParticipantInfo& ParticipantInfo);
 
 	void BroadcastVideoTrackAdded(const FDolbyIOVideoTrack& VideoTrack);
 	void BroadcastVideoTrackEnabled(const FDolbyIOVideoTrack& VideoTrack);
@@ -475,13 +486,29 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnErrorDelegate OnUnmuteParticipantError;
 
-	/** Triggered when a remote participant is added to the conference. */
+	/** Triggered when a remote participant is added to the conference.
+	 *
+	 * This event is triggered for all participants who were present in the conference at any time, including
+	 * participants who joined and left and are no longer in the conference. The status of the participant provided by
+	 * this event should be taken into account when handling this event.
+	 *
+	 * Users who are only interested in tracking whether a participant is currently connected to the conference are
+	 * encouraged to use On Remote Participant Connected and On Remote Participant Disconnected for simplicity.
+	 */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnParticipantAddedDelegate OnParticipantAdded;
 
 	/** Triggered when a remote participant's status is updated. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
 	FDolbyIOOnParticipantUpdatedDelegate OnParticipantUpdated;
+
+	/** Triggered when a remote participant is connected to the conference. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnRemoteParticipantConnectedDelegate OnRemoteParticipantConnected;
+
+	/** Triggered when a remote participant is disconnected from the conference. */
+	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
+	FDolbyIOOnRemoteParticipantDisconnectedDelegate OnRemoteParticipantDisconnected;
 
 	/** Triggered when the local participant's status is updated. */
 	UPROPERTY(BlueprintAssignable, Category = "Dolby.io Comms")
@@ -710,6 +737,14 @@ private:
 	UFUNCTION()
 	void FwdOnParticipantUpdated(const EDolbyIOParticipantStatus Status, const FDolbyIOParticipantInfo& ParticipantInfo)
 	    DLB_DEFINE_FORWARDER(OnParticipantUpdated, Status, ParticipantInfo);
+
+	UFUNCTION()
+	void FwdOnRemoteParticipantConnected(const FDolbyIOParticipantInfo& ParticipantInfo)
+	    DLB_DEFINE_FORWARDER(OnRemoteParticipantConnected, ParticipantInfo);
+
+	UFUNCTION()
+	void FwdOnRemoteParticipantDisconnected(const FDolbyIOParticipantInfo& ParticipantInfo)
+	    DLB_DEFINE_FORWARDER(OnRemoteParticipantDisconnected, ParticipantInfo);
 
 	UFUNCTION()
 	void FwdOnLocalParticipantUpdated(const EDolbyIOParticipantStatus Status,

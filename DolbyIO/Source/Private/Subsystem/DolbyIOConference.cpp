@@ -245,6 +245,7 @@ void UDolbyIOSubsystem::Handle(const remote_participant_added& Event)
 	}
 
 	BroadcastEvent(OnParticipantAdded, Info.Status, Info);
+	BroadcastRemoteParticipantConnectedIfNecessary(Info);
 	ProcessBufferedVideoTracks(Info.UserID);
 }
 
@@ -264,6 +265,26 @@ void UDolbyIOSubsystem::Handle(const remote_participant_updated& Event)
 	}
 
 	BroadcastEvent(OnParticipantUpdated, Info.Status, Info);
+	BroadcastRemoteParticipantConnectedIfNecessary(Info);
+	BroadcastRemoteParticipantDisconnectedIfNecessary(Info);
+}
+
+void UDolbyIOSubsystem::BroadcastRemoteParticipantConnectedIfNecessary(const FDolbyIOParticipantInfo& ParticipantInfo)
+{
+	if (ParticipantInfo.Status == EDolbyIOParticipantStatus::OnAir)
+	{
+		BroadcastEvent(OnRemoteParticipantConnected, ParticipantInfo);
+	}
+}
+
+void UDolbyIOSubsystem::BroadcastRemoteParticipantDisconnectedIfNecessary(
+    const FDolbyIOParticipantInfo& ParticipantInfo)
+{
+	if (ParticipantInfo.Status == EDolbyIOParticipantStatus::Left ||
+	    ParticipantInfo.Status == EDolbyIOParticipantStatus::Kicked)
+	{
+		BroadcastEvent(OnRemoteParticipantDisconnected, ParticipantInfo);
+	}
 }
 
 void UDolbyIOSubsystem::Handle(const local_participant_updated& Event)

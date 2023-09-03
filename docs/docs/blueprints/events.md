@@ -192,6 +192,10 @@ Triggered automatically when a message is received.
 
 Triggered automatically when a remote participant is added to the conference.
 
+This event is triggered for all participants who were present in the conference at any time, including participants who joined and left and are no longer in the conference. The status of the participant provided by this event should be taken into account when handling this event. For more information, refer to the [graph of possible status changes](../../static/img/participant-status-changes.png).
+
+Users who are only interested in tracking whether a participant is currently connected to the conference are encouraged to use [On Remote Participant Connected](#on-remote-participant-connected) and [On Remote Participant Disconnected](#on-remote-participant-disconnected) for simplicity.
+
 #### Data provided
 | Provides             | Type                                                                | Description                        |
 |----------------------|:--------------------------------------------------------------------|:-----------------------------------|
@@ -208,6 +212,28 @@ Triggered automatically when a remote participant's status is updated. For more 
 | Provides             | Type                                                                | Description                        |
 |----------------------|:--------------------------------------------------------------------|:-----------------------------------|
 | **Status**           | [Dolby.io Participant Status](types.mdx#dolbyio-participant-status) | The status of the participant.     |
+| **Participant Info** | [Dolby.io Participant Info](types.mdx#dolbyio-participant-info)     | Information about the participant. |
+
+---
+
+## On Remote Participant Connected
+
+Triggered automatically when a remote participant is connected to the conference.
+
+#### Data provided
+| Provides             | Type                                                                | Description                        |
+|----------------------|:--------------------------------------------------------------------|:-----------------------------------|
+| **Participant Info** | [Dolby.io Participant Info](types.mdx#dolbyio-participant-info)     | Information about the participant. |
+
+---
+
+## On Remote Participant Disconnected
+
+Triggered automatically when a remote participant is disconnected from the conference.
+
+#### Data provided
+| Provides             | Type                                                                | Description                        |
+|----------------------|:--------------------------------------------------------------------|:-----------------------------------|
 | **Participant Info** | [Dolby.io Participant Info](types.mdx#dolbyio-participant-info)     | Information about the participant. |
 
 ---
