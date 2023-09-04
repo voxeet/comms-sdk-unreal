@@ -228,8 +228,9 @@ void UDolbyIOObserver::InitializeComponent()
 				DLB_BIND(OnUnmuteParticipantError);
 
 				DLB_BIND(OnParticipantAdded);
-
 				DLB_BIND(OnParticipantUpdated);
+				DLB_BIND(OnRemoteParticipantConnected);
+				DLB_BIND(OnRemoteParticipantDisconnected);
 
 				DLB_BIND(OnLocalParticipantUpdated);
 
