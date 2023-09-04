@@ -24,7 +24,7 @@ public:
 		    [](std::size_t Count, std::size_t Al) { return ::operator new(Count, static_cast<std::align_val_t>(Al)); },
 		    ::operator delete,
 		    [](void* Ptr, std::size_t Al) { ::operator delete(Ptr, static_cast<std::align_val_t>(Al)); }};
-		BaseDir = FPaths::Combine(BaseDir, "bin");
+		BaseDir = FPaths::Combine(BaseDir, TEXT("bin"));
 		LoadDll(BaseDir, "avutil-57.dll");
 		LoadDll(BaseDir, "avcodec-59.dll");
 		LoadDll(BaseDir, "dvclient.dll");
@@ -39,13 +39,13 @@ public:
 		LoadDll(BaseDir, "video_processor.dll");
 		dolbyio::comms::plugin::video_processor::set_app_allocator(Allocator);
 #elif PLATFORM_MAC
-		BaseDir = FPaths::Combine(BaseDir, "lib");
+		BaseDir = FPaths::Combine(BaseDir, TEXT("lib"));
 		LoadDll(BaseDir, "libdolbyio_comms_media.dylib");
 		LoadDll(BaseDir, "libdolbyio_comms_sdk.dylib");
 		LoadDll(BaseDir, "libvideo_processor.dylib");
 #elif PLATFORM_LINUX
 		BaseDir += "-ubuntu-20.04-clang10-libc++10";
-		BaseDir = FPaths::Combine(BaseDir, "lib");
+		BaseDir = FPaths::Combine(BaseDir, TEXT("lib"));
 		LoadDll(BaseDir, "libavutil.so.57");
 		LoadDll(BaseDir, "libavcodec.so.59");
 		LoadDll(BaseDir, "libavformat.so.59");
