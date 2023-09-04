@@ -4,18 +4,6 @@
     <log text="DolbyIO plugin init"/>
   </init>
 
-  <gradleProperties>
-    <insert>
-      ANDROID_TOOLS_BUILD_GRADLE_VERSION=com.android.tools.build:gradle:7.3.1
-    </insert>
-  </gradleProperties>
-
-  <soLoadLibrary>
-    <loadLibrary
-      name="dolbyio_comms_sdk_android_cppsdk"
-      failmsg="Could not load libdolbyio_comms_sdk_android_cppsdk.so" />
-  </soLoadLibrary>
-
   <baseBuildGradleAdditions>
     <insert>
       allprojects {
@@ -41,5 +29,10 @@
       }
     </insert>
   </buildGradleAdditions>
+
+  <soLoadLibrary>
+    <loadLibrary
+      name="dolbyio_comms_sdk_android_cppsdk" failmsg="Failed to load libdolbyio_comms_sdk_android_cppsdk.so" />
+  </soLoadLibrary>
 
 </root>

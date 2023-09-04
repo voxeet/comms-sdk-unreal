@@ -237,14 +237,17 @@ jobs:
           AAR_PATH_BASE: "${{ github.workspace }}/${{ env.PLUGIN_SOURCE_DIR }}/comms-sdk-android-cppsdk-"
           AAR_PATH: "${{ env.AAR_PATH_BASE }}${{ env.CPP_SDK_VERSION }}.aar"
           AAR_NO_PREFAB_PATH: "${{ env.AAR_PATH_BASE }}noprefab-${{ env.CPP_SDK_VERSION }}.aar"
+          AAR_SHARED_PATH: "${{ env.AAR_PATH_BASE }}shared-${{ env.CPP_SDK_VERSION }}.aar"
         run: |
-          ./scripts/android.sh ${{ env.AAR_PATH }} ${{ env.AAR_NO_PREFAB_PATH }}
+          ./scripts/android.sh ${{ env.AAR_PATH }} ${{ env.AAR_NO_PREFAB_PATH }} ${{ env.AAR_SHARED_PATH }}
 
       - name: Build plugin
         env:
-          BUILD_ARGS: "BuildPlugin -Rocket -StrictIncludes -Plugin=\"$(pwd)/DolbyIO/DolbyIO.uplugin\" -Package=$(pwd)/Build/DolbyIO -TargetPlatforms=Android -NoHostPlatform"
+          BUILD_COMMAND: "/Users/Shared/Epic\\ Games/UE_${{ matrix.version }}/Engine/Build/BatchFiles/RunUAT.sh"
+          BUILD_ARGS_PLATFORM: "-TargetPlatforms=Android -NoHostPlatform"
+          NDKROOT: "/Users/dolbyio/Library/Android/sdk/ndk/25.1.8937393"
         run: |
-          /Users/Shared/Epic\ Games/UE_${{ matrix.version }}/Engine/Build/BatchFiles/RunUAT.sh ${{ env.BUILD_ARGS }}
+          ${{ env.BUILD_COMMAND }} ${{ env.BUILD_ARGS_COMMON }} ${{ env.BUILD_ARGS_PLATFORM }}
 
       - name: Zip plugin
         working-directory: Build
