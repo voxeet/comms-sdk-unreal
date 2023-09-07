@@ -53,10 +53,12 @@ const config = {
     ({
       // Replace with your project's social card
       navbar: {
-        title: 'Home',
+        title: 'Virtual Worlds plugin for Unreal Engine',
+        style: 'dark',
         logo: {
-          alt: 'Comms Unreal Plugin Logo',
-          src: 'img/logo.svg',
+          alt: 'Dolby logo',
+          src: 'img/logo-white.svg',
+          className: 'logo',
         },
       },
       footer: {
