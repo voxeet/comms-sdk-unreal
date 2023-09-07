@@ -7,7 +7,7 @@ public class DolbyIO : ModuleRules
 {
     public DolbyIO(ReadOnlyTargetRules Target) : base(Target)
     {
-        PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
         CppStandard = CppStandardVersion.Cpp17;
         bEnableExceptions = true;
