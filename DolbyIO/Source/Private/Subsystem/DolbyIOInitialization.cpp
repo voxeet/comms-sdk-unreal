@@ -25,10 +25,6 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-#if PLATFORM_ANDROID
-	SetLogSettings(EDolbyIOLogLevel::Info, EDolbyIOLogLevel::Off, EDolbyIOLogLevel::Debug, true);
-#endif
-
 	ConferenceStatus = conference_status::destroyed;
 
 	{
@@ -59,13 +55,11 @@ void UDolbyIOSubsystem::Deinitialize()
 	Super::Deinitialize();
 }
 
-namespace DolbyIO
+namespace
 {
 	class FSdkLogCallback : public logger_sink_callback
 	{
 	public:
-		FSdkLogCallback(UDolbyIOSubsystem& Subsystem) : Subsystem(Subsystem) {}
-
 		void log(log_level Level, std::string_view Message) const override
 		{
 #define DLB_UE_LOG_SDK_BASE(Verbosity)                                           \
@@ -77,33 +71,16 @@ namespace DolbyIO
 					DLB_UE_LOG_SDK_BASE(Error);
 				case log_level::WARNING:
 					DLB_UE_LOG_SDK_BASE(Warning);
-				case log_level::DEBUG:
-#if PLATFORM_ANDROID
-					if (Message.find("DVC_StartRtpCommunication ") != Message.npos)
-					{
-						Subsystem.bIsRtpStarted = true;
-						DLB_UE_LOG_BASE(Warning, "bIsRtpStarted = true");
-					}
-#endif
-				default:;
+				default:
 					DLB_UE_LOG_SDK_BASE(Log);
 			}
 		}
-
-	private:
-		UDolbyIOSubsystem& Subsystem;
 	};
 }
 
 void UDolbyIOSubsystem::SetLogSettings(EDolbyIOLogLevel SdkLogLevel, EDolbyIOLogLevel MediaLogLevel,
                                        EDolbyIOLogLevel DvcLogLevel, bool bLogToConsole, bool bLogToFile)
 {
-#if PLATFORM_ANDROID
-	DvcLogLevel = EDolbyIOLogLevel::Debug;
-	bLogToConsole = true;
-	bLogToFile = false;
-#endif
-
 	sdk::log_settings LogSettings;
 	LogSettings.sdk_log_level = ToSdkLogLevel(SdkLogLevel);
 	LogSettings.media_log_level = ToSdkLogLevel(MediaLogLevel);
@@ -112,7 +89,7 @@ void UDolbyIOSubsystem::SetLogSettings(EDolbyIOLogLevel SdkLogLevel, EDolbyIOLog
 
 	if (bLogToConsole)
 	{
-		LogSettings.log_callback = std::make_shared<FSdkLogCallback>(*this);
+		LogSettings.log_callback = std::make_shared<FSdkLogCallback>();
 	}
 	if (bLogToFile)
 	{

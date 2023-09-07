@@ -135,10 +135,6 @@ void UDolbyIOSubsystem::Disconnect()
 
 void UDolbyIOSubsystem::UpdateStatus(conference_status Status)
 {
-#if PLATFORM_ANDROID
-	bIsRtpStarted = false;
-#endif
-
 	ConferenceStatus = Status;
 	DLB_UE_LOG("Conference status: %s", *ToString(ConferenceStatus));
 

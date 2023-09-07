@@ -31,13 +31,6 @@ void UDolbyIOSubsystem::SetLocalPlayerLocationImpl(const FVector& Location)
 		return;
 	}
 
-#if PLATFORM_ANDROID
-	if (!bIsRtpStarted)
-	{
-		return;
-	}
-#endif
-
 	Sdk->conference()
 	    .set_spatial_position(ToStdString(LocalParticipantID), {Location.X, Location.Y, Location.Z})
 	    .on_error(DLB_ERROR_HANDLER(OnSetLocalPlayerLocationError));
@@ -59,13 +52,6 @@ void UDolbyIOSubsystem::SetLocalPlayerRotationImpl(const FRotator& Rotation)
 	{
 		return;
 	}
-
-#if PLATFORM_ANDROID
-	if (!bIsRtpStarted)
-	{
-		return;
-	}
-#endif
 
 	// The SDK expects the direction values to mean rotations around the {x,y,z} axes as specified by the
 	// environment. In Unreal, rotation around x is roll (because x is forward), y is pitch and z is yaw.
