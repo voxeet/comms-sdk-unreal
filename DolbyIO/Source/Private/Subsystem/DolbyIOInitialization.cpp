@@ -121,7 +121,7 @@ void UDolbyIOSubsystem::SetToken(const FString& Token)
 		{
 			DLB_ERROR_HANDLER(OnSetTokenError).HandleError();
 		}
-		RefreshTokenCb.Reset(); // RefreshToken callback can be called only once
+		RefreshTokenCb.Reset(); // RefreshToken callback can only be called once
 	}
 }
 
