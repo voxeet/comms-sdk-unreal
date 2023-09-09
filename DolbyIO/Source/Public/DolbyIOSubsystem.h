@@ -457,10 +457,13 @@ private:
 	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
 	TMap<FString, TArray<FDolbyIOVideoTrack>> BufferedAddedVideoTracks;
 	TMap<FString, TArray<FDolbyIOVideoTrack>> BufferedEnabledVideoTracks;
+
 	TMap<FString, FDolbyIOParticipantInfo> RemoteParticipants;
 	FCriticalSection RemoteParticipantsLock;
 
 	TMap<FString, std::shared_ptr<DolbyIO::FVideoSink>> VideoSinks;
+	FCriticalSection VideoSinksLock;
+
 	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalCameraFrameHandler;
 	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalScreenshareFrameHandler;
 	TSharedPtr<dolbyio::comms::sdk> Sdk;
