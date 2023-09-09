@@ -8,7 +8,7 @@ This tutorial explains how to set up the plugin to target Android devices.
 
 ## Prerequisites
 
-Please follow the [official Android setup guide](https://docs.unrealengine.com/5.3/en-US/how-to-set-up-android-sdk-and-ndk-for-your-unreal-engine-development-environment/) for the Unreal Engine and make sure you can package and launch an Android game on a phone without using the plugin first. The Android version of the plugin supports Unreal Engine 5.3 or later.
+Please follow the [official Android setup guide](https://docs.unrealengine.com/5.3/en-US/how-to-set-up-android-sdk-and-ndk-for-your-unreal-engine-development-environment/) for the Unreal Engine and make sure you can package and launch an Android game on a phone without using the plugin first.
 
 ## Setup
 1. Follow the [installation](installation) instructions for your development platform.
@@ -19,10 +19,8 @@ Please follow the [official Android setup guide](https://docs.unrealengine.com/5
 
 ## UnrealBuildTool
 
-It is also required to rebuild UnrealBuildTool to disable static libc++ linkage on Android.
+It is also to necessary to enable linking libc++ dynamically on Android. The steps below explain how to do so on Unreal Engine 5.3 and Windows.
 
-1. Go to `{UnrealEngineRoot}/Engine/Source/Programs/UnrealBuildTool``.
-2. Open the `UnrealBuildTool`` solution in Visual Studio.
-3. Open the `Platform/Android/AndroidToolChain.cs` file.
-4. Find the line `Result += " -static-libstdc++";` and comment it out or simply delete it.
-5. Select the `Development` build configuration (default is probably `Debug`) and build the solution.
+1. Open your project in Visual Studio.
+2. Open `Programs/UnrealBuildTool/Platform/Android/AndroidToolChain.cs`.
+3. Find the line `Result += " -static-libstdc++";` and comment it out or simply delete it.
