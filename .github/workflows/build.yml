@@ -14,6 +14,7 @@ env:
   CPP_SDK_URL: "https://github.com/DolbyIO/comms-sdk-cpp/releases/download"
   PLUGIN_SOURCE_DIR: "DolbyIO"
   PLUGIN_BUILD_DIR: "Build/DolbyIO"
+  BUILD_ARGS_COMMON: "BuildPlugin -Rocket -StrictIncludes -Plugin=\"$(pwd)/DolbyIO/DolbyIO.uplugin\" -Package=\"$(pwd)/Build/DolbyIO\""
   GH_TOKEN: ${{ github.token }}
   RETENTION: 7
 
@@ -41,10 +42,17 @@ jobs:
 
       - name: Build plugin
         env:
-          BUILD_ARGS: "BuildPlugin -Rocket -StrictIncludes -Plugin=\"$(pwd)\\DolbyIO\\DolbyIO.uplugin\" -Package=\"$(pwd)\\Build\\DolbyIO\" -TargetPlatforms=Win64 -VS2019"
+          BUILD_COMMAND: "C:/Program` Files/Epic` Games/UE_${{ matrix.version }}/Engine/Build/BatchFiles/RunUAT.bat"
+          BUILD_ARGS_PLATFORM: "-TargetPlatforms=Win64"
         run: |
-          $UAT = "C:\\Program Files\\Epic Games\\UE_${{ matrix.version }}\\Engine\\Build\\BatchFiles\\RunUAT.bat"
-          & $UAT ${{ env.BUILD_ARGS }}
+          if (${{ matrix.version }} -eq "4.27")
+          {
+            ${{ env.BUILD_COMMAND }} ${{ env.BUILD_ARGS_COMMON }} ${{ env.BUILD_ARGS_PLATFORM }} -VS2019
+          }
+          else
+          {
+            ${{ env.BUILD_COMMAND }} ${{ env.BUILD_ARGS_COMMON }} ${{ env.BUILD_ARGS_PLATFORM }}
+          }
 
       - name: Sign plugin
         env:
@@ -100,9 +108,10 @@ jobs:
 
       - name: Build plugin
         env:
-          BUILD_ARGS: "BuildPlugin -Rocket -StrictIncludes -Plugin=\"$(pwd)/DolbyIO/DolbyIO.uplugin\" -Package=$(pwd)/Build/DolbyIO -TargetPlatforms=Mac -Architecture_Mac=x64+arm64"
+          BUILD_COMMAND: "/Users/Shared/Epic\\ Games/UE_${{ matrix.version }}/Engine/Build/BatchFiles/RunUAT.sh"
+          BUILD_ARGS_PLATFORM: "-TargetPlatforms=Mac -Architecture_Mac=x64+arm64"
         run: |
-          /Users/Shared/Epic\ Games/UE_${{ matrix.version }}/Engine/Build/BatchFiles/RunUAT.sh ${{ env.BUILD_ARGS }}
+          ${{ env.BUILD_COMMAND }} ${{ env.BUILD_ARGS_COMMON }} ${{ env.BUILD_ARGS_PLATFORM }}
 
       - name: Sign plugin
         env:
@@ -170,15 +179,18 @@ jobs:
 
       - name: Build plugin
         env:
-          BUILD_ARGS: "BuildPlugin -Rocket -StrictIncludes -Plugin=\"$(pwd)\\DolbyIO\\DolbyIO.uplugin\" -Package=\"$(pwd)\\Build\\DolbyIO\" -TargetPlatforms=Linux -NoHostPlatform"
+          BUILD_COMMAND: "C:/Program` Files/Epic` Games/UE_${{ matrix.version }}/Engine/Build/BatchFiles/RunUAT.bat"
+          BUILD_ARGS_PLATFORM: "-TargetPlatforms=Linux -NoHostPlatform"
         run: |
-          if(${{ matrix.version }} -eq "4.27"){
+          if (${{ matrix.version }} -eq "4.27")
+          {
             $env:LINUX_MULTIARCH_ROOT="C:\\UnrealToolchains\\v19_clang-11.0.1-centos7"
-          } else {
+          }
+          else
+          {
             $env:LINUX_MULTIARCH_ROOT="C:\\UnrealToolchains\\v21_clang-15.0.1-centos7"
           }
-          $UAT = "C:\\Program Files\\Epic Games\\UE_${{ matrix.version }}\\Engine\\Build\\BatchFiles\\RunUAT.bat"
-          & $UAT ${{ env.BUILD_ARGS }}
+          ${{ env.BUILD_COMMAND }} ${{ env.BUILD_ARGS_COMMON }} ${{ env.BUILD_ARGS_PLATFORM }}
 
       - name: Zip plugin
         working-directory: ${{ env.PLUGIN_BUILD_DIR }}
