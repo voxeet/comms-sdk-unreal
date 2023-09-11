@@ -13,6 +13,7 @@ using namespace DolbyIO;
 
 void UDolbyIOSubsystem::BindMaterial(UMaterialInstanceDynamic* Material, const FString& VideoTrackID)
 {
+	FScopeLock Lock{&VideoSinksLock};
 	for (auto& Sink : VideoSinks)
 	{
 		if (Sink.Key != VideoTrackID)
@@ -29,6 +30,7 @@ void UDolbyIOSubsystem::BindMaterial(UMaterialInstanceDynamic* Material, const F
 
 void UDolbyIOSubsystem::UnbindMaterial(UMaterialInstanceDynamic* Material, const FString& VideoTrackID)
 {
+	FScopeLock Lock{&VideoSinksLock};
 	if (const std::shared_ptr<DolbyIO::FVideoSink>* Sink = VideoSinks.Find(VideoTrackID))
 	{
 		(*Sink)->UnbindMaterial(Material);
@@ -37,6 +39,7 @@ void UDolbyIOSubsystem::UnbindMaterial(UMaterialInstanceDynamic* Material, const
 
 UTexture2D* UDolbyIOSubsystem::GetTexture(const FString& VideoTrackID)
 {
+	FScopeLock Lock{&VideoSinksLock};
 	if (const std::shared_ptr<FVideoSink>* Sink = VideoSinks.Find(VideoTrackID))
 	{
 		return (*Sink)->GetTexture();
@@ -60,31 +63,35 @@ void UDolbyIOSubsystem::ProcessBufferedVideoTracks(const FString& ParticipantID)
 {
 	if (TArray<FDolbyIOVideoTrack>* AddedTracks = BufferedAddedVideoTracks.Find(ParticipantID))
 	{
+		FScopeLock Lock{&VideoSinksLock};
 		for (const FDolbyIOVideoTrack& AddedTrack : *AddedTracks)
 		{
-			VideoSinks[AddedTrack.TrackID]->OnTextureCreated(
-			    [=]
-			    {
-				    BroadcastVideoTrackAdded(AddedTrack);
-
-				    if (TArray<FDolbyIOVideoTrack>* EnabledTracks = BufferedEnabledVideoTracks.Find(ParticipantID))
+			if (std::shared_ptr<DolbyIO::FVideoSink>* Sink = VideoSinks.Find(AddedTrack.TrackID))
+			{
+				(*Sink)->OnTextureCreated(
+				    [=]
 				    {
-					    TArray<FDolbyIOVideoTrack>& EnabledTracksRef = *EnabledTracks;
-					    for (int i = 0; i < EnabledTracksRef.Num(); ++i)
+					    BroadcastVideoTrackAdded(AddedTrack);
+
+					    if (TArray<FDolbyIOVideoTrack>* EnabledTracks = BufferedEnabledVideoTracks.Find(ParticipantID))
 					    {
-						    if (EnabledTracksRef[i].TrackID == AddedTrack.TrackID)
+						    TArray<FDolbyIOVideoTrack>& EnabledTracksRef = *EnabledTracks;
+						    for (int i = 0; i < EnabledTracksRef.Num(); ++i)
 						    {
-							    BroadcastVideoTrackEnabled(EnabledTracksRef[i]);
-							    EnabledTracksRef.RemoveAt(i);
-							    if (!EnabledTracksRef.Num())
+							    if (EnabledTracksRef[i].TrackID == AddedTrack.TrackID)
 							    {
-								    BufferedEnabledVideoTracks.Remove(ParticipantID);
+								    BroadcastVideoTrackEnabled(EnabledTracksRef[i]);
+								    EnabledTracksRef.RemoveAt(i);
+								    if (!EnabledTracksRef.Num())
+								    {
+									    BufferedEnabledVideoTracks.Remove(ParticipantID);
+								    }
+								    return;
 							    }
-							    return;
 						    }
 					    }
-				    }
-			    });
+				    });
+			}
 		}
 		BufferedAddedVideoTracks.Remove(ParticipantID);
 	}
@@ -94,13 +101,14 @@ void UDolbyIOSubsystem::Handle(const remote_video_track_added& Event)
 {
 	const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
 
+	FScopeLock Lock1{&VideoSinksLock};
 	VideoSinks.Emplace(VideoTrack.TrackID, std::make_shared<FVideoSink>(VideoTrack.TrackID));
 	Sdk->video()
 	    .remote()
 	    .set_video_sink(Event.track, VideoSinks[VideoTrack.TrackID])
 	    .on_error(DLB_ERROR_HANDLER_NO_DELEGATE);
 
-	FScopeLock Lock{&RemoteParticipantsLock};
+	FScopeLock Lock2{&RemoteParticipantsLock};
 	if (RemoteParticipants.Contains(VideoTrack.ParticipantID))
 	{
 		VideoSinks[VideoTrack.TrackID]->OnTextureCreated([this, VideoTrack] { BroadcastVideoTrackAdded(VideoTrack); });
@@ -118,8 +126,17 @@ void UDolbyIOSubsystem::Handle(const remote_video_track_removed& Event)
 	const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
 	DLB_UE_LOG("Video track removed: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID, *VideoTrack.ParticipantID);
 
-	VideoSinks[VideoTrack.TrackID]->UnbindAllMaterials();
-	VideoSinks.Remove(VideoTrack.TrackID);
+	FScopeLock Lock{&VideoSinksLock};
+	if (std::shared_ptr<DolbyIO::FVideoSink>* Sink = VideoSinks.Find(VideoTrack.TrackID))
+	{
+		(*Sink)->UnbindAllMaterials();
+		VideoSinks.Remove(VideoTrack.TrackID);
+	}
+	else
+	{
+		DLB_UE_LOG_BASE(Warning, "Non-existent video track removed");
+	}
+
 	BroadcastEvent(OnVideoTrackRemoved, VideoTrack);
 }
 
