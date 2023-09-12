@@ -27,10 +27,13 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	ConferenceStatus = conference_status::destroyed;
 
-	VideoSinks.Emplace(LocalCameraTrackID, std::make_shared<FVideoSink>(LocalCameraTrackID));
-	VideoSinks.Emplace(LocalScreenshareTrackID, std::make_shared<FVideoSink>(LocalScreenshareTrackID));
-	LocalCameraFrameHandler = std::make_shared<FVideoFrameHandler>(VideoSinks[LocalCameraTrackID]);
-	LocalScreenshareFrameHandler = std::make_shared<FVideoFrameHandler>(VideoSinks[LocalScreenshareTrackID]);
+	{
+		FScopeLock Lock{&VideoSinksLock};
+		VideoSinks.Emplace(LocalCameraTrackID, std::make_shared<FVideoSink>(LocalCameraTrackID));
+		VideoSinks.Emplace(LocalScreenshareTrackID, std::make_shared<FVideoSink>(LocalScreenshareTrackID));
+		LocalCameraFrameHandler = std::make_shared<FVideoFrameHandler>(VideoSinks[LocalCameraTrackID]);
+		LocalScreenshareFrameHandler = std::make_shared<FVideoFrameHandler>(VideoSinks[LocalScreenshareTrackID]);
+	}
 
 	FTimerManager& TimerManager = GetGameInstance()->GetTimerManager();
 	TimerManager.SetTimer(LocationTimerHandle, this, &UDolbyIOSubsystem::SetLocationUsingFirstPlayer, 0.1, true);
@@ -42,6 +45,8 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 void UDolbyIOSubsystem::Deinitialize()
 {
 	DLB_UE_LOG("Deinitializing");
+
+	FScopeLock Lock{&VideoSinksLock};
 	for (auto& Sink : VideoSinks)
 	{
 		Sink.Value->Disable(); // ignore new frames now on
@@ -121,7 +126,7 @@ void UDolbyIOSubsystem::SetToken(const FString& Token)
 		{
 			DLB_ERROR_HANDLER(OnSetTokenError).HandleError();
 		}
-		RefreshTokenCb.Reset(); // RefreshToken callback can be called only once
+		RefreshTokenCb.Reset(); // RefreshToken callback can only be called once
 	}
 }
 

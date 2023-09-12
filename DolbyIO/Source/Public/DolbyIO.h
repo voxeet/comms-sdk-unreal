@@ -12,57 +12,140 @@
 
 #include "DolbyIO.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDolbyIOOnTokenNeededDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDolbyIOOnInitializedDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnConnectedDelegate, const FString&, LocalParticipantID,
-                                             const FString&, ConferenceID);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDolbyIOOnDisconnectedDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnParticipantAddedDelegate, const EDolbyIOParticipantStatus,
-                                             Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnParticipantUpdatedDelegate, const EDolbyIOParticipantStatus,
-                                             Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnRemoteParticipantConnectedDelegate,
-                                            const FDolbyIOParticipantInfo&, ParticipantInfo);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnRemoteParticipantDisconnectedDelegate,
-                                            const FDolbyIOParticipantInfo&, ParticipantInfo);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnLocalParticipantUpdatedDelegate, const EDolbyIOParticipantStatus,
-                                             Status, const FDolbyIOParticipantInfo&, ParticipantInfo);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnVideoTrackAddedDelegate, const FDolbyIOVideoTrack&, VideoTrack);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnVideoTrackRemovedDelegate, const FDolbyIOVideoTrack&, VideoTrack);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnVideoTrackEnabledDelegate, const FDolbyIOVideoTrack&, VideoTrack);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnVideoTrackDisabledDelegate, const FDolbyIOVideoTrack&,
-                                            VideoTrack);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnVideoEnabledDelegate, const FString&, VideoTrackID);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnVideoDisabledDelegate, const FString&, VideoTrackID);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnScreenshareStartedDelegate, const FString&, VideoTrackID);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnScreenshareStoppedDelegate, const FString&, VideoTrackID);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnActiveSpeakersChangedDelegate, const TArray<FString>&,
-                                            ActiveSpeakers);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnAudioLevelsChangedDelegate, const TArray<FString>&,
-                                             ActiveSpeakers, const TArray<float>&, AudioLevels);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnScreenshareSourcesReceivedDelegate,
-                                            const TArray<FDolbyIOScreenshareSource>&, Sources);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentScreenshareSourceReceivedDelegate, bool, IsNone,
-                                             const FDolbyIOScreenshareSource&, OptionalSource);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnAudioInputDevicesReceivedDelegate,
-                                            const TArray<FDolbyIOAudioDevice>&, Devices);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnAudioOutputDevicesReceivedDelegate,
-                                            const TArray<FDolbyIOAudioDevice>&, Devices);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentAudioInputDeviceReceivedDelegate, bool, IsNone,
-                                             const FDolbyIOAudioDevice&, OptionalDevice);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentAudioOutputDeviceReceivedDelegate, bool, IsNone,
-                                             const FDolbyIOAudioDevice&, OptionalDevice);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnVideoDevicesReceivedDelegate, const TArray<FDolbyIOVideoDevice>&,
-                                            Devices);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentVideoDeviceReceivedDelegate, bool, IsNone,
-                                             const FDolbyIOVideoDevice&, OptionalDevice);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentAudioInputDeviceChangedDelegate, bool, IsNone,
-                                             const FDolbyIOAudioDevice&, OptionalDevice);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnCurrentAudioOutputDeviceChangedDelegate, bool, IsNone,
-                                             const FDolbyIOAudioDevice&, OptionalDevice);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDolbyIOOnMessageReceivedDelegate, const FString&, Message,
-                                             const FDolbyIOParticipantInfo&, ParticipantInfo);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDolbyIOOnErrorDelegate, const FString&, ErrorMsg);
+// clang-format off
+DECLARE_DYNAMIC_MULTICAST_DELEGATE
+(FDolbyIOOnTokenNeededDelegate);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE
+(FDolbyIOOnInitializedDelegate);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams
+(FDolbyIOOnConnectedDelegate,
+const FString&, LocalParticipantID,
+const FString&, ConferenceID);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE
+(FDolbyIOOnDisconnectedDelegate);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams
+(FDolbyIOOnParticipantAddedDelegate,
+const EDolbyIOParticipantStatus, Status,
+const FDolbyIOParticipantInfo&, ParticipantInfo);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams
+(FDolbyIOOnParticipantUpdatedDelegate,
+const EDolbyIOParticipantStatus, Status,
+const FDolbyIOParticipantInfo&, ParticipantInfo);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam
+(FDolbyIOOnRemoteParticipantConnectedDelegate,
+const FDolbyIOParticipantInfo&, ParticipantInfo);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(
+FDolbyIOOnRemoteParticipantDisconnectedDelegate,
+const FDolbyIOParticipantInfo&, ParticipantInfo);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams
+(FDolbyIOOnLocalParticipantUpdatedDelegate,
+const EDolbyIOParticipantStatus, Status,
+const FDolbyIOParticipantInfo&, ParticipantInfo);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam
+(FDolbyIOOnVideoTrackAddedDelegate,
+const FDolbyIOVideoTrack&, VideoTrack);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam
+(FDolbyIOOnVideoTrackRemovedDelegate,
+const FDolbyIOVideoTrack&, VideoTrack);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam
+(FDolbyIOOnVideoTrackEnabledDelegate,
+const FDolbyIOVideoTrack&, VideoTrack);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam
+(FDolbyIOOnVideoTrackDisabledDelegate,
+const FDolbyIOVideoTrack&, VideoTrack);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam
+(FDolbyIOOnVideoEnabledDelegate,
+const FString&, VideoTrackID);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam
+(FDolbyIOOnVideoDisabledDelegate,
+const FString&, VideoTrackID);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam
+(FDolbyIOOnScreenshareStartedDelegate,
+const FString&, VideoTrackID);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam
+(FDolbyIOOnScreenshareStoppedDelegate,
+const FString&, VideoTrackID);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam
+(FDolbyIOOnActiveSpeakersChangedDelegate,
+const TArray<FString>&, ActiveSpeakers);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams
+(FDolbyIOOnAudioLevelsChangedDelegate,
+const TArray<FString>&, ActiveSpeakers,
+const TArray<float>&, AudioLevels);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam
+(FDolbyIOOnScreenshareSourcesReceivedDelegate,
+const TArray<FDolbyIOScreenshareSource>&, Sources);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams
+(FDolbyIOOnCurrentScreenshareSourceReceivedDelegate,
+bool, IsNone,
+const FDolbyIOScreenshareSource&, OptionalSource);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam
+(FDolbyIOOnAudioInputDevicesReceivedDelegate,
+const TArray<FDolbyIOAudioDevice>&, Devices);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam
+(FDolbyIOOnAudioOutputDevicesReceivedDelegate,
+const TArray<FDolbyIOAudioDevice>&, Devices);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams
+(FDolbyIOOnCurrentAudioInputDeviceReceivedDelegate,
+bool, IsNone,
+const FDolbyIOAudioDevice&, OptionalDevice);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams
+(FDolbyIOOnCurrentAudioOutputDeviceReceivedDelegate,
+bool, IsNone,
+const FDolbyIOAudioDevice&, OptionalDevice);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam
+(FDolbyIOOnVideoDevicesReceivedDelegate,
+const TArray<FDolbyIOVideoDevice>&, Devices);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams
+(FDolbyIOOnCurrentVideoDeviceReceivedDelegate,
+bool, IsNone,
+const FDolbyIOVideoDevice&, OptionalDevice);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams
+(FDolbyIOOnCurrentAudioInputDeviceChangedDelegate,
+bool, IsNone,
+const FDolbyIOAudioDevice&, OptionalDevice);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams
+(FDolbyIOOnCurrentAudioOutputDeviceChangedDelegate,
+bool, IsNone,
+const FDolbyIOAudioDevice&, OptionalDevice);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams
+(FDolbyIOOnMessageReceivedDelegate,
+const FString&, Message,
+const FDolbyIOParticipantInfo&, ParticipantInfo);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam
+(FDolbyIOOnErrorDelegate,
+const FString&, ErrorMsg);
+// clang-format on
 
 namespace DolbyIO
 {
@@ -355,6 +438,7 @@ private:
 	void BroadcastVideoTrackAdded(const FDolbyIOVideoTrack& VideoTrack);
 	void BroadcastVideoTrackEnabled(const FDolbyIOVideoTrack& VideoTrack);
 	void ProcessBufferedVideoTracks(const FString& ParticipantID);
+	void WarnIfVideoTrackSuspicious(const FString& VideoTrackID);
 
 	void SetLocationUsingFirstPlayer();
 	void SetLocalPlayerLocationImpl(const FVector& Location);
@@ -385,10 +469,13 @@ private:
 	EDolbyIOSpatialAudioStyle SpatialAudioStyle;
 	TMap<FString, TArray<FDolbyIOVideoTrack>> BufferedAddedVideoTracks;
 	TMap<FString, TArray<FDolbyIOVideoTrack>> BufferedEnabledVideoTracks;
+
 	TMap<FString, FDolbyIOParticipantInfo> RemoteParticipants;
 	FCriticalSection RemoteParticipantsLock;
 
 	TMap<FString, std::shared_ptr<DolbyIO::FVideoSink>> VideoSinks;
+	FCriticalSection VideoSinksLock;
+
 	std::shared_ptr<dolbyio::comms::plugin::video_processor> VideoProcessor;
 	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalCameraFrameHandler;
 	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalScreenshareFrameHandler;
