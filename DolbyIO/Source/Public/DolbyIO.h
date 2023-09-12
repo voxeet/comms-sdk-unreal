@@ -438,6 +438,7 @@ private:
 	void BroadcastVideoTrackAdded(const FDolbyIOVideoTrack& VideoTrack);
 	void BroadcastVideoTrackEnabled(const FDolbyIOVideoTrack& VideoTrack);
 	void ProcessBufferedVideoTracks(const FString& ParticipantID);
+	void WarnIfVideoTrackSuspicious(const FString& VideoTrackID);
 
 	void SetLocationUsingFirstPlayer();
 	void SetLocalPlayerLocationImpl(const FVector& Location);

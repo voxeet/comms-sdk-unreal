@@ -50,7 +50,16 @@ UTexture2D* UDolbyIOSubsystem::GetTexture(const FString& VideoTrackID)
 void UDolbyIOSubsystem::BroadcastVideoTrackAdded(const FDolbyIOVideoTrack& VideoTrack)
 {
 	DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID, *VideoTrack.ParticipantID);
+	WarnIfVideoTrackSuspicious(VideoTrack.TrackID);
 	BroadcastEvent(OnVideoTrackAdded, VideoTrack);
+}
+
+void UDolbyIOSubsystem::WarnIfVideoTrackSuspicious(const FString& VideoTrackID)
+{
+	if (VideoTrackID == "{-}")
+	{
+		DLB_UE_LOG_BASE(Warning, "Suspicious video track ID added, things may not work as expected");
+	}
 }
 
 void UDolbyIOSubsystem::BroadcastVideoTrackEnabled(const FDolbyIOVideoTrack& VideoTrack)
@@ -125,6 +134,7 @@ void UDolbyIOSubsystem::Handle(const remote_video_track_removed& Event)
 {
 	const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
 	DLB_UE_LOG("Video track removed: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID, *VideoTrack.ParticipantID);
+	WarnIfVideoTrackSuspicious(VideoTrack.TrackID);
 
 	FScopeLock Lock{&VideoSinksLock};
 	if (std::shared_ptr<DolbyIO::FVideoSink>* Sink = VideoSinks.Find(VideoTrack.TrackID))
