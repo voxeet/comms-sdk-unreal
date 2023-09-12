@@ -219,6 +219,7 @@ void UDolbyIOSubsystem::Initialize(const FString& Token)
 			            const FDolbyIOVideoTrack VideoTrack = ToFDolbyIOVideoTrack(Event.track);
 			            DLB_UE_LOG("Video track removed: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID,
 			                       *VideoTrack.ParticipantID);
+			            WarnIfVideoTrackSuspicious(VideoTrack.TrackID);
 
 			            FScopeLock Lock{&VideoSinksLock};
 			            if (std::shared_ptr<DolbyIO::FVideoSink>* Sink = VideoSinks.Find(VideoTrack.TrackID))
@@ -632,7 +633,16 @@ void UDolbyIOSubsystem::DisableVideo()
 void UDolbyIOSubsystem::BroadcastVideoTrackAdded(const FDolbyIOVideoTrack& VideoTrack)
 {
 	DLB_UE_LOG("Video track added: TrackID=%s ParticipantID=%s", *VideoTrack.TrackID, *VideoTrack.ParticipantID);
+	WarnIfVideoTrackSuspicious(VideoTrack.TrackID);
 	BroadcastEvent(OnVideoTrackAdded, VideoTrack);
+}
+
+void UDolbyIOSubsystem::WarnIfVideoTrackSuspicious(const FString& VideoTrackID)
+{
+	if (VideoTrackID == "{-}")
+	{
+		DLB_UE_WARN("Suspicious video track ID added, things may not work as expected");
+	}
 }
 
 void UDolbyIOSubsystem::BroadcastVideoTrackEnabled(const FDolbyIOVideoTrack& VideoTrack)
