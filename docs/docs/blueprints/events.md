@@ -137,10 +137,6 @@ Triggered by [**Dolby.io Disconnect**](functions.md#dolbyio-disconnect) when the
 
 ## On Error
 
-:::info 🚀 Beta
-This event is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
-:::
-
 Triggered by functions if errors occur.
 
 #### Data provided
@@ -158,10 +154,6 @@ Triggered by [**Dolby.io Set Token**](functions.md#dolbyio-set-token) when the p
 
 ## On Local Participant Updated
 
-:::info 🚀 Beta
-This event is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
-:::
-
 Triggered when the local participant's status is updated as a result of calling [Connect](functions.md#dolbyio-connect), [Demo Conference](functions.md#dolbyio-demo-conference) or [Update User Metadata](functions.md#dolbyio-update-user-metadata).
 
 #### Data provided
@@ -173,10 +165,6 @@ Triggered when the local participant's status is updated as a result of calling 
 ---
 
 ## On Message Received
-
-:::info 🚀 Beta
-This event is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
-:::
 
 Triggered automatically when a message is received.
 
