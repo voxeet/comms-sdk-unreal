@@ -28,11 +28,12 @@ namespace DolbyIO
 
 	private:
 		void HandleError(TFunction<void()> Callee) const;
+		void HandleErrorOnGameThread(std::exception_ptr&& ExcPtr) const;
 		void LogException(const FString& Type, const FString& What) const;
 
-		FString File;
-		int Line;
-		UDolbyIOSubsystem& DolbyIOSubsystem;
+		const FString File;
+		const int Line;
+		const UDolbyIOSubsystem& DolbyIOSubsystem;
 		const FDolbyIOOnErrorDelegate* const OnError{};
 	};
 }

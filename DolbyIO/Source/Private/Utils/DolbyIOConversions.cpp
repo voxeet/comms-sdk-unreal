@@ -160,7 +160,11 @@ namespace DolbyIO
 	    const dolbyio::comms::utils::participant_track_map::value_type& TrackMapItem)
 	{
 		FDolbyIOVideoTrack Ret;
+#if PLATFORM_ANDROID // SDK 2.7
+		Ret.TrackID = ToFString(TrackMapItem.second.sdp_track_id);
+#else // SDK 2.6
 		Ret.TrackID = ToFString(std::get<1>(TrackMapItem.second));
+#endif
 		Ret.ParticipantID = ToFString(TrackMapItem.first);
 		Ret.bIsScreenshare = false;
 		return Ret;

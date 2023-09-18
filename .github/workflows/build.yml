@@ -9,7 +9,7 @@ permissions:
   packages: write
 
 env:
-  PLUGIN_VERSION: "1.2.0-beta.11"
+  PLUGIN_VERSION: "1.2.0"
   CPP_SDK_VERSION: "2.6.1"
   CPP_SDK_URL: "https://github.com/DolbyIO/comms-sdk-cpp/releases/download"
   PLUGIN_SOURCE_DIR: "DolbyIO"
@@ -209,3 +209,60 @@ jobs:
         working-directory: ${{ env.PLUGIN_BUILD_DIR }}
         run: |
           ${{ github.workspace }}\\.github\\actions\\upload_assets\\upload_release_asset.ps1 -File DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip
+
+
+  build-android:
+    if: false
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["5.2"]
+    runs-on: ["self-hosted", "X64", "macOS"]
+
+    env:
+      BUILD_PLATFORM: 'android'
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Download C++ SDK
+        uses: ./.github/actions/download_cppsdk/bash
+        with:
+          tag: ${{ env.CPP_SDK_VERSION }}
+          asset_suffix: "${{ env.BUILD_PLATFORM }}64.zip"
+
+      - name: Repackage AARs
+        env:
+          AAR_PATH_BASE: "${{ github.workspace }}/${{ env.PLUGIN_SOURCE_DIR }}/comms-sdk-android-cppsdk-"
+          AAR_PATH: "${{ env.AAR_PATH_BASE }}${{ env.CPP_SDK_VERSION }}.aar"
+          AAR_NO_PREFAB_PATH: "${{ env.AAR_PATH_BASE }}noprefab-${{ env.CPP_SDK_VERSION }}.aar"
+          AAR_SHARED_PATH: "${{ env.AAR_PATH_BASE }}shared-${{ env.CPP_SDK_VERSION }}.aar"
+        run: |
+          ./scripts/android.sh ${{ env.AAR_PATH }} ${{ env.AAR_NO_PREFAB_PATH }} ${{ env.AAR_SHARED_PATH }}
+
+      - name: Build plugin
+        env:
+          BUILD_COMMAND: "/Users/Shared/Epic\\ Games/UE_${{ matrix.version }}/Engine/Build/BatchFiles/RunUAT.sh"
+          BUILD_ARGS_PLATFORM: "-TargetPlatforms=Android -NoHostPlatform"
+          NDKROOT: "/Users/dolbyio/Library/Android/sdk/ndk/25.1.8937393"
+        run: |
+          ${{ env.BUILD_COMMAND }} ${{ env.BUILD_ARGS_COMMON }} ${{ env.BUILD_ARGS_PLATFORM }}
+
+      - name: Zip plugin
+        working-directory: Build
+        run: |
+          zip -rq DolbyIO/DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip DolbyIO/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}
+          path: "${{ env.PLUGIN_BUILD_DIR }}/DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip"
+          retention-days: ${{ env.RETENTION }}
+
+      - name: Release plugin 🎉
+        if: startsWith(github.ref, 'refs/tags/')
+        working-directory: ${{ env.PLUGIN_BUILD_DIR }}
+        run: |
+          ${GITHUB_WORKSPACE}/.github/actions/upload_assets/upload_release_asset.sh DolbyIO_${{ env.PLUGIN_VERSION }}_UE${{ matrix.version }}_${{ env.BUILD_PLATFORM }}.zip

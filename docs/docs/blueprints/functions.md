@@ -16,10 +16,6 @@ Binds a dynamic material instance to hold the frames of the given video track. T
 
 ## Dolby.io Broadcast Message
 
-:::info 🚀 Beta
-This function is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
-:::
-
 Sends a message to all participants in the current conference. The message size is limited to 16KB.
 
 This function calls [Dolby.io Send Message](#dolbyio-send-message) with an empty array of selected participants.
@@ -49,10 +45,6 @@ Changes the screen sharing parameters if already sharing screen.
 ---
 
 ## Dolby.io Connect
-
-:::info 🚀 Beta
-The **Video Codec** parameter is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
-:::
 
 Connects to a conference.
 
@@ -124,10 +116,6 @@ Disconnects from the current conference.
 ---
 
 ## Dolby.io Enable Video
-
-:::info 🚀 Beta
-The **Blur Background** parameter is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
-:::
 
 Enables video streaming from the given video device or the default device if no device is given.
 
@@ -205,10 +193,6 @@ Gets the current audio output device.
 
 ## Dolby.io Get Current Screenshare Source
 
-:::info 🚀 Beta
-This function is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
-:::
-
 Gets the current screenshare source.
 
 ![](../../static/img/generated/DolbyIOGetCurrentScreenshareSource/img/nd_img_UK2Node_AsyncAction.png)
@@ -222,10 +206,6 @@ Gets the current screenshare source.
 ---
 
 ## Dolby.io Get Current Video Device
-
-:::info 🚀 Beta
-This function is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
-:::
 
 Gets the current video device.
 
@@ -282,10 +262,6 @@ Gets the texture to which video from a given track is being rendered.
 
 ## Dolby.io Get Token From URL
 
-:::info 🚀 Beta
-This function is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
-:::
-
 Gets a Dolby.io client access token from a URL.
 
 For convenience during early development and prototyping, this function is provided to acquire a client access token directly from the game.
@@ -307,10 +283,6 @@ For convenience during early development and prototyping, this function is provi
 ---
 
 ## Dolby.io Get Token Using App Key And Secret
-
-:::info 🚀 Beta
-The function is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs) and replaces **Get Dolby.io Token**. The behavior of **Get Dolby.io Token** remains unchanged; we only renamed the function.
-:::
 
 Gets a Dolby.io client access token using an app key and secret combination.
 
@@ -380,10 +352,6 @@ Mutes a given participant for the local user.
 
 ## Dolby.io Send Message
 
-:::info 🚀 Beta
-This function is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
-:::
-
 Sends a message to selected participants in the current conference. The message size is limited to 16KB.
 
 ![](../../static/img/generated/DolbyIOBlueprintFunctionLibrary/img/nd_img_SendMessage.png)
@@ -397,10 +365,6 @@ Sends a message to selected participants in the current conference. The message 
 ---
 
 ## Dolby.io Set Audio Capture Mode
-
-:::info 🚀 Beta
-This function is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
-:::
 
 Sets the preferred noise reduction mode and voice font.
 
@@ -481,12 +445,6 @@ Calling this function even once disables the default behavior, which is to autom
 ---
 
 ## Dolby.io Set Log Settings
-
-:::info 🚀 Beta
-The **Log to Console** parameter is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
-
-The **Log to File** parameter is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs). In previous versions, logs were always written to a file.
-:::
 
 Sets what to log in the Dolby.io C++ SDK.
 
@@ -641,10 +599,6 @@ Unmutes a given participant for the local user.
 ---
 
 ## Dolby.io Update User Metadata
-
-:::info 🚀 Beta
-This function is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs).
-:::
 
 Updates information about the local participant.
 

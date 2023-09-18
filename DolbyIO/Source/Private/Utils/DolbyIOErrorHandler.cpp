@@ -26,7 +26,11 @@ namespace DolbyIO
 
 	void FErrorHandler::operator()(std::exception_ptr&& ExcPtr) const
 	{
+#if PLATFORM_ANDROID
+		HandleErrorOnGameThread(MoveTemp(ExcPtr));
+#else
 		HandleError([ExcP = MoveTemp(ExcPtr)] { std::rethrow_exception(ExcP); });
+#endif
 	}
 
 	void FErrorHandler::HandleError() const
@@ -77,6 +81,22 @@ namespace DolbyIO
 	catch (...)
 	{
 		LogException("unknown exception", "");
+	}
+
+	void FErrorHandler::HandleErrorOnGameThread(std::exception_ptr&& ExcPtr) const
+	{
+		AsyncTask(ENamedThreads::GameThread,
+		          [ExcP = MoveTemp(ExcPtr), CopySelf = *this]
+		          {
+			          try
+			          {
+				          std::rethrow_exception(ExcP);
+			          }
+			          catch (...)
+			          {
+				          CopySelf.HandleError();
+			          }
+		          });
 	}
 
 	void FErrorHandler::LogException(const FString& Type, const FString& What) const
