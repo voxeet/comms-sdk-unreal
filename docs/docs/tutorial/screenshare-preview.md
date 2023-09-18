@@ -30,10 +30,6 @@ Before you start, follow the [common setup](common-setup) tutorial.
 
 `W_DolbyIOSampleScreenshareControls` is a sample widget whose "Screenshare sources" combo box is filled using [`Get Screenshare Sources`](../blueprints/functions#dolbyio-get-screenshare-sources). We also save the sources in a variable.
 
-:::info 🚀 Beta
-The `W_DolbyIOSampleScreenshareControls` widget is a part of the [Beta program](https://docs.dolby.io/communications-apis/docs/overview-beta-programs). In previous versions, the plugin uses `W_DolbyIOSampleMenu`.
-:::
-
 ![](../../static/img/screenshare-preview-combobox.png)
 
 When you click "Start screenshare", we match the selected source from the combo box with the corresponding source from the variable, get other parameters from their combo boxes and [`Start Screenshare`](../blueprints/functions#dolbyio-start-screenshare).
