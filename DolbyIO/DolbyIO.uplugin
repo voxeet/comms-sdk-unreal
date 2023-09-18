@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.2.0",
+	"VersionName": "1.3.0-beta.1",
 	"FriendlyName": "Dolby.io Virtual Worlds",
 	"Description": "Plugin integrating Dolby.io Communications.",
 	"Category": "Communications",
@@ -12,7 +12,7 @@
 	"SupportURL": "https://github.com/DolbyIO/comms-sdk-unreal/issues",
 	"EnabledByDefault": true,
 	"CanContainContent": true,
-	"IsBetaVersion": false,
+	"IsBetaVersion": true,
 	"Installed": false,
 	"Modules": [
 		{
