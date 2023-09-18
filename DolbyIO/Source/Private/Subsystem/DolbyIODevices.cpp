@@ -113,13 +113,11 @@ namespace DolbyIO
 			        if (!Device)
 			        {
 				        DLB_UE_LOG("Got current audio input device - none");
-				        BroadcastEvent(Subsystem.OnCurrentAudioInputDeviceReceived, bIsDeviceNone,
-				                       FDolbyIOAudioDevice{});
+				        BroadcastEvent(Subsystem.OnCurrentAudioInputDeviceReceivedNone);
 				        return;
 			        }
 			        DLB_UE_LOG("Got current audio input device - %s", *ToString(*Device));
-			        BroadcastEvent(Subsystem.OnCurrentAudioInputDeviceReceived, !bIsDeviceNone,
-			                       ToFDolbyIOAudioDevice(*Device));
+			        BroadcastEvent(Subsystem.OnCurrentAudioInputDeviceReceived, ToFDolbyIOAudioDevice(*Device));
 		        })
 		    .on_error(DLB_ERROR_HANDLER(Subsystem.OnGetCurrentAudioInputDeviceError));
 	}
@@ -134,13 +132,11 @@ namespace DolbyIO
 			        if (!Device)
 			        {
 				        DLB_UE_LOG("Got current audio output device - none");
-				        BroadcastEvent(Subsystem.OnCurrentAudioOutputDeviceReceived, bIsDeviceNone,
-				                       FDolbyIOAudioDevice{});
+				        BroadcastEvent(Subsystem.OnCurrentAudioOutputDeviceReceivedNone);
 				        return;
 			        }
 			        DLB_UE_LOG("Got current audio output device - %s", *ToString(*Device));
-			        BroadcastEvent(Subsystem.OnCurrentAudioOutputDeviceReceived, !bIsDeviceNone,
-			                       ToFDolbyIOAudioDevice(*Device));
+			        BroadcastEvent(Subsystem.OnCurrentAudioOutputDeviceReceived, ToFDolbyIOAudioDevice(*Device));
 		        })
 		    .on_error(DLB_ERROR_HANDLER(Subsystem.OnGetCurrentAudioOutputDeviceError));
 	}
@@ -213,12 +209,11 @@ namespace DolbyIO
 			        if (!Device)
 			        {
 				        DLB_UE_LOG("Got current video device - none");
-				        BroadcastEvent(Subsystem.OnCurrentVideoDeviceReceived, bIsDeviceNone, FDolbyIOVideoDevice{});
+				        BroadcastEvent(Subsystem.OnCurrentVideoDeviceReceivedNone);
 				        return;
 			        }
 			        DLB_UE_LOG("Got current video device - %s", *ToString(*Device));
-			        BroadcastEvent(Subsystem.OnCurrentVideoDeviceReceived, !bIsDeviceNone,
-			                       ToFDolbyIOVideoDevice(*Device));
+			        BroadcastEvent(Subsystem.OnCurrentVideoDeviceReceived, ToFDolbyIOVideoDevice(*Device));
 		        })
 		    .on_error(DLB_ERROR_HANDLER(Subsystem.OnGetCurrentVideoDeviceError));
 	}
@@ -232,9 +227,9 @@ void UDolbyIOSubsystem::Handle(const audio_device_changed& Event)
 	{
 		DLB_UE_LOG("Audio device changed for direction: %s to no device", *ToString(Event.utilized_direction));
 		if (Event.utilized_direction == audio_device::direction::input)
-			BroadcastEvent(OnCurrentAudioInputDeviceChanged, bIsDeviceNone, FDolbyIOAudioDevice{});
+			BroadcastEvent(OnCurrentAudioInputDeviceChangedToNone);
 		else
-			BroadcastEvent(OnCurrentAudioOutputDeviceChanged, bIsDeviceNone, FDolbyIOAudioDevice{});
+			BroadcastEvent(OnCurrentAudioOutputDeviceChangedToNone);
 		return;
 	}
 	Sdk->device_management()
@@ -248,11 +243,9 @@ void UDolbyIOSubsystem::Handle(const audio_device_changed& Event)
 				        DLB_UE_LOG("Audio device changed for direction: %s to device - %s",
 				                   *ToString(Event.utilized_direction), *ToString(Device));
 				        if (Event.utilized_direction == audio_device::direction::input)
-					        BroadcastEvent(OnCurrentAudioInputDeviceChanged, !bIsDeviceNone,
-					                       ToFDolbyIOAudioDevice(Device));
+					        BroadcastEvent(OnCurrentAudioInputDeviceChanged, ToFDolbyIOAudioDevice(Device));
 				        else
-					        BroadcastEvent(OnCurrentAudioOutputDeviceChanged, !bIsDeviceNone,
-					                       ToFDolbyIOAudioDevice(Device));
+					        BroadcastEvent(OnCurrentAudioOutputDeviceChanged, ToFDolbyIOAudioDevice(Device));
 				        return;
 			        }
 	        })

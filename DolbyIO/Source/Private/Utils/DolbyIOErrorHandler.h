@@ -5,7 +5,7 @@
 #include "Containers/UnrealString.h"
 
 class UDolbyIOSubsystem;
-class FDolbyIOOnErrorDelegate;
+class FDolbyIOErrorDelegate;
 
 namespace DolbyIO
 {
@@ -19,12 +19,12 @@ namespace DolbyIO
 
 		FErrorHandler(const FString& File, int Line, UDolbyIOSubsystem& DolbyIOSubsystem);
 		FErrorHandler(const FString& File, int Line, UDolbyIOSubsystem& DolbyIOSubsystem,
-		              const FDolbyIOOnErrorDelegate& OnError);
+		              const FDolbyIOErrorDelegate& OnError);
 
 		void operator()(std::exception_ptr&& ExcPtr) const;
 		void HandleError() const;
 
-		static void Warn(const FDolbyIOOnErrorDelegate& OnError, const FString& Msg);
+		static void Warn(const FDolbyIOErrorDelegate& OnError, const FString& Msg);
 
 	private:
 		void HandleError(TFunction<void()> Callee) const;
@@ -34,6 +34,6 @@ namespace DolbyIO
 		const FString File;
 		const int Line;
 		const UDolbyIOSubsystem& DolbyIOSubsystem;
-		const FDolbyIOOnErrorDelegate* const OnError{};
+		const FDolbyIOErrorDelegate* const OnError{};
 	};
 }
