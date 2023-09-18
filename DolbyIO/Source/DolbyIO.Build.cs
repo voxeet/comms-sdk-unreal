@@ -54,7 +54,6 @@ public class DolbyIO : ModuleRules
             {
                 RuntimeDependencies.Add(Path.Combine(BinDir, Dll));
             }
-            RuntimeDependencies.Add(Path.Combine(BinDir, "cac_dvdnr.dll"));
             RuntimeDependencies.Add(Path.Combine(BinDir, "model.dnr"));
             RuntimeDependencies.Add(Path.Combine(BinDir, "video_processor.model"));
         }
@@ -70,7 +69,6 @@ public class DolbyIO : ModuleRules
             {
                 RuntimeDependencies.Add(Lib);
             }
-            RuntimeDependencies.Add(Path.Combine(LibDir, "libcac_dvdnr.dylib"));
             RuntimeDependencies.Add(Path.Combine(LibDir, "libdlb_vidseg_c_api.dylib"));
             RuntimeDependencies.Add(Path.Combine(LibDir, "libdvclient.dylib"));
             RuntimeDependencies.Add(Path.Combine(LibDir, "libdvdnr.dylib"));
@@ -98,7 +96,7 @@ public class DolbyIO : ModuleRules
             {
                 RuntimeDependencies.Add(Lib);
             }
-            RuntimeDependencies.Add(Path.Combine(LibDir, "libcac_dvdnr.so"));
+            RuntimeDependencies.Add(Path.Combine(LibDir, "libdvdnr.so"));
             RuntimeDependencies.Add(Path.Combine(LibDir, "model.dnr"));
         }
         else if (Target.Platform == UnrealTargetPlatform.Android)
