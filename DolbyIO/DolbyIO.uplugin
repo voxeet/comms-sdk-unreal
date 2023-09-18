@@ -19,7 +19,7 @@
 			"Name": "DolbyIO",
 			"Type": "Runtime",
 			"LoadingPhase": "PreDefault",
-			"WhitelistPlatforms": [ "Linux", "Mac", "Win64" ]
+			"WhitelistPlatforms": [ "Android", "Linux", "Mac", "Win64" ]
 		}
 	]
 }
