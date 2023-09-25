@@ -7,5 +7,3 @@
 With the Dolby.io Virtual Worlds plugin for Unreal Engine, you can easily integrate [Dolby.io](https://dolby.io) Spatial Audio, powered by Dolby Atmos technology into your virtual world applications.
 
 You can find the plugin documentation [here](https://api-references.dolby.io/comms-sdk-unreal/).
-
-This project is no longer maintained.
