@@ -105,6 +105,18 @@ namespace DolbyIO
 		                       *(ToFText(Source.title).ToString()));
 	}
 
+	FString ToString(dolbyio::comms::screen_share_error::error_type err_type) {
+		switch (err_type) {
+			case dolbyio::comms::screen_share_error::error_type::continuos_temporary:
+				return "Continuous but temporary";
+			case dolbyio::comms::screen_share_error::error_type::permanent:
+				return "Permanent";
+			default:
+				return "";
+		}
+	}
+
+
 	EDolbyIOParticipantStatus ToEDolbyIOParticipantStatus(std::optional<participant_status> Status)
 	{
 		if (Status)
