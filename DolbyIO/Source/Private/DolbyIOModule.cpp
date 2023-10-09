@@ -24,17 +24,19 @@ public:
 		    [](std::size_t Count, std::size_t Al) { return ::operator new(Count, static_cast<std::align_val_t>(Al)); },
 		    ::operator delete,
 		    [](void* Ptr, std::size_t Al) { ::operator delete(Ptr, static_cast<std::align_val_t>(Al)); }};
-		LoadDll(BaseDir, "bin/avutil-57.dll");
-		LoadDll(BaseDir, "bin/avcodec-59.dll");
-		LoadDll(BaseDir, "bin/dvclient.dll");
-		LoadDll(BaseDir, "bin/dolbyio_comms_media.dll");
-		LoadDll(BaseDir, "bin/dolbyio_comms_sdk.dll");
+		BaseDir = FPaths::Combine(BaseDir, TEXT("bin"));
+		LoadDll(BaseDir, "avutil-57.dll");
+		LoadDll(BaseDir, "avcodec-59.dll");
+		LoadDll(BaseDir, "avformat-59.dll");
+		LoadDll(BaseDir, "dvclient.dll");
+		LoadDll(BaseDir, "dolbyio_comms_media.dll");
+		LoadDll(BaseDir, "dolbyio_comms_sdk.dll");
 		sdk::set_app_allocator(Allocator);
-		LoadDll(BaseDir, "bin/opencv_core451.dll");
-		LoadDll(BaseDir, "bin/opencv_imgproc451.dll");
-		LoadDll(BaseDir, "bin/opencv_imgcodecs451.dll");
-		LoadDll(BaseDir, "bin/dlb_vidseg_c_api.dll");
-		LoadDll(BaseDir, "bin/video_processor.dll");
+		LoadDll(BaseDir, "opencv_core451.dll");
+		LoadDll(BaseDir, "opencv_imgproc451.dll");
+		LoadDll(BaseDir, "opencv_imgcodecs451.dll");
+		LoadDll(BaseDir, "dlb_vidseg_c_api.dll");
+		LoadDll(BaseDir, "video_processor.dll");
 		dolbyio::comms::plugin::video_processor::set_app_allocator(Allocator);
 #elif PLATFORM_MAC
 		LoadDll(BaseDir, "lib/libdvclient.dylib");
