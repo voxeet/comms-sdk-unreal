@@ -9,7 +9,7 @@ permissions:
   packages: write
 
 env:
-  PLUGIN_VERSION: "1.2.0"
+  PLUGIN_VERSION: "1.2.2"
   CPP_SDK_VERSION: "2.6.1"
   CPP_SDK_URL: "https://github.com/DolbyIO/comms-sdk-cpp/releases/download"
   PLUGIN_SOURCE_DIR: "DolbyIO"
