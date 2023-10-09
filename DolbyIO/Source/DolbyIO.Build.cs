@@ -38,6 +38,7 @@ public class DolbyIO : ModuleRules
 
             string[] Dlls = new string[] { "avutil-57.dll",
                                            "avcodec-59.dll",
+                                           "avformat-59.dll",	
                                            "dvclient.dll",
                                            "dolbyio_comms_media.dll",
                                            "dolbyio_comms_sdk.dll",
@@ -69,12 +70,12 @@ public class DolbyIO : ModuleRules
             {
                 RuntimeDependencies.Add(Lib);
             }
-            RuntimeDependencies.Add(Path.Combine(LibDir, "libdlb_vidseg_c_api.dylib"));
             RuntimeDependencies.Add(Path.Combine(LibDir, "libdvclient.dylib"));
-            RuntimeDependencies.Add(Path.Combine(LibDir, "libdvdnr.dylib"));
             RuntimeDependencies.Add(Path.Combine(LibDir, "libopencv_core.4.5.dylib"));
             RuntimeDependencies.Add(Path.Combine(LibDir, "libopencv_imgcodecs.4.5.dylib"));
             RuntimeDependencies.Add(Path.Combine(LibDir, "libopencv_imgproc.4.5.dylib"));
+            RuntimeDependencies.Add(Path.Combine(LibDir, "libdvdnr.dylib"));
+            RuntimeDependencies.Add(Path.Combine(LibDir, "libdlb_vidseg_c_api.dylib"));
             RuntimeDependencies.Add(Path.Combine(LibDir, "model.dnr"));
             RuntimeDependencies.Add(Path.Combine(LibDir, "video_processor.model"));
         }

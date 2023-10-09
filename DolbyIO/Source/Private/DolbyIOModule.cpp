@@ -24,6 +24,7 @@ public:
 		    [](std::size_t Count, std::size_t Al) { return ::operator new(Count, static_cast<std::align_val_t>(Al)); },
 		    ::operator delete,
 		    [](void* Ptr, std::size_t Al) { ::operator delete(Ptr, static_cast<std::align_val_t>(Al)); }};
+		// Add this here as I am not sure how Windows paths are interpreted (do I need the backslash)
 		BaseDir = FPaths::Combine(BaseDir, TEXT("bin"));
 		LoadDll(BaseDir, "avutil-57.dll");
 		LoadDll(BaseDir, "avcodec-59.dll");
@@ -35,6 +36,7 @@ public:
 		LoadDll(BaseDir, "opencv_core451.dll");
 		LoadDll(BaseDir, "opencv_imgproc451.dll");
 		LoadDll(BaseDir, "opencv_imgcodecs451.dll");
+		LoadDll(BaseDir, "dvdnr.dll");
 		LoadDll(BaseDir, "dlb_vidseg_c_api.dll");
 		LoadDll(BaseDir, "video_processor.dll");
 		dolbyio::comms::plugin::video_processor::set_app_allocator(Allocator);
@@ -46,6 +48,7 @@ public:
 		LoadDll(BaseDir, "lib/libopencv_imgproc.4.5.dylib");
 		LoadDll(BaseDir, "lib/libopencv_imgcodecs.4.5.dylib");
 		LoadDll(BaseDir, "lib/libdlb_vidseg_c_api.dylib");
+		LoadDll(BaseDir, "lib/libdvdnr.dylib");
 		LoadDll(BaseDir, "lib/libvideo_processor.dylib");
 #elif PLATFORM_LINUX
 		BaseDir += "-ubuntu-20.04-clang10-libc++10";
