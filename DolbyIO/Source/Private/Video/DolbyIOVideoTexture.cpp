@@ -109,11 +109,11 @@ namespace DolbyIO
 		    [SharedThis = AsShared()](FRHICommandListImmediate& RHICmdList)
 		    {
 			    FScopeLock Lock{SharedThis->GetBufferLock()};
-			    RHIUpdateTexture2D(SharedThis->Texture->GetResource()->GetTexture2DRHI(), 0,
-			                       FUpdateTextureRegion2D{0, 0, 0, 0,
-			                                              static_cast<uint32>(SharedThis->Texture->GetSizeX()),
-			                                              static_cast<uint32>(SharedThis->Texture->GetSizeY())},
-			                       SharedThis->Texture->GetSizeX() * Stride, SharedThis->GetBuffer());
+			    auto FRHITexture2D_Ptr = SharedThis->Texture->GetResource()->GetTexture2DRHI();
+			    uint32 SizeX = FRHITexture2D_Ptr->GetSizeX(), SizeY = FRHITexture2D_Ptr->GetSizeY();	
+			    RHIUpdateTexture2D(FRHITexture2D_Ptr, 0,
+			                       FUpdateTextureRegion2D{0, 0, 0, 0, SizeX, SizeY},
+			                       SizeX * Stride, SharedThis->GetBuffer());
 		    });
 	}
 
