@@ -109,12 +109,21 @@ namespace DolbyIO
 		    [SharedThis = AsShared()](FRHICommandListImmediate& RHICmdList)
 		    {
 			    FScopeLock Lock{SharedThis->GetBufferLock()};
-			    auto FRHITexture2D_Ptr = SharedThis->Texture->GetResource()->GetTexture2DRHI();
-			    uint32 SizeX = FRHITexture2D_Ptr->GetSizeX(), SizeY = FRHITexture2D_Ptr->GetSizeY();	
-			    RHIUpdateTexture2D(FRHITexture2D_Ptr, 0,
-			                       FUpdateTextureRegion2D{0, 0, 0, 0, SizeX, SizeY},
-			                       SizeX * Stride, SharedThis->GetBuffer());
-		    });
+
+				const auto TextureRegion = FUpdateTextureRegion2D{0, 0, 0, 0,
+																	static_cast<uint32>(SharedThis->Texture->GetResource()->GetTexture2DRHI()->GetSizeX()),
+																	static_cast<uint32>(SharedThis->Texture->GetResource()->GetTexture2DRHI()->GetSizeY())};
+
+				if (TextureRegion.DestX + TextureRegion.Width <= static_cast<uint32>(SharedThis->Texture->GetResource()->GetTexture2DRHI()->GetSizeX()) &&
+					TextureRegion.DestY + TextureRegion.Height <= static_cast<uint32>(SharedThis->Texture->GetResource()->GetTexture2DRHI()->GetSizeY()))
+				{
+					RHIUpdateTexture2D(SharedThis->Texture->GetResource()->GetTexture2DRHI(), 
+										0,
+										TextureRegion,
+										SharedThis->Texture->GetResource()->GetTexture2DRHI()->GetSizeX() * Stride,
+										SharedThis->GetBuffer());
+				}
+			});
 	}
 
 	namespace
