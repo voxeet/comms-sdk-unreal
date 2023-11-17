@@ -153,6 +153,7 @@ namespace DolbyIO
 	class FErrorHandler;
 	class FVideoFrameHandler;
 	class FVideoSink;
+	class dummy_frame_dropper;
 }
 
 UCLASS(DisplayName = "Dolby.io Subsystem")
@@ -477,8 +478,8 @@ private:
 	FCriticalSection VideoSinksLock;
 
 	std::shared_ptr<dolbyio::comms::plugin::video_processor> VideoProcessor;
-	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalCameraFrameHandler;
-	std::shared_ptr<DolbyIO::FVideoFrameHandler> LocalScreenshareFrameHandler;
+	std::shared_ptr<DolbyIO::dummy_frame_dropper> LocalCameraFrameHandler;
+	std::shared_ptr<DolbyIO::dummy_frame_dropper> LocalScreenshareFrameHandler;
 	TSharedPtr<DolbyIO::FDevices> Devices;
 	TSharedPtr<dolbyio::comms::sdk> Sdk;
 	TSharedPtr<dolbyio::comms::refresh_token> RefreshTokenCb;

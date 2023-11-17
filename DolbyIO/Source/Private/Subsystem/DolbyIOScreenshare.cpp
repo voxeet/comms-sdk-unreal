@@ -7,6 +7,7 @@
 #include "Utils/DolbyIOErrorHandler.h"
 #include "Utils/DolbyIOLogging.h"
 #include "Video/DolbyIOVideoFrameHandler.h"
+#include "Video/dummy_frame_dropper.h"
 
 using namespace dolbyio::comms;
 using namespace DolbyIO;

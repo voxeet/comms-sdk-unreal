@@ -9,6 +9,7 @@
 #include "Utils/DolbyIOLogging.h"
 #include "Video/DolbyIOVideoFrameHandler.h"
 #include "Video/DolbyIOVideoProcessingFrameHandler.h"
+#include "Video/dummy_frame_dropper.h"
 
 using namespace dolbyio::comms;
 using namespace DolbyIO;
@@ -29,7 +30,7 @@ void UDolbyIOSubsystem::EnableVideo(const FDolbyIOVideoDevice& VideoDevice, bool
 #if PLATFORM_WINDOWS | PLATFORM_MAC
 		DLB_UE_LOG("Blurring background");
 		VideoFrameHandler =
-		    std::make_shared<FVideoProcessingFrameHandler>(VideoProcessor, LocalCameraFrameHandler->sink());
+		    std::make_shared<FVideoProcessingFrameHandler>(VideoProcessor, LocalCameraFrameHandler->sink(), 5);
 #else
 		DLB_WARNING(OnEnableVideoError, "Cannot blur background on this platform");
 #endif

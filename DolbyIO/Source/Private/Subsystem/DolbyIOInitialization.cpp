@@ -8,6 +8,7 @@
 #include "Utils/DolbyIOErrorHandler.h"
 #include "Utils/DolbyIOLogging.h"
 #include "Video/DolbyIOVideoFrameHandler.h"
+#include "Video/dummy_frame_dropper.h"
 #include "Video/DolbyIOVideoSink.h"
 
 #include "Engine/GameInstance.h"
@@ -31,8 +32,8 @@ void UDolbyIOSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		FScopeLock Lock{&VideoSinksLock};
 		VideoSinks.Emplace(LocalCameraTrackID, std::make_shared<FVideoSink>(LocalCameraTrackID));
 		VideoSinks.Emplace(LocalScreenshareTrackID, std::make_shared<FVideoSink>(LocalScreenshareTrackID));
-		LocalCameraFrameHandler = std::make_shared<FVideoFrameHandler>(VideoSinks[LocalCameraTrackID]);
-		LocalScreenshareFrameHandler = std::make_shared<FVideoFrameHandler>(VideoSinks[LocalScreenshareTrackID]);
+		LocalCameraFrameHandler = std::make_shared<dummy_frame_dropper>(VideoSinks[LocalCameraTrackID], 5);
+		LocalScreenshareFrameHandler = std::make_shared<dummy_frame_dropper>(VideoSinks[LocalScreenshareTrackID], 5);
 	}
 
 	FTimerManager& TimerManager = GetGameInstance()->GetTimerManager();
